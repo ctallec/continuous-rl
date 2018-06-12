@@ -19,4 +19,18 @@ algorithm that remains viable in the limit of small discretizations.
 
 \subsection{Notations}
 In what follows, we loosely consider the notion of a $\emph{Markov Decision Process}$
-$\mathcal{M}$ with discretization step $\deltat$. 
+$\mathcal{M}$ with discretization step $\deltat$. Such an MDP is the discretization
+of a continuous MDP with discretization step $\deltat$. Notably, this means that
+contiguous states are at distance $\bigO{\deltat}$ and that instantaneous rewards
+have magnitude $\bigO{\deltat}$ for any policy, i.e.
+\begin{align}
+	\|s_{t + \deltat} - s_t\| &= \bigO{\deltat}\\
+	r_t = \reward_t \deltat, &\quad \reward_t = \bigO{1}.
+\end{align}
+Policies are functions from the state space $\statespace$ to distributions on the
+$\actionspace$
+\begin{equation}
+	\pi\colon \statespace \mapsto \mathcal{D}\left(\actionspace\right).
+\end{equation}
+The probability of an action $a$ in a given state $s$ under policy $\pi$ is
+denoted by $\pi\left(a\mid s\right)$.
