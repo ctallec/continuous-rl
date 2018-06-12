@@ -11,3 +11,8 @@ algorithms aiming at attacking the reinforcement learning field in physical
 setups: such algorithms should only improve as the time discretization is
 refined, as refining the time discretization can only increase the amount of 
 eploitable information.
+
+However, some reinforcement learning algorithms such as \emph{Q-Learning} are
+ill-behaved in the regime of small time discretization. In what follow, we
+analyze in an handwavy manner the reason for this failure, and give an alternative
+algorithm that remains viable in the limit of small discretizations.
