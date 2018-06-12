@@ -72,9 +72,30 @@ Both functions satisfy recurrent \emph{Bellman equations}
 
 \subsection{$Q^\pi = V^\pi$ in continuous time}
 \emph{Q-learning} uses the state-action value function to determine which
-action optimizes the future return. However, in continuous time, the state-action
-value function no longer carries any information on which action carries the best
-return. Intuitively, as the discretization step goes to zero, the difference
-in resulting state between two actions is of magnitude $\bigO{\deltat}$. Consequently,
-the value functions of the corresponding states, and thus the state-action value functions
-only differ by a factor of magnitude $\bigO{\deltat}$.
+action optimizes the future return.
+
+However, in continuous time, the state-action value function no longer carries
+any information on which action yields the best return. Intuitively, as the
+discretization step goes to zero, the difference in resulting state between two
+actions is of magnitude $\bigO{\deltat}$. Consequently, the value functions of
+the corresponding states, and thus the state-action value functions only differ
+by a factor of magnitude $\bigO{\deltat}$.
+
+Formally,
+\begin{align}
+	V^\pi(s) - Q^\pi(s, a) &= 
+	(\BE_\pi\left[\reward_t \deltat \mid s_t=s\right] -
+	\BE_\pi\left[\reward_t \deltat \mid s_t=s\right]) \deltat +\\
+	&\gamma'(\BE_\pi\left[
+		V^\pi(s_{t + \deltat})
+		\mid s_t = s
+	\right] - \BE_\pi\left[
+		V^\pi(s_{t + \deltat})
+		\mid s_t = s, a_t=a
+	\right]).\nonumber
+\end{align}
+Since $s_{t+\deltat} = s_t + \bigO{\deltat}$ and $V^\pi$ is differentiable,
+$V^\pi(s_{t+\deltat}) = V^\pi(s_t) + \bigO{\deltat}$. Consequently,
+\begin{equation}
+	V^\pi(s) - Q^\pi(s, a) = \bigO{\deltat}.
+\end{equation}
