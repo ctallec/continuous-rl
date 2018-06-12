@@ -19,4 +19,61 @@ algorithm that remains viable in the limit of small discretizations.
 
 \subsection{Notations}
 In what follows, we loosely consider the notion of a $\emph{Markov Decision Process}$
-$\mathcal{M}$ with discretization step $\deltat$. 
+$\mathcal{M}$ with discretization step $\deltat$. Such an MDP is the discretization
+of a continuous MDP with discretization step $\deltat$. Notably, this means that
+contiguous states are at distance $\bigO{\deltat}$ and that instantaneous rewards
+have magnitude $\bigO{\deltat}$ for any policy, i.e.
+\begin{align}
+	\|s_{t + \deltat} - s_t\| &= \bigO{\deltat}\\
+	r_t = \reward_t \deltat, &\quad \reward_t = \bigO{1}.
+\end{align}
+Policies are functions from the state space $\statespace$ to distributions on the
+$\actionspace$
+\begin{equation}
+	\pi\colon \statespace \mapsto \mathcal{D}\left(\actionspace\right).
+\end{equation}
+The probability of an action $a$ in a given state $s$ under policy $\pi$ is
+denoted by $\pi\left(a\mid s\right)$.
+
+We consider discount factors of the form
+\begin{equation}
+	\gamma' = \left[1 - (1 - \gamma) \deltat\right],
+\end{equation}
+so has to have an effective discount factor close to $\gamma$.
+
+The state value function and action-state value function of a policy
+$\pi$ are defined as
+\begin{align}
+	V^\pi(s) &= \BE_\pi\left[
+		\sum\limits_{t=s}^\infty
+		{\gamma'}^{s - t} \reward_{t + (s-t)\deltat} \deltat
+		\mid
+		s_t = s
+	\right]\\
+	Q^\pi(s, a) &= \BE_\pi\left[
+		\sum\limits_{t=s}^\infty
+		{\gamma'}^{s - t} \reward_s \deltat
+		\mid
+		s_t = s, a_t = a
+	\right].
+\end{align}
+Both functions satisfy recurrent \emph{Bellman equations}
+\begin{align}
+	V^\pi(s) &= \BE_\pi\left[
+		\reward_t \deltat + \gamma' V^\pi(s_{t + \deltat})
+		\mid
+	s_t = s\right]\\
+	Q^\pi(s, a) &= \BE_\pi\left[
+		\reward_t \deltat + \gamma' V^\pi(s_{t + \deltat})
+		\mid
+	s_t = s, a_t = a\right].
+\end{align}
+
+\subsection{$Q^\pi = V^\pi$ in continuous time}
+\emph{Q-learning} uses the state-action value function to determine which
+action optimizes the future return. However, in continuous time, the state-action
+value function no longer carries any information on which action carries the best
+return. Intuitively, as the discretization step goes to zero, the difference
+in resulting state between two actions is of magnitude $\bigO{\deltat}$. Consequently,
+the value functions of the corresponding states, and thus the state-action value functions
+only differ by a factor of magnitude $\bigO{\deltat}$.
