@@ -54,12 +54,20 @@ Pseudo code strongly inspired by \href{http://ccg.doc.gold.ac.uk/ccg_old/teachin
 \end{algorithm}
 \begin{algorithm}
 	\caption{\textproc{Backup}}
-	\begin{algorithmic}[1]
+	\begin{algorithmic}
 		\Function{Backup}{$v, \Delta$}
 		\While{$v$ is not null}
 		\State $N(v) \leftarrow N(v) + 1$
 		\State $Q(v) \leftarrow Q(v) + \Delta(v)$
 		\State $v \leftarrow \mathrm{parent of } v$
+                \EndWhile
 		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:
