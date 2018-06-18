@@ -1,0 +1,65 @@
+%!TEX root = main.tex
+
+\section{Continuous MCTS}
+\label{sec:mcts}
+Pseudo code strongly inspired by \href{http://ccg.doc.gold.ac.uk/ccg_old/teaching/ludic_computing/ludic16.pdf}{this link}.
+\begin{algorithm}
+	\caption{\textproc{UCTSearch}}
+	\begin{algorithmic}[1]
+		\Function{UCTSearch}{$s_0$}
+		\State create $v_0$ with state $s_0$
+		\While{within computational budget}
+		\State $v_l \leftarrow \textproc{TreePolicy}(v_0)$
+		\State $\Delta \leftarrow \textproc{Eval}(s(v_l))$
+		\State $\textproc{Backup}(v_l, \Delta)$
+		\EndWhile
+		\State \Return $a(\textproc{BestChild}(v_0, 0))$
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{\textproc{TreePolicy}}
+	\begin{algorithmic}[1]
+		\Function{TreePolicy}{$v$}
+		\While{$v$ is non terminal}
+		\If{$v$ is not expanded or $\textproc{Unif}() < C \deltat$}
+		\State \Return $\textproc{Expand}(v)$
+		\Else
+		\State $v \leftarrow \textproc{BestChild}(v)$
+		\EndIf
+		\EndWhile
+		\State \Return $v$
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{\textproc{Expand}}
+	\begin{algorithmic}
+		\Function{Expand}{$v$}
+		\State Create new node $v'$
+		\State $a(v') \sim \pi(a\mid s(v))$
+		\State $s(v') \sim T(s'\mid s(v), a)$
+		\State \Return $v'$
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{\textproc{BestChild}}
+	\begin{algorithmic}[1]
+	\Function{BestChild}{$v$}
+	\State \Return $\argmax\limits_{v' \in \textrm{Expanded children of } v}
+	\frac{Q(v')}{N(v')} + c \sqrt{\frac{2 \ln{N(v)}}{N(v')}}$
+	\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+\begin{algorithm}
+	\caption{\textproc{Backup}}
+	\begin{algorithmic}[1]
+		\Function{Backup}{$v, \Delta$}
+		\While{$v$ is not null}
+		\State $N(v) \leftarrow N(v) + 1$
+		\State $Q(v) \leftarrow Q(v) + \Delta(v)$
+		\State $v \leftarrow \mathrm{parent of } v$
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
