@@ -1,0 +1,63 @@
+%!TEX root = main.tex
+\section{An aside on learning rates}
+\label{sec:lr}
+Defining $P_{ij} = P(j\mid i)$, $\mathrm{TD}(0)$ can be rewritten as
+\begin{align*}
+	V^{t+1} - V^* = V^t - V^* + \alpha E_{s_t}\left[{(E_{s_{t+1}} - P^T E_{s_t})}^T R + 
+		\gamma E_{s_{t+1}}^T V^t - \gamma E_{s_t}^T P V^* - E_{s_t}^T(V^t-V^*)
+	\right]
+\end{align*}
+or, with $W^t = V^t - V^*$,
+\begin{align*}
+	W^{t+1} = \left[I + \alpha E_{s_t}{(\gamma E_{s_{t+1}} - E_{s_t})}^T\right] W^t +
+	\alpha E_{s_t}{(E_{s_{t+1}} - P^T E_{s_t})}^T (R + \gamma V^*)
+\end{align*}
+We would like to find conditions on $\alpha$ that turn $\|W^t\|^2$ into a submartingale. 
+Rewrite
+\begin{align*}
+	W^{t+1} = X^t + Y^{t+1}
+\end{align*}
+where
+\begin{align*}
+	X^t &= \left[I - \alpha E_{s_t}E_{s_t}^T\right] W^t - 
+	\alpha E_{s_t}E_{s_t}^T P{(R + \gamma V^*)}\\
+	Y^{t+1} &= \alpha \gamma E_{s_t}E_{s_{t+1}}^T W^t + \alpha E_{s_t}E_{s_{t+1}}^T(R + \gamma V^*)\\
+	&= \alpha E_{s_t}E_{s_{t+1}}^T(R + \gamma V^t).
+\end{align*}
+Recall that $\BE\left[E_{s_{t+1}}\mid \pfield\right] = P^T E_{s_t}$.
+\begin{align}
+	\BE\left[Y^{t+1}\mid \pfield\right] &= \alpha E_{s_t} E_{s_t}^T P (R + \gamma V^t).
+\end{align}
+Besides,
+\begin{align*}
+	\BE\left[E_{s_{t+1}}E_{s_t}^T E_{s_t} E_{s_{t+1}}^T\mid \pfield\right] &=
+	\sum\limits_{s_{t+1}} P(s_{t+1}\mid s_t) E_{s_{t+1}} E_{s_{t+1}}^T\\
+	&= \mathrm{diag}{(P^T E_{s_t})}
+\end{align*}
+yielding
+\begin{align}
+	\BE\left[Y^{t+1}^T Y^{t+1}\mid \pfield\right] &= \alpha ^ 2
+	\BE\left[{\left(R(s_{t+1}) + \gamma V^t(s_{t+1})\right)}^2\mid \pfield\right].
+\end{align}
+Similarily
+\begin{align*}
+	X^t^T X^t = &\|\left[I - \alpha E_{s_t}E_{s_t}^T\right]W^t\|^2 + 2 \alpha{(\alpha - 1)}
+	W^t(s_t) V^*(s_t) + \alpha^2V^*(s_t)^2
+\end{align*}
+and
+\begin{align*}
+	\BE\left[X^{tT} Y^{t+1}\mid \pfield\right] = & \alpha(1 - \alpha)
+	\BE\left[R(s_{t+1}) + \gamma V^t(s_{t+1})\mid \pfield \right]W^t(s_t)
+	- \\&\alpha^2 \BE\left[R(s_{t+1} + \gamma V^t(s_{t+1}))\mid \pfield\right] V^*(s_t).
+\end{align*}
+Summing, we obtain
+\begin{align*}
+	\BE\left[\|W^t\|^2\mid \pfield\right] &=
+	\|\left[I - \alpha E_{s_t}E_{s_t}^T\right]W^t\|^2
+	- \alpha^2 V^*(s_t)^2 \\
+	&-2 \alpha (1 - \alpha) \BE\left[\gamma W^t(s_{t+1})\mid \pfield\right] W^t(s_t)
+	 \\
+	&+2 \alpha^2 \BE\left[\gamma W^t(s_{t+1})\mid \pfield\right] V^*(s_t) +
+	\alpha^2
+	\BE\left[{\left(R(s_{t+1}) + \gamma V^t(s_{t+1})\right)}^2\mid \pfield\right].
+\end{align*}
