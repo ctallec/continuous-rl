@@ -3,7 +3,8 @@
 \label{sec:lr}
 Defining $P_{ij} = P(j\mid i)$, $\mathrm{TD}(0)$ can be rewritten as
 \begin{align*}
-	V^{t+1} - V^* = V^t - V^* + \alpha E_{s_t}\left[{(E_{s_{t+1}} - P^T E_{s_t})}^T R + 
+	V^{t+1} - V^* &= V^t - V^* \\
+		      &+ \alpha E_{s_t}\left[{(E_{s_{t+1}} - P^T E_{s_t})}^T R + 
 		\gamma E_{s_{t+1}}^T V^t - \gamma E_{s_t}^T P V^* - E_{s_t}^T(V^t-V^*)
 	\right]
 \end{align*}
@@ -24,40 +25,76 @@ where
 	Y^{t+1} &= \alpha \gamma E_{s_t}E_{s_{t+1}}^T W^t + \alpha E_{s_t}E_{s_{t+1}}^T(R + \gamma V^*)\\
 	&= \alpha E_{s_t}E_{s_{t+1}}^T(R + \gamma V^t).
 \end{align*}
-Recall that $\BE\left[E_{s_{t+1}}\mid \pfield\right] = P^T E_{s_t}$.
+Recall that $\Ep{E_{s_{t+1}}} = P^T E_{s_t}$.
 \begin{align}
-	\BE\left[Y^{t+1}\mid \pfield\right] &= \alpha E_{s_t} E_{s_t}^T P (R + \gamma V^t).
+	\Ep{Y^{t+1}} &= \alpha E_{s_t} E_{s_t}^T P (R + \gamma V^t)\\
+	\Ep{W^{t+1}} &= \left[I + \alpha E_{s_t}E_{s_t}^T(\gamma P - I)\right] W^t.
 \end{align}
 Besides,
 \begin{align*}
-	\BE\left[E_{s_{t+1}}E_{s_t}^T E_{s_t} E_{s_{t+1}}^T\mid \pfield\right] &=
+	\Ep{E_{s_{t+1}}E_{s_t}^T E_{s_t} E_{s_{t+1}}^T} &=
 	\sum\limits_{s_{t+1}} P(s_{t+1}\mid s_t) E_{s_{t+1}} E_{s_{t+1}}^T\\
 	&= \mathrm{diag}{(P^T E_{s_t})}
 \end{align*}
 yielding
 \begin{align}
-	\BE\left[Y^{t+1}^T Y^{t+1}\mid \pfield\right] &= \alpha ^ 2
-	\BE\left[{\left(R(s_{t+1}) + \gamma V^t(s_{t+1})\right)}^2\mid \pfield\right].
+	\Ep{Y^{t+1}^T Y^{t+1}} &= \alpha ^ 2
+	\Ep{{\left(R(s_{t+1}) + \gamma V^t(s_{t+1})\right)}^2}.
 \end{align}
-Similarily
+Now
 \begin{align*}
-	X^t^T X^t = &\|\left[I - \alpha E_{s_t}E_{s_t}^T\right]W^t\|^2 + 2 \alpha{(\alpha - 1)}
-	W^t(s_t) V^*(s_t) + \alpha^2V^*(s_t)^2
+	\Ep{W^{t+1}^T W^{t+1}} &= X^t^T X^t + 2X^t^T \Ep{Y^{t+1}}
+	+ \Ep{Y^{t+1}^TY^{t+1}}\\
+	\Ep{W^{t+1}}^T\Ep{W^{t+1}} &= X^t^T X^t + 2X^t^T \Ep{Y^{t+1}}
+				 \\&+ \Ep{Y^{t+1}}^T\Ep{Y^{t+1}}.
 \end{align*}
-and
+Consequently
 \begin{align*}
-	\BE\left[X^{tT} Y^{t+1}\mid \pfield\right] = & \alpha(1 - \alpha)
-	\BE\left[R(s_{t+1}) + \gamma V^t(s_{t+1})\mid \pfield \right]W^t(s_t)
-	- \\&\alpha^2 \BE\left[R(s_{t+1} + \gamma V^t(s_{t+1}))\mid \pfield\right] V^*(s_t).
+	\Ep{W^{t+1}^T W^{t+1}} &= \Ep{W^{t+1}}^T\Ep{W^{t+1}} + \Ep{Y^{t+1}^T Y^{t+1}}\\
+			       &- \Ep{Y^{t+1}}^T\Ep{Y^{t+1}}
 \end{align*}
-Summing, we obtain
+and finally
 \begin{align*}
-	\BE\left[\|W^t\|^2\mid \pfield\right] &=
-	\|\left[I - \alpha E_{s_t}E_{s_t}^T\right]W^t\|^2
-	- \alpha^2 V^*(s_t)^2 \\
-	&-2 \alpha (1 - \alpha) \BE\left[\gamma W^t(s_{t+1})\mid \pfield\right] W^t(s_t)
-	 \\
-	&+2 \alpha^2 \BE\left[\gamma W^t(s_{t+1})\mid \pfield\right] V^*(s_t) +
-	\alpha^2
-	\BE\left[{\left(R(s_{t+1}) + \gamma V^t(s_{t+1})\right)}^2\mid \pfield\right].
+	\Ep{W^{t+1}^T W^{t+1}} = \|\left[I + \alpha E_{s_t} E_{s_t}^T(\gamma P - I)\right]W^t\|^2 + \alpha ^ 2 \mathrm{Var}\left[R(s_{t+1}) + \gamma V^t(s_{t+1})\mid \pfield\right].
 \end{align*}
+With no further assumptions or approximations, considered learning rates must verify 
+stringent conditions for convergence to hold, typically
+\begin{align*}
+	\sum\limits \alpha_t = +\infty\\
+	\sum\limits \alpha_t ^ 2 < + \infty.
+\end{align*}
+We turn to a simpler dynamic to obtain less stringent conditions on the learning rates,
+\begin{align*}
+	\Ep{W^{t+1}^T W^{t+1}} = \|\left[I + \alpha \diag{\mu}(\gamma P - I)\right]W^t\|^2 + \alpha ^ 2 \mathrm{Var}\left[R(s_{t+1}) + \gamma V^t(s_{t+1})\mid \pfield\right].
+\end{align*}
+This dynamic amounts to only perform updates on $V^t$ once you have enough
+samples from the markov chain to have a representative sample of its invariant
+distribution $\mu$.
+
+Now, defining $R_+ = \max\limits_s |R(s)|$,
+\begin{align}
+	\Ep{W^{t+1}^T W^{t+1}} \leq \|\left[I + \alpha \diag{\mu}(\gamma P - I)\right]W^t\|^2 + \frac{\alpha^2}{(1 - \gamma)^2} R_+^2.
+\end{align}
+Define $\lmax = \max(\alpha (\gamma + 1) \max(\mu) - 1, 1 - \alpha (1 - \gamma) \min(\mu))$ and $N^t$ as
+\begin{align}
+	N^{t+1} = \lmax N_t + \frac{\alpha^2}{(1 - \gamma)^2} R_+^2.
+\end{align}
+Then $N^t$ upper bounds $\Ep{W^t^T W^t}$ and $N^t \to \frac{\alpha^2 R_+^2} {(1
+- \gamma)^2 (1 - \lmax)} = S \varepsilon^2$, with $S$ the number of states,
+thus, on average, $V^t$ approximates $V^*$ up to $\varepsilon$ componentwise as
+$t\to\infty$.  To obtain a precision up to $\deltat$, you tipically need
+\begin{align}
+	\alpha = \frac{\sqrt{S}\deltat^2(1 - \gamma)^2\min(2 - (\gamma + 1)\max(\mu),(1-\gamma)\min(\mu))}{R_+^2}
+\end{align}
+in most cases, $2 - (\gamma + 1)\max(\mu) > (1 - \gamma) \min(\mu)$, yielding
+\begin{align}
+	\alpha = \frac{\sqrt{S}\deltat^5 (1 - \gamma')^3 \min(\mu)}{R_+^2},
+\end{align}
+with $\gamma' = (1 - (1 - \gamma) \deltat)$, the discretization insensitive discount.
+Now, if the invariant distribution is quasi uniform and the dimension of the state space
+is $D$, $\min(\mu) \approx \deltat^D$, and $S \approx \deltat^{-D}$.
+
+Consequently,
+\begin{equation}
+	\alpha = \frac{\deltat^{5 + \frac{D}{2}}(1 - \gamma')}{R_+^2}.
+\end{equation}
