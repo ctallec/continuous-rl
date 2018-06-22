@@ -152,3 +152,13 @@ Thus it is enough to learn a model of the instantaneous reward, a model
 of the value function $V$ (sufficiently regularized to allow for
 estimation of $\partial V(s)/\partial s$), and a model of the
 instantaneous dynamics $F(s,a)$.
+
+This extends to situations with continuous time and continuous or
+discrete space, where the state jumps from $s$ to $s'$ with probability $\deltat
+L(s,a,s')$ at each time. (Here $L$ is signed, with $L(s,a,s)$ usually
+negative to represent the jump from $s$; $L$ is the generator of the
+Markov process.) Writing $p_J(s,a,s')$ the law of
+$s'$ knowing that a jump has occurred, and $\deltat J(s,a)$ the
+probability of jumping, we have $L(s,a,s')=J(s,a)(p_J(s,a,s')-\delta(s))$
+and
+
