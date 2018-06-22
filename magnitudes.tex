@@ -161,4 +161,9 @@ Markov process.) Writing $p_J(s,a,s')$ the law of
 $s'$ knowing that a jump has occurred, and $\deltat J(s,a)$ the
 probability of jumping, we have $L(s,a,s')=J(s,a)(p_J(s,a,s')-\delta(s))$
 and
+\begin{equation}
+A(s_t,a_t)=\E\left[\reward_t(s_t,a_t)+J(s_t,a_t)\,\E_{s'\sim
+p_J(s_t,a_t,s')} (V(s')-V(s_t))
+\mid a_t\right]+\cdots(s_t)
+\end{equation}
 
