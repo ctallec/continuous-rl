@@ -106,7 +106,7 @@ values, i.e.
 \begin{equation*}
 	|\tilde{Q}^\pi(s, a) - \tilde{Q}^\pi(s, a') - Q^\pi(s, a) +
 	Q^\pi(s, a')| = \bigO{\deltat}.
-\end{equation*}.
+\end{equation*}
 
 Approximating with this degree of precision becomes harder as $\bigO{\deltat}$
 decreases. \NDC{This is not convincing at the moment: as $\deltat$ decreases,
@@ -115,3 +115,38 @@ decreases. \NDC{This is not convincing at the moment: as $\deltat$ decreases,
 	required to obtain an approximation of order $\varepsilon$ is superlinear in
 	$\frac{1}{\varepsilon}$ and thus the previous argument holds. We either need
 a simple theoretical setup where this works or an experimental one.}
+
+\paragraph{Directly learning the advantage function.}
+Let the system be defined by a state- and action-driven stochastic
+differential equation
+\begin{equation}
+s_{t+\deltat}=s_t+\deltat F(s_t,a_t)+\sqrt{\deltat}\mathcal{N}(0,C(s_t))
+\end{equation}
+where we assume that the covariance noise does not depend on $a_t$. (If
+$a_t$ itself is noisy, this will produce noise on $F$, but this noise
+would typically be of order $\deltat$ unless the noise on $a_t$ is of
+order $1/\sqrt{\deltat}$.)
+
+Then with $\gamma=1$ the Bellman equation is
+\begin{align}
+Q(s_t,a_t)=&\E[ \reward_t(s_t,a_t) \deltat + V(s_{t+\deltat}) \mid a_t]
+\\&=V(s_t)+\deltat \,\E\left[\reward_t(s_t,a_t)+\frac{\partial V(s_t)}{\partial
+s}F(s_t,a_t)+\frac12 \Tr \left(C(s_t)\frac{\partial^2 V(s_t)}{\partial
+s^2}\right)\mid a_t\right]+o(\deltat)
+\end{align}
+
+We only need to compute the advantage function $A$ defined by
+$Q(s_t,a_t)\eqd V(s_t)+\deltat A(s_t,a_t)$; or just the advantage function
+up to any term that depends only $s_t$ but not on $a_t$. By isolating the
+part that
+depends on $a_t$ in the above, the advantage function is
+\begin{equation}
+A(s_t,a_t)=\E\left[\reward_t(s_t,a_t)+\frac{\partial
+V(s_t)}{\partial
+s}F(s_t,a_t)\mid a_t\right]+\cdots(s_t)+o(1)
+\end{equation}
+
+Thus it is enough to learn a model of the instantaneous reward, a model
+of the value function $V$ (sufficiently regularized to allow for
+estimation of $\partial V(s)/\partial s$), and a model of the
+instantaneous dynamics $F(s,a)$.

@@ -4,7 +4,8 @@
 \usepackage{algpseudocode}
 \usepackage{hyperref}
 
-\newcommand{\deltat}{\delta\hspace*{-.3mm}t}
+%\newcommand{\deltat}{\delta\hspace*{-.3mm}t}
+\newcommand{\deltat}{\ensuremath{\delta\hspace{-.06em}t}}
 \newcommand{\bigO}[1]{O (#1)}
 \newcommand{\reward}{\tilde{r}}
 \newcommand{\actionspace}{\mathcal{A}}
@@ -15,3 +16,93 @@
 \newcommand{\Ep}[1]{\BE\left[#1\mid\pfield\right]}
 \newcommand{\diag}[1]{\mathrm{\textbf{diag}}(#1)}
 \newcommand{\lmax}{\lambda_{\mathrm{max}}}
+
+
+
+\newcommand{\mynumero}{n°}
+
+
+%\def\d{{\mathrm{d}}}
+%\def\d{\operatorname{d}\!}
+\def\d{\operatorname{d}\!{}}
+%\def\d{\operatorname{}\!\mathrm{d}}
+
+\def\N{{\mathbb{N}}}
+\def\Z{{\mathbb{Z}}}
+\def\Nstar{{\mathbb{N}^\star}}
+\def\Q{{\mathbb{Q}}}
+\def\R{{\mathbb{R}}}
+\def\C{{\mathbb{C}}}
+
+\renewcommand{\geq}{\geqslant}
+\renewcommand{\leq}{\leqslant}
+
+\renewcommand{\emptyset}{\varnothing}
+
+\newcommand{\deq}{\mathrel{\mathop{:}}=}
+\newcommand{\eqd}{=\mathrel{\mathop{:}}}
+
+\newcommand{\from}{\colon} % correct ':' in f\from X \to Y
+\newcommand{\st}{\mid} % set builder
+%\newcommand{\st}{\mathrel{}\middle|\mathrel{}} % set builder
+
+\def\eps{\varepsilon}
+\renewcommand{\epsilon}{\varepsilon}
+\renewcommand{\phi}{\varphi}
+
+\def\ds{\displaystyle}
+
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\diam}{diam}
+\DeclareMathOperator{\vol}{vol}
+\DeclareMathOperator{\Ric}{Ric}
+
+\DeclareMathOperator{\lap}{\Delta\!}
+\DeclareMathOperator{\nab}{\nabla\!\!}
+\DeclareMathOperator{\Hess}{Hess}
+
+\DeclareMathOperator{\Ent}{Ent}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\let\oldPr\Pr
+\renewcommand{\Pr}{\oldPr\nolimits}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\KL}[2]{\mathrm{KL}\!\left(#1 \,|\hspace{-.15ex}|\,#2\right)}
+
+\DeclareMathOperator{\mult}{mult}
+\DeclareMathOperator{\Card}{Card}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\Epi}{Epi}
+\DeclareMathOperator{\Spec}{Sp}
+%\DeclareMathOperator{\Ker}{Ker}
+\DeclareMathOperator{\Img}{Im}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\Tor}{Tor}
+\DeclareMathOperator{\Ext}{Ext}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\coker}{coker}
+\DeclareMathOperator{\Id}{Id}
+\DeclareMathOperator{\id}{id}
+%\DeclareMathOperator{\diag}{diag}
+
+
+\newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\scal}[2]{\left< \, #1 \mid #2 \, \right>}
+\newcommand{\1}{\mathbbm{1}}
+
+\newcommand{\ilim}[1]{\underset{#1}{\underrightarrow{\lim\vspace{.5ex}}}\,}
+\newcommand{\plim}[1]{\underset{#1}{\underleftarrow{\lim\vspace{.5ex}}}\,}
+
+\DeclareMathOperator*{\vlimsup}{\varlimsup}
+\DeclareMathOperator*{\vliminf}{\varliminf}
+
+\newcommand{\presgroup}[2]{\left\langle\,#1 \mid  #2\,\right\rangle}
+
+\newcommand{\twopi}{2\hspace{-.23em}\pi}
+
+%\DeclareMathOperator*{\argmax}{arg\,max}
+%\DeclareMathOperator*{\argmin}{arg\,min}
+
