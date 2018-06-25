@@ -38,24 +38,26 @@ Besides,
 \end{align*}
 yielding
 \begin{align}
-	\Ep{Y^{t+1}^T Y^{t+1}} &= \alpha ^ 2
+	\Ep{\transp{{Y^{t+1}}} Y^{t+1}} &= \alpha ^ 2
 	\Ep{{\left(R(s_{t+1}) + \gamma V^t(s_{t+1})\right)}^2}.
 \end{align}
 Now
 \begin{align*}
-	\Ep{W^{t+1}^T W^{t+1}} &= X^t^T X^t + 2X^t^T \Ep{Y^{t+1}}
-	+ \Ep{Y^{t+1}^TY^{t+1}}\\
-	\Ep{W^{t+1}}^T\Ep{W^{t+1}} &= X^t^T X^t + 2X^t^T \Ep{Y^{t+1}}
-				 \\&+ \Ep{Y^{t+1}}^T\Ep{Y^{t+1}}.
+	\Ep{\transp{{W^{t+1}}} W^{t+1}} &= \transp{{X^t}} X^t +
+	2\transp{{X^t}} \Ep{Y^{t+1}}
+	+ \Ep{\transp{{Y^{t+1}}}Y^{t+1}}\\
+	\Ep{\transp{{W^{t+1}}}}\Ep{W^{t+1}} &= \transp{{X^t}} X^t + 2\transp{{X^t}} \Ep{Y^{t+1}}
+				 \\&+ \Ep{\transp{{Y^{t+1}}}}^T\Ep{Y^{t+1}}.
 \end{align*}
 Consequently
 \begin{align*}
-	\Ep{W^{t+1}^T W^{t+1}} &= \Ep{W^{t+1}}^T\Ep{W^{t+1}} + \Ep{Y^{t+1}^T Y^{t+1}}\\
-			       &- \Ep{Y^{t+1}}^T\Ep{Y^{t+1}}
+	\Ep{\transp{{W^{t+1}}} W^{t+1}} &=
+	\Ep{\transp{{W^{t+1}}}}\Ep{W^{t+1}} + \Ep{\transp{{Y^{t+1}}} Y^{t+1}}\\
+			       &- \Ep{\transp{{Y^{t+1}}}}\Ep{Y^{t+1}}
 \end{align*}
 and finally
 \begin{align*}
-	\Ep{W^{t+1}^T W^{t+1}} = \|\left[I + \alpha E_{s_t} E_{s_t}^T(\gamma P - I)\right]W^t\|^2 + \alpha ^ 2 \mathrm{Var}\left[R(s_{t+1}) + \gamma V^t(s_{t+1})\mid \pfield\right].
+	\Ep{\transp{{W^{t+1}}} W^{t+1}} = \|\left[I + \alpha E_{s_t} E_{s_t}^T(\gamma P - I)\right]W^t\|^2 + \alpha ^ 2 \mathrm{Var}\left[R(s_{t+1}) + \gamma V^t(s_{t+1})\mid \pfield\right].
 \end{align*}
 With no further assumptions or approximations, considered learning rates must verify 
 stringent conditions for convergence to hold, typically
@@ -65,7 +67,7 @@ stringent conditions for convergence to hold, typically
 \end{align*}
 We turn to a simpler dynamic to obtain less stringent conditions on the learning rates,
 \begin{align*}
-	\Ep{W^{t+1}^T W^{t+1}} = \|\left[I + \alpha \diag{\mu}(\gamma P - I)\right]W^t\|^2 + \alpha ^ 2 \mathrm{Var}\left[R(s_{t+1}) + \gamma V^t(s_{t+1})\mid \pfield\right].
+	\Ep{\transp{{W^{t+1}}} W^{t+1}} = \|\left[I + \alpha \diag{\mu}(\gamma P - I)\right]W^t\|^2 + \alpha ^ 2 \mathrm{Var}\left[R(s_{t+1}) + \gamma V^t(s_{t+1})\mid \pfield\right].
 \end{align*}
 This dynamic amounts to only perform updates on $V^t$ once you have enough
 samples from the markov chain to have a representative sample of its invariant
@@ -73,13 +75,13 @@ distribution $\mu$.
 
 Now, defining $R_+ = \max\limits_s |R(s)|$,
 \begin{align}
-	\Ep{W^{t+1}^T W^{t+1}} \leq \|\left[I + \alpha \diag{\mu}(\gamma P - I)\right]W^t\|^2 + \frac{\alpha^2}{(1 - \gamma)^2} R_+^2.
+	\Ep{\transp{{W^{t+1}}} W^{t+1}} \leq \|\left[I + \alpha \diag{\mu}(\gamma P - I)\right]W^t\|^2 + \frac{\alpha^2}{(1 - \gamma)^2} R_+^2.
 \end{align}
 Define $\lmax = \max(\alpha (\gamma + 1) \max(\mu) - 1, 1 - \alpha (1 - \gamma) \min(\mu))$ and $N^t$ as
 \begin{align}
 	N^{t+1} = \lmax N_t + \frac{\alpha^2}{(1 - \gamma)^2} R_+^2.
 \end{align}
-Then $N^t$ upper bounds $\Ep{W^t^T W^t}$ and $N^t \to \frac{\alpha^2 R_+^2} {(1
+Then $N^t$ upper bounds $\Ep{\transp{{W^t}} W^t}$ and $N^t \to \frac{\alpha^2 R_+^2} {(1
 - \gamma)^2 (1 - \lmax)} = S \varepsilon^2$, with $S$ the number of states,
 thus, on average, $V^t$ approximates $V^*$ up to $\varepsilon$ componentwise as
 $t\to\infty$.  To obtain a precision up to $\deltat$, you tipically need
