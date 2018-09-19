@@ -70,6 +70,8 @@ Both functions satisfy recurrent \emph{Bellman equations}
 \end{align}
 
 \subsection{$Q^\pi = V^\pi$ in continuous time}
+\label{sec:QContinuous}
+% {{{
 \emph{Q-learning} uses the state-action value function to determine which
 action optimizes the future return.
 
@@ -109,14 +111,26 @@ values, i.e.
 \end{equation*}
 
 Approximating with this degree of precision becomes harder as $\bigO{\deltat}$
-decreases. \NDC{This is not convincing at the moment: as $\deltat$ decreases,
+decreases. Typically, if the Q-function is learned only from \emph{Monte Carlo} samples
+of the return, the observed variance of the quantity to learn is of order
+$\frac{1}{{(1 - \gamma)} ^ 2 \deltat}$. An optimist estimate of the number of
+samples required to learn this quantity up to order $\bigO{\deltat}$ is 
+$\bigO{\frac{1}{{(1 - \gamma)}^2 \deltat^3}}$. If a sampling rate of $\deltat$ is
+assumed, the time it takes to learn $Q$ up to the correct degree of precission,
+increases quadratically with $\frac{1}{\deltat}$. Indeed, in a single real time step, with a
+sampling rate of $\deltat$, $\frac{1}{\deltat}$ samples are aquired. Consequently,
+$\frac{1}{{(1 - \gamma)}^2 \deltat^2}$ timesteps are required to obtain an estimate up
+to the desired precision.
+\NDC{This is not convincing at the moment: as $\deltat$ decreases,
 	the number of observations made increases, and this may help get a better
 	estimate $\tilde{Q}^\pi(s, a)$. My guess is that the number of observations
 	required to obtain an approximation of order $\varepsilon$ is superlinear in
 	$\frac{1}{\varepsilon}$ and thus the previous argument holds. We either need
 a simple theoretical setup where this works or an experimental one.}
+% }}}
 
 \paragraph{Directly learning the advantage function.}
+% {{{
 (See Kenji Doya, Reinforcement Learning in Continuous Space and Time,
 Neural Comp.\ 2000.)
 Let the system be defined by a state- and action-driven stochastic
@@ -174,4 +188,25 @@ if some part of the state reaches some threshold. Indeed, this relies on
 $s_{t+\deltat}$ being somehow close to $s_t$, either in distance or in
 probability.
 
-(Should also check "Advantage updating" Baird 1993, Harmon et al 1996.)
+(Should also check ``Advantage updating'' Baird 1993, Harmon et al 1996.)
+% }}}
+
+\paragraph{Questions left unanswered with advantage learning.}
+As mentionned, advantage learning requires learning the gradient of $V$
+with respect to the states, or, in the discrete case, the difference of
+$V$'s between two neighboring rescaled by $\frac{1}{\deltat}$. Now, as
+mentionned in~\ref{sec:QContinuous}, $V$ can only be learned up to $\bigO{1}$
+in reasonable time. Consequently, $V(s) - V(s') = \bigO{1}$ in the general case,
+and $\frac{V(s) - V(s')}{\deltat} = \bigO{\frac{1}{\deltat}}$. This means that
+the learning procedure of $A$ can endure a bias of order $\bigO{\frac{1}{\deltat}}$
+which goes to $+\infty$ as $\deltat \to 0$.
+
+One could think that adding a gradient penalization to the learning criterion of
+$V$, or similarily, restricting the class of candidate function to a subset of 
+the set of $K$-lipschitz functions would enforce convergence of the gradient of the
+approximate $V$ function to the gradient of the true $V$ function as the approximate
+$V$ function gets closer to the true $V$ function. This is not true
+in the general case, as any constant function can be uniformly approximated by a
+$K$-lipschitz function whose derivative has unit infinity norm. A $K$-lipschitz
+approximation of the true $V$ can get arbitrarily close, while its derivative remains
+far from the true derivative.
