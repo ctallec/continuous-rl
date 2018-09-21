@@ -2,6 +2,7 @@
 
 \section{Intuitions}
 \label{sec:intuitions}
+% {{{
 Reinforcement learning aims at tackling a wide variety of real world problems.
 Among them obviously stand physical problems, where an agent interacts with a
 physical environment, e.g.\ the real world.
@@ -17,7 +18,10 @@ ill-behaved in the regime of small time discretization. In what follow, we
 analyze in an handwavy manner the reason for this failure, and give an alternative
 algorithm that remains viable in the limit of small discretizations.
 
+% }}}
+
 \subsection{Notations}
+% {{{
 In what follows, we loosely consider the notion of a $\emph{Markov Decision Process}$
 $\mathcal{M}$ with discretization step $\deltat$. Such an MDP is the discretization
 of a continuous MDP with discretization step $\deltat$.
@@ -110,9 +114,9 @@ the average return mainly fall in two categories:
 Both approaches require estimating $Q^{\pi_\theta}$, and we will show that these
 estimations need to be precise up to $\bigO{\deltat}$.
 
-\paragraph{\emph{Monte Carlo} policy gradient in continuous time}~\\
+% }}}
 
-\paragraph{$Q^\pi = V^\pi$ in continuous time}~\\
+\paragraph{$Q$-functions and $V$-functions only differ by $\bigO{\deltat}$}~\\
 \label{sec:QContinuous}
 % {{{
 \emph{Q-learning} uses the state-action value function to determine which
@@ -120,29 +124,31 @@ action optimizes the future return.
 
 However, in continuous time, the state-action value function no longer carries
 any information on which action yields the best return. Intuitively, as the
-discretization step goes to zero, the difference in resulting state between two
-actions is of magnitude $\bigO{\deltat}$. Consequently, the value functions of
-the corresponding states, and thus the state-action value functions only differ
-by a factor of magnitude $\bigO{\deltat}$.
+discretization step goes to zero, the expected difference in resulting state
+values between two actions is of magnitude $\bigO{\deltat}$. Consequently, the
+state-action value functions only differ by a factor of magnitude
+$\bigO{\deltat}$.
 
 Formally,
 \begin{align}
-	V^\pi(s) - Q^\pi(s, a) &= 
-	(\BE_\pi\left[\reward_t \deltat \mid s_t=s\right] -
-	\BE_\pi\left[\reward_t \deltat \mid s_t=s\right]) \deltat +\\
-	&\gamma'(\BE_\pi\left[
-		V^\pi(s_{t + \deltat})
-		\mid s_t = s
-	\right] - \BE_\pi\left[
-		V^\pi(s_{t + \deltat})
-		\mid s_t = s, a_t=a
-	\right]).\nonumber
+	&V^\pi(s) - Q^\pi(s, a)\\ 
+	= &\BE_{a'\sim \pi(\cdot\mid s)}
+	\left[\tilde{r}(s, a') - \tilde{r}(s, a)\right] \deltat
+	+
+	\gamma^\deltat 
+	(\BE\left[V^\pi(s_{t+\deltat}) \mid s_t=s\right]
+	-
+	\BE\left[V^\pi(s_{t+\deltat}) \mid s_t=s, a_t=a\right]).\nonumber
 \end{align}
-Since $s_{t+\deltat} = s_t + \bigO{\deltat}$ and $V^\pi$ is differentiable,
-$V^\pi(s_{t+\deltat}) = V^\pi(s_t) + \bigO{\deltat}$. Consequently,
+Now $s_{t + \deltat} = s_t + \F(s_t, a_t) \deltat +
+\gauss(0, C(s_t, a_t)) \sqrt{\deltat}$, thus 
 \begin{equation}
-	V^\pi(s) - Q^\pi(s, a) = \bigO{\deltat}.
+	V(s_{t+\deltat}) = V(s_t) + \partial_s V(s_t) \delta s_t
+	+ \frac{1}{2}\mathrm{tr}(C(s_t, a_t) H_V(s_t))\deltat.
 \end{equation}
+In expectation, irrespective of wether the expectation is conditionned on $a$,
+$V(s_{t+\deltat})$ and $V(s_t)$ are at distance $\bigO{\deltat}$. Consequently,
+$V^\pi(s) - Q^\pi(s, a) = \bigO{\deltat}$.
 
 Notably, decision based on the values or relative values of an approximation of
 the $Q^\pi(s, a)$'s for different $a$ are only meaningful when the
@@ -164,12 +170,16 @@ increases quadratically with $\frac{1}{\deltat}$. Indeed, in a single real time 
 sampling rate of $\deltat$, $\frac{1}{\deltat}$ samples are aquired. Consequently,
 $\frac{1}{{(1 - \gamma)}^2 \deltat^2}$ timesteps are required to obtain an estimate up
 to the desired precision.
-\NDC{This is not convincing at the moment: as $\deltat$ decreases,
-	the number of observations made increases, and this may help get a better
-	estimate $\tilde{Q}^\pi(s, a)$. My guess is that the number of observations
-	required to obtain an approximation of order $\varepsilon$ is superlinear in
-	$\frac{1}{\varepsilon}$ and thus the previous argument holds. We either need
-a simple theoretical setup where this works or an experimental one.}
+% \NDC{This is not convincing at the moment: as $\deltat$ decreases,
+% 	the number of observations made increases, and this may help get a better
+% 	estimate $\tilde{Q}^\pi(s, a)$. My guess is that the number of observations
+% 	required to obtain an approximation of order $\varepsilon$ is superlinear in
+% 	$\frac{1}{\varepsilon}$ and thus the previous argument holds. We either need
+% a simple theoretical setup where this works or an experimental one.}
+% }}}
+
+\paragraph{\emph{Monte Carlo} policy gradient in continuous time}~\\
+% {{{
 % }}}
 
 \paragraph{Directly learning the advantage function.}
@@ -235,6 +245,7 @@ probability.
 % }}}
 
 \paragraph{Questions left unanswered with advantage learning.}
+% {{{
 As mentionned, advantage learning requires learning the gradient of $V$
 with respect to the states, or, in the discrete case, the difference of
 $V$'s between two neighboring rescaled by $\frac{1}{\deltat}$. Now, as
@@ -253,3 +264,4 @@ in the general case, as any constant function can be uniformly approximated by a
 $K$-lipschitz function whose derivative has unit infinity norm. A $K$-lipschitz
 approximation of the true $V$ can get arbitrarily close, while its derivative remains
 far from the true derivative.
+% }}}
