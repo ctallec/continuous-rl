@@ -103,6 +103,7 @@ the average return mainly fall in two categories:
 		It is possible to estimate the gradient of the average return
 		using the policy gradient theorem, which yields
 		\begin{equation}
+			\label{eq:policygradient}
 			\nabla_\theta\BE_{s\sim\rho_\theta}\left[V^{\pi_\theta}(s)\right]
 			=
 			\BE_{s\sim\rho_\theta, a\sim\pi(\cdot\mid s)}\left[
@@ -172,6 +173,10 @@ $\frac{1}{(1 - \gamma) \deltat}$ timesteps are required to obtain an estimate up
 to the desired precision. As $\deltat \to 0$, it takes an infinite number of samples
 to obtain a viable estimate of $Q$, rendering $Q$-learning methods theoretically
 unsound.
+
+In what follows, we will refer to the advantage function $A^\pi(s, a)$ as
+$\frac{Q^\pi(s,a) - V^\pi(s)}{\deltat}$. Since $Q^\pi$ and $V^\pi$ only differ
+by a factor of scale $\bigO{\deltat}$, this quantity remains finite as $\deltat \to 0$.
 % \NDC{This is not convincing at the moment: as $\deltat$ decreases,
 % 	the number of observations made increases, and this may help get a better
 % 	estimate $\tilde{Q}^\pi(s, a)$. My guess is that the number of observations
@@ -180,7 +185,12 @@ unsound.
 % a simple theoretical setup where this works or an experimental one.}
 % }}}
 
-\paragraph{Policy gradient methods in continuous time}~\\
+\paragraph{Policy gradient methods in continuous time} Policy gradient methods aim at
+maximizing the average return using gradient ascent on estimations of~\eqref{eq:policygradient}.
+One can observe that subtracting an action independent baseline to $Q^{\pi_\theta}$ in~\eqref{eq:policygradient} still yields an unbiased estimte of the gradient. Notably,
+\begin{equation}
+\end{equation}
+
 % {{{
 % }}}
 
@@ -251,7 +261,7 @@ probability.
 As mentionned, advantage learning requires learning the gradient of $V$
 with respect to the states, or, in the discrete case, the difference of
 $V$'s between two neighboring rescaled by $\frac{1}{\deltat}$. Now, as
-mentionned in~\ref{sec:QContinuous}, $V$ can only be learned up to $\bigO{1}$
+mentionned in~\ref{sec:QContinuous}, $V$ can only be learnt up to $\bigO{1}$
 in reasonable time. Consequently, $V(s) - V(s') = \bigO{1}$ in the general case,
 and $\frac{V(s) - V(s')}{\deltat} = \bigO{\frac{1}{\deltat}}$. This means that
 the learning procedure of $A$ can endure a bias of order $\bigO{\frac{1}{\deltat}}$
