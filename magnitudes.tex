@@ -116,7 +116,7 @@ estimations need to be precise up to $\bigO{\deltat}$.
 
 % }}}
 
-\paragraph{$Q$-functions and $V$-functions only differ by $\bigO{\deltat}$}~\\
+\paragraph{$Q$-functions and $V$-functions only differ by $\bigO{\deltat}$}
 \label{sec:QContinuous}
 % {{{
 \emph{Q-learning} uses the state-action value function to determine which
@@ -160,16 +160,18 @@ values, i.e.
 \end{equation*}
 
 Approximating with this degree of precision becomes harder as $\bigO{\deltat}$
-decreases. Typically, if the Q-function is learned only from \emph{Monte Carlo} samples
+decreases. Typically, if the Q-function is learnt only from \emph{Monte Carlo} samples
 of the return, the observed variance of the quantity to learn is of order
-$\frac{1}{{(1 - \gamma)} ^ 2 \deltat}$. An optimist estimate of the number of
+$\frac{1}{1 - \gamma}$. An optimist estimate of the number of
 samples required to learn this quantity up to order $\bigO{\deltat}$ is 
-$\bigO{\frac{1}{{(1 - \gamma)}^2 \deltat^3}}$. If a sampling rate of $\deltat$ is
+$\bigO{\frac{1}{(1 - \gamma) \deltat^2}}$. If a sampling rate of $\deltat$ is
 assumed, the time it takes to learn $Q$ up to the correct degree of precission,
-increases quadratically with $\frac{1}{\deltat}$. Indeed, in a single real time step, with a
+increases linearily with $\frac{1}{\deltat}$. Indeed, in a single real time step, with a
 sampling rate of $\deltat$, $\frac{1}{\deltat}$ samples are aquired. Consequently,
-$\frac{1}{{(1 - \gamma)}^2 \deltat^2}$ timesteps are required to obtain an estimate up
-to the desired precision.
+$\frac{1}{(1 - \gamma) \deltat}$ timesteps are required to obtain an estimate up
+to the desired precision. As $\deltat \to 0$, it takes an infinite number of samples
+to obtain a viable estimate of $Q$, rendering $Q$-learning methods theoretically
+unsound.
 % \NDC{This is not convincing at the moment: as $\deltat$ decreases,
 % 	the number of observations made increases, and this may help get a better
 % 	estimate $\tilde{Q}^\pi(s, a)$. My guess is that the number of observations
