@@ -5,3 +5,5 @@
 *.synctex.gz
 *.pdf
 *.out
+**/*/.mypy_cache
+**/__pycache__/
