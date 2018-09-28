@@ -277,3 +277,54 @@ $K$-lipschitz function whose derivative has unit infinity norm. A $K$-lipschitz
 approximation of the true $V$ can get arbitrarily close, while its derivative remains
 far from the true derivative.
 % }}}
+
+\paragraph{An experimental validation of \tdz convergence.}
+% {{{
+As mentionned in the previous paragraph, the learning algorithms described
+in~\ref{} are only expected to scale well if the value function approximated by
+\tdz converges in some kind of $\ho$ norm, or at least a norm that involves
+difference of function evaluations instead of function evaluations.
+
+We evaluate the validity of this statement on a toy 2D problem, where the
+value function can be efficiently nearly exactly approximated using finite
+element methods. To simplify things, we work with fixed policy, and only
+consider the state dynamic.
+
+Consider a stochastic continuous dynamical system evolving as
+\begin{equation}
+	ds_t = (\omega J -\theta) (s_t - \mu) dt + \sigma dB_t
+\end{equation}
+where $s$ is a $2$-d vector, $J$ is $\begin{pmatrix} 0 & -1 \\ 1 & 0\end{pmatrix}$,
+$\omega$ is an angular velocity parameter, $\mu$ is a mean parameter, $\theta$ is a
+recall parameter and $\sigma$ is a noise parameter. A typical trajectory of this process
+is given in Fig.~\ref{fig:trajectory}.
+\begin{figure}
+	\includegraphics[width=10cm]{imgs/trajectory.pdf}
+	\caption{Example trajectory, $\mu=0$, $\sigma=0.3$, $\omega=0.5$,
+	$\theta=0.03$}
+	\label{fig:trajectory}
+\end{figure}
+
+Given a reward function $r\colon \statespace \to \R$, Bellman equation yields
+\begin{equation}
+	V(s_{t}) = \BE\left[\tilde{r}(s_t)dt\right] + (1 - (1 - \gamma)dt)\BE\left[V(s_{t+dt})\right]
+\end{equation}
+Using Ito's lemma,
+\begin{align}
+	V(s_{t}) &= \BE\left[\tilde{r}(s_t)dt\right] + (1 - (1 - \gamma)dt)\left(V(s_t) + \frac{\partial V}{\partial s}(s_t) (\omega J - \theta) (s_t - \mu) dt + \frac{\sigma^2}{2}\Delta V(s_t) dt\right)\nonumber\\
+	(1 - \gamma) V(s_t) &= \BE\left[\tilde{r}(s_t)\right] + \frac{\partial V}{\partial s}(s_t) (\omega J - \theta) (s_t - \mu) + \frac{\sigma^2}{2}\Delta V(s_t).
+\end{align}
+This partial derivative equation is not directly solvable, but can be efficiently approximated
+using finite element methods.
+
+Important remarks:
+\begin{itemize}
+	\item Sampling i.i.d. from the trajectory seems to be extremely
+		important. Estimating gradients using consecutive samples fails
+		miserably (with NaNs early on, in setups where i.i.d. samples
+		lead to convergence).
+	\item Same goes for reward rescaling for high $\gamma$'s, an incorrect scaling
+		will lead to quick divergence. TODO: test if computing mean on the fly
+		suffices. TODO: Test if normalizing outputs suffices.
+\end{itemize}
+% }}}

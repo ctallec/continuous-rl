@@ -27,7 +27,7 @@ def generate_trajectories(
     for t in range(T):
         noises[:, t] = noise.x
         noise.step()
-    return noises
+    return noises, noise
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt

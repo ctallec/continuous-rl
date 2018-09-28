@@ -39,28 +39,28 @@ class OrnsteinUlhenbeck(object): # pylint: disable=too-few-public-methods
     def stationary(self, samples: int) -> np.ndarray:
         """ Samples from the stationary distribution. """
         omega_coef = 0 if self.omega is None else self.omega
-        return (self.sigma / (2 * np.sqrt(self.theta ** 2 + omega_coef ** 2)) *
+        return (self.sigma / np.sqrt(2 * np.sqrt(self.theta ** 2 + omega_coef ** 2)) *
                 np.random.randn(samples, self.x.shape[-1]))
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
+    np.random.seed(0)
 
-    plt.ion()
-    T = 100000
+    T = 10000
     dt = .001
     mu = np.array([0., 0.])
     sigma = .3
-    omega = .3
+    omega = .5
     x_0 = np.array([0., 0.])
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.set_xlim([-10, 10])
-    ax.set_ylim([-10, 10])
-    pline, = ax.plot([], [], alpha=.3)
+    ax.set_xlim([-2, 1])
+    ax.set_ylim([-3, 2])
+    pline, = ax.plot([], [], alpha=.7)
 
-    noise = OrnsteinUlhenbeck(dt, mu, sigma, x_0, omega, theta=1e-3)
+    noise = OrnsteinUlhenbeck(dt, mu, sigma, x_0, omega, theta=.03)
     line: Tuple[List[float], List[float]] = ([], [])
     for t in range(T):
         line[0].append(noise.x[0])
@@ -68,5 +68,4 @@ if __name__ == "__main__":
         noise.step()
         if t % int(1 / dt) == 0:
             pline.set_data(*line)
-            plt.show()
-            plt.pause(.01)
+    plt.savefig('../imgs/trajectory.pdf')
