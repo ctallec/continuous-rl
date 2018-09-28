@@ -6,7 +6,6 @@ import numpy as np
 import torch
 import torch.nn.functional as f
 from data import generate_trajectories, OrnsteinUlhenbeckParameters
-from noise import OrnsteinUlhenbeck
 from model import Model
 from femvfunction import solve_exact
 import matplotlib.pyplot as plt
@@ -25,30 +24,23 @@ def train(model: Model,
           beta: float,
           dt: float,
           thresh: float,
-          ou_process: OrnsteinUlhenbeck,
           device) -> List[float]:
     """ Train. """
     losses = []
     for i in range(nb_steps):
-        # index = begin_index + i
-        index = np.random.randint(0, data.shape[1] - 1)
+        index = begin_index + i
+        # index = np.random.randint(0, data.shape[1] - 1)
         np_next_state = data[:, index + 1]
         reward = to_tensor(reward_function(np_next_state, beta, dt, thresh), device)
         state = to_tensor(data[:, index], device)
         next_state = to_tensor(np_next_state, device)
         # you need the copy, otherwise you modify data
-        ou_process.reset(data[:, index].copy())
-        fake_next_state = to_tensor(ou_process.step(), device)
 
         V = model(state).squeeze()
         V_next = model(next_state).squeeze()
-        V_fake_next = model(fake_next_state).squeeze()
-        if True:
-            V_mixed_next = V_next.detach()
-        else:
-            V_mixed_next = V_fake_next - V_fake_next.detach() + V_next.detach()
-        
-        loss = f.mse_loss(V - true_gamma * V_mixed_next, reward) / dt # + 0 * hessian_loss
+        V_mixed_next = V_next.detach()
+
+        loss = f.mse_loss(V - true_gamma * V_mixed_next, reward) # + 0 * hessian_loss
 
         optimizer.zero_grad()
         loss.backward()
@@ -120,7 +112,7 @@ def run(batch_size: int,
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     dt = ou_params.dt
 
-    data, ou_process = generate_trajectories(
+    data, _ = generate_trajectories(
         batch_size=batch_size, T=T,
         w=w, ornstein_ulhenbeck_params=OrnsteinUlhenbeckParameters(dt, sigma, theta))
     print(f"Maximum and minimum values achieved in data: {data.max()}, {data.min()}")
@@ -130,8 +122,9 @@ def run(batch_size: int,
 
     model = Model(nb_hiddens, nb_inputs).to(device)
     optimizer = torch.optim.SGD(model.parameters(),
-                                lr=2 * dt)
-    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda t: 1 / np.power(t * dt / 2 + 1, 3/5))
+                                lr=1)
+    scheduler = torch.optim.lr_scheduler.LambdaLR(
+        optimizer, lambda t: 1 / np.power(t * dt / 2 + 1, 3/5))
 
     nb_epochs = (T - 1) // steps_per_epoch
     step = 0
@@ -140,7 +133,8 @@ def run(batch_size: int,
             evaluate(model, (-5, 5), 100, beta, dt, data,
                      test_data, thresh, exact_solution, gamma, device)
         losses = train(model, optimizer, scheduler, data, steps_per_epoch, step,
-                       1 - (1 - gamma) * dt, beta, dt, thresh, ou_process, device)
+                       1 - (1 - gamma) * dt, beta, dt, thresh, device)
+        step += steps_per_epoch
         print(f"At epoch {e}, average loss: {np.mean(losses)}, std loss: {np.std(losses)}")
 
 def reward_function(state: np.ndarray, beta: float, dt: float, thres: float) -> np.ndarray:
@@ -155,7 +149,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     batch_size = 32
-    T = 1000000
+    T = 100000
     omega = .1
     dt = args.dt
     sigma = .3
