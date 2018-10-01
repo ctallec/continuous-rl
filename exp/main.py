@@ -1,14 +1,16 @@
-# pylint: disable=too-many-arguments, too-many-locals
 """ Learning V-function. """
+# pylint: disable=too-many-arguments, too-many-locals, comparison-with-itself
 import argparse
-from typing import List, Tuple
+from os.path import join, exists
+from typing import List, Tuple, TextIO
 import numpy as np
 import torch
 import torch.nn.functional as f
+import matplotlib.pyplot as plt
+
 from data import generate_trajectories, OrnsteinUlhenbeckParameters
 from model import Model
 from femvfunction import solve_exact
-import matplotlib.pyplot as plt
 
 def to_tensor(x: np.ndarray, device) -> torch.Tensor:
     """ From numpy to tensor. """
@@ -56,9 +58,9 @@ def zero_nan(x: torch.Tensor) -> torch.Tensor:
     x[mask] = 0
     return x
 
-def evaluate(model: Model, state_limits: Tuple[float, float], pixel_width: int,
+def evaluate(model: Model, state_limits: Tuple[float, float], step: int, pixel_width: int,
              beta: float, dt: float, train_data: np.ndarray, test_data: np.ndarray,
-             thresh: float, exact_solution, gamma: float, device):
+             thresh: float, exact_solution, gamma: float, device, logdir: str, fp: TextIO):
     """ Eval. """
     oned_states = np.linspace(*state_limits, num=pixel_width)
     x, y = np.meshgrid(oned_states, oned_states)
@@ -74,7 +76,10 @@ def evaluate(model: Model, state_limits: Tuple[float, float], pixel_width: int,
         dirichlet_test_loss = ((((1 - (1 - gamma) * dt) * delta_V[:, 1:] -
                                  delta_V[:, :-1]) / dt) ** 2).mean().item()
 
+    # Log
+    fp.write(f"{step * dt} {l2_test_loss} {dirichlet_test_loss}\n")
     print(f"Evaluation -- l2_loss: {l2_test_loss} -- dirichlet: {dirichlet_test_loss}")
+
     rs = reward_function(states, beta, dt, thresh)
     with torch.no_grad():
         Vs = model(to_tensor(states, device)).cpu().numpy().squeeze()
@@ -87,9 +92,16 @@ def evaluate(model: Model, state_limits: Tuple[float, float], pixel_width: int,
 
     plt.subplot(153)
     plt.imshow(Vs) # pylint: disable=no-member
+    # log image
+    v_file = join(logdir, f"V_{int(step*dt)}")
+    np.save(v_file, Vs)
 
     plt.subplot(154)
     plt.imshow(exact_V)
+    # if the file does not exist, log it
+    exact_v_file = join(logdir, 'exact_V')
+    if not exists(exact_v_file):
+        np.save(exact_v_file, exact_V)
 
     plt.subplot(155)
     plt.plot(train_data[0, :, 0], train_data[0, :, 1])
@@ -107,10 +119,14 @@ def run(batch_size: int,
         ou_params: OrnsteinUlhenbeckParameters, beta: float,
         steps_per_epoch: int,
         thresh: float,
-        exact_solution):
+        exact_solution,
+        logdir: str):
     """ Run. """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     dt = ou_params.dt
+
+    # logging
+    fp = open(join(logdir, "eval.log"), 'w')
 
     data, _ = generate_trajectories(
         batch_size=batch_size, T=T,
@@ -122,20 +138,25 @@ def run(batch_size: int,
 
     model = Model(nb_hiddens, nb_inputs).to(device)
     optimizer = torch.optim.SGD(model.parameters(),
-                                lr=1)
+                                lr=.7)
+
+    def _lr_reduce_function(real_t):
+        return 1 / np.power(real_t + 1, 3/5)
+
     scheduler = torch.optim.lr_scheduler.LambdaLR(
-        optimizer, lambda t: 1 / np.power(t * dt / 2 + 1, 3/5))
+        optimizer, lambda t: _lr_reduce_function(t * dt))
 
     nb_epochs = (T - 1) // steps_per_epoch
     step = 0
     for e in range(nb_epochs):
         if e % 100 == 0:
-            evaluate(model, (-5, 5), 100, beta, dt, data,
-                     test_data, thresh, exact_solution, gamma, device)
+            evaluate(model, (-5, 5), step, 100, beta, dt, data,
+                     test_data, thresh, exact_solution, gamma, device,
+                     logdir, fp)
         losses = train(model, optimizer, scheduler, data, steps_per_epoch, step,
                        1 - (1 - gamma) * dt, beta, dt, thresh, device)
         step += steps_per_epoch
-        print(f"At epoch {e}, average loss: {np.mean(losses)}, std loss: {np.std(losses)}")
+        print(f"At step {step * dt}, average loss: {np.mean(losses)}, std loss: {np.std(losses)}")
 
 def reward_function(state: np.ndarray, beta: float, dt: float, thres: float) -> np.ndarray:
     """ Reward function. """
@@ -146,12 +167,13 @@ if __name__ == '__main__':
     plt.ion()
     parser = argparse.ArgumentParser()
     parser.add_argument('--dt', default=1e-2, type=float)
+    parser.add_argument('--logdir', required=True)
     args = parser.parse_args()
 
     batch_size = 32
-    T = 100000
     omega = .1
     dt = args.dt
+    T = int(30000 / dt)
     sigma = .3
     theta = .01
     beta = 30
@@ -165,4 +187,5 @@ if __name__ == '__main__':
 
     run(batch_size, T, omega, nb_hiddens, nb_inputs,
         gamma, OrnsteinUlhenbeckParameters(dt, sigma, theta),
-        beta, steps_per_epoch, thresh, exact_solution)
+        beta, steps_per_epoch, thresh, exact_solution,
+        args.logdir)
