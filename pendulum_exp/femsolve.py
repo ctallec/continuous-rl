@@ -11,7 +11,7 @@ def angle_normalize(x: np.ndarray) -> np.ndarray:
 
 def reward(s: np.ndarray) -> np.ndarray:
     """ Returns reward. """
-    return - angle_normalize(s[0]) ** 2 + .1 * s[1] ** 2
+    return - angle_normalize(s[0]) ** 2 - .1 * s[1] ** 2
 
 
 class PendulumUtilities:
@@ -46,13 +46,14 @@ def solve_exact(pendulum_utility: PendulumUtilities):
     m.scale((th_scale, dth_scale))
     m.translate((-th_scale / 2, -dth_scale / 2))
     m.refine(6)
+    gamma = 0.
 
     e = ElementTriP1()
     basis = InteriorBasis(m, e)
 
     @bilinear_form
     def optimal_bellman(u, du, v, dv, w): # pylint: disable=unused-argument
-        return pendulum_utility.max_transition(w[0], dv) * u
+        return pendulum_utility.max_transition(w[0], dv) * u - (1 - gamma) * u * v
 
     @linear_form
     def reward_form(v, dv, w): # pylint: disable=unused-argument
@@ -61,7 +62,7 @@ def solve_exact(pendulum_utility: PendulumUtilities):
     A = asm(optimal_bellman, basis)
     b = asm(reward_form, basis)
 
-    I = m.interior_nodes()
+    I = np.concatenate([m.interior_nodes(), m.boundary_nodes()])
     x = 0 * b
     x[I] = solve(*condense(A, b, I=I))
     f = m.interpolator(x)
@@ -69,7 +70,9 @@ def solve_exact(pendulum_utility: PendulumUtilities):
     return m, x, f
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
     pendulum_utils = PendulumUtilities(g=10., l=1., m=1., dt=.05)
     m, x, f = solve_exact(pendulum_utils)
     m.plot3(x)
     input()
+    plt.savefig('logs/misc.pdf')
