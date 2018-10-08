@@ -3,10 +3,10 @@
 import argparse
 from typing import Tuple
 import gym
-import torch
-import torch.nn.functional as f
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
+import torch.nn.functional as f
 
 from envs.vecenv import SubprocVecEnv
 from models import MLP, perturbed_output
@@ -43,7 +43,6 @@ def train(
         nsteps: int,
         device: torch.device):
     """ Trains for one epoch. """
-    log = 50
     vfunction.train()
     afunction.train()
     obs = to_tensor(start_obs, device)
@@ -60,8 +59,6 @@ def train(
 
             action = 4 * to_numpy(torch.max(pre_action, dim=1)[1]) - 2
             next_obs, reward, _, _ = vec_env.step(action[:, np.newaxis])
-            if epoch % log == log - 1:
-                vec_env.render()
             next_obs = next_obs
             true_reward = reward * dt
             reward_floating_mean.step(true_reward)
@@ -98,9 +95,25 @@ def train(
     return to_numpy(next_obs)
 
 def evaluate(
+        epoch: int,
         vfunction: MLP,
+        afunction: MLP,
         device: torch.device):
     """ Evaluate. """
+    log = 10
+
+    if epoch % log == log - 1:
+        env = gym.make('Pendulum-v0').unwrapped
+        nb_steps = 250
+        with torch.no_grad():
+            obs = to_tensor(env.reset(), device).unsqueeze(0)
+            for _ in range(nb_steps):
+                action = 4 * torch.max(afunction(obs), dim=1)[1][0] - 2
+                obs, _, _, _ = env.step(action)
+                obs = to_tensor(obs, device).unsqueeze(0)
+                env.render()
+        env.close()
+
     with torch.no_grad():
         vfunction.eval()
         nb_pixels = 50
@@ -142,7 +155,7 @@ def main(
     obs = vec_env.reset()
 
     def lr_decay(t):
-        return 1 / np.power(1 + t * dt, 0)
+        return 1 # / np.log(2 + t * dt)
 
     reward_floating_mean = FloatingAvg(
         dt
@@ -168,7 +181,7 @@ def main(
         obs = train(e, vfunction, afunction, a_noise, optimizers, schedulers,
                     vec_env, obs, dt, epsilon, gamma,
                     reward_floating_mean, nb_steps, device)
-        evaluate(vfunction, device)
+        evaluate(e, vfunction, afunction, device)
 
 
 if __name__ == '__main__':
@@ -180,7 +193,7 @@ if __name__ == '__main__':
     parser.add_argument('--gamma', type=float, default=1.)
     parser.add_argument('--nb_epochs', type=int, default=5000)
     parser.add_argument('--nb_steps', type=int, default=500)
-    parser.add_argument('--sigma', type=float, default=.2)
+    parser.add_argument('--sigma', type=float, default=.4)
     parser.add_argument('--theta', type=float, default=1)
     parser.add_argument('--lr', type=float, default=.003)
     args = parser.parse_args()
