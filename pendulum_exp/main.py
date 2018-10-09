@@ -1,6 +1,7 @@
 """ Trying to solve pendulum using a robust advantage learning. """
 # pylint: disable=too-many-arguments, too-many-locals
 from functools import partial
+from itertools import chain
 from time import sleep
 import argparse
 from typing import Tuple, Union, Callable
@@ -36,8 +37,8 @@ def train(
         vfunction: MLP,
         afunction: MLP,
         anoise: Union[ParameterNoise, ActionNoise],
-        optimizers: Tuple[torch.optim.Optimizer, torch.optim.Optimizer],
-        schedulers: torch.optim.lr_scheduler.LambdaLR,
+        optimizer: torch.optim.Optimizer,
+        scheduler: torch.optim.lr_scheduler.LambdaLR,
         vec_env: SubprocVecEnv,
         start_obs: np.ndarray,
         dt: float,
@@ -50,8 +51,7 @@ def train(
     afunction.train()
     obs = to_tensor(start_obs, device)
 
-    cum_aloss = 0
-    cum_vloss = 0
+    cum_loss = 0
     for _ in range(nsteps):
         # interact
         with torch.no_grad():
@@ -60,48 +60,37 @@ def train(
             anoise.step()
 
             action = to_numpy(torch.max(pre_action, dim=1)[1])
-            true_action = to_numpy(torch.max(afunction(obs), dim=1)[1])
 
             next_obs, reward, _, _ = vec_env.step(action)
             next_obs = to_tensor(next_obs, device)
             true_reward = reward * dt
 
 
-        if (action == true_action).any():
-            # learn
-            a_idx = torch.LongTensor(action)
-            ta_idx = torch.LongTensor(true_action)
-            on_policy_idx = a_idx == ta_idx
+        # learn
+        indices = torch.LongTensor(action).to(device)
+        v = vfunction(obs).squeeze()
+        adv = afunction(obs)
+        max_adv = torch.max(adv, dim=1)[0]
+        adv_a = adv.gather(1, indices.view(-1, 1)).squeeze()
 
-            v = vfunction(obs).squeeze()
-            expected_v = to_tensor(true_reward, device) + \
-                gamma ** dt * vfunction(next_obs).detach().squeeze()
-            value_floating_mean.step(expected_v.detach())
+        expected_v = to_tensor(true_reward, device) + \
+            gamma ** dt * vfunction(next_obs).detach().squeeze()
+        value_floating_mean.step(expected_v)
+        dv = (expected_v - value_floating_mean.mean - v) / dt
+        a_update = dv - adv_a + max_adv
 
-            v_loss = f.mse_loss(v[on_policy_idx],
-                                expected_v[on_policy_idx] - value_floating_mean.mean)
-            optimizers[0].zero_grad()
-            v_loss.backward()
-            optimizers[0].step()
-            schedulers[0].step()
+        loss = (a_update ** 2).mean() + (max_adv ** 2).mean()
 
-            cum_vloss += v_loss.item()
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        scheduler.step()
 
-            indices = torch.LongTensor(action).to(device)
-            a = afunction(obs).gather(1, indices.view(-1, 1)).squeeze()
-            a_loss = f.mse_loss(a, (expected_v - v.detach()) / dt)
-
-            optimizers[1].zero_grad()
-            a_loss.backward()
-            optimizers[1].step()
-            schedulers[1].step()
-
-            cum_aloss += a_loss.item()
+        cum_loss += loss.item()
 
         obs = next_obs
     print(f'At epoch {epoch}, '
-          f'avg_aloss: {cum_aloss / nsteps}, '
-          f'avg_vloss: {cum_vloss / nsteps}')
+          f'avg_loss: {cum_loss / nsteps}')
     return to_numpy(next_obs)
 
 def evaluate(
@@ -216,16 +205,12 @@ def main(
         a_noise = ActionNoise((batch_size, nb_actions), theta, sigma, dt, noise_decay)
         a_noise_eval = ActionNoise((1, nb_actions), theta, sigma_eval, dt, noise_decay)
 
-    optimizers = (
-        torch.optim.SGD(vfunction.parameters(), lr=lr),
-        torch.optim.SGD(afunction.parameters(), lr=lr * dt))
-    schedulers = (
-        torch.optim.lr_scheduler.LambdaLR(optimizers[0], lr_decay),
-        torch.optim.lr_scheduler.LambdaLR(optimizers[1], lr_decay))
+    optimizer = torch.optim.SGD(chain(afunction.parameters(), vfunction.parameters()), lr=lr * dt)
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_decay)
 
     for e in range(nb_epochs):
         print(f"Epoch {e}...")
-        obs = train(e, vfunction, afunction, a_noise, optimizers, schedulers,
+        obs = train(e, vfunction, afunction, a_noise, optimizer, scheduler,
                     vec_env, obs, dt, gamma,
                     value_floating_mean, nb_steps, device)
         evaluate(env_fn, e, vfunction, afunction, a_noise_eval, device)
