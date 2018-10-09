@@ -1,6 +1,9 @@
 """ Environment utilities """
 from abc import ABC, abstractmethod
+import gym
+from gym import ActionWrapper
 import numpy as np
+from envs.pusher import PusherEnv
 
 def tile_images(img_nhwc):
     """
@@ -153,3 +156,22 @@ class CloudpickleWrapper: # pylint: disable=R0903
     def __setstate__(self, ob):
         import pickle
         self.x = pickle.loads(ob)
+
+def wrap_pendulum(env):
+    """ Wrap pendulum env. """
+    class WrapPendulum(ActionWrapper):
+        """ Wrap pendulum. """
+        def action(self, action):
+            return 4 * np.array(action)[np.newaxis] - 2
+    return WrapPendulum(env)
+
+def make_env(env_id, dt):
+    """ Make env. """
+    if env_id == 'pendulum':
+        env = gym.make('Pendulum-v0').unwrapped
+    else:
+        env = PusherEnv()
+    env.dt = dt
+    if env_id == 'pendulum':
+        env = wrap_pendulum(env)
+    return env

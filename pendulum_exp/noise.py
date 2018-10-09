@@ -1,5 +1,5 @@
 """ Noise. """
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 import numpy as np
 import torch
 import torch.nn as nn # pylint: disable=useless-import-alias
@@ -33,3 +33,28 @@ class ParameterNoise: # pylint: disable=too-few-public-methods
 
     def __iter__(self):
         return iter(self._p_noise)
+
+class ActionNoise: # pylint: disable=too-few-public-methods
+    """ Ornstein Ulhenbeck action noise. """
+    def __init__(self, # pylint: disable=too-many-arguments
+                 action_shape: Tuple[int, int],
+                 theta: float,
+                 sigma: float,
+                 dt: float,
+                 sigma_decay: Optional[Callable[[int], float]] = None) -> None:
+        self.noise = sigma / np.sqrt(2 * theta) * \
+            torch.randn(action_shape, requires_grad=False)
+        self._theta = theta
+        self._sigma = sigma
+        self._sigma_decay = sigma_decay
+        self._dt = dt
+        self._count = 0
+
+    def step(self):
+        """ Perform one step of update of parameter noise. """
+
+        decay = 1 if self._sigma_decay is None else self._sigma_decay(self._count)
+        dBt = torch.randn_like(self.noise, requires_grad=False) * self._sigma * \
+            decay * np.sqrt(self._dt)
+        self.noise = self.noise * (1 - self._theta * self._dt) + dBt
+        self._count += 1

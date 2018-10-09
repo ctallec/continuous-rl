@@ -1,7 +1,8 @@
 """ Define pytorch models. """
+from typing import Union
 import torch
 import torch.nn as nn # pylint: disable=useless-import-alias
-from noise import ParameterNoise
+from noise import ParameterNoise, ActionNoise
 
 class MLP(nn.Module):
     """ MLP """
@@ -17,7 +18,18 @@ class MLP(nn.Module):
     def forward(self, *inputs):
         return self._core(*inputs)
 
-def perturbed_output(inputs: torch.Tensor, network: nn.Module, parameter_noise: ParameterNoise):
+def perturbed_output(inputs: torch.Tensor,
+                     network: nn.Module,
+                     noise: Union[ParameterNoise, ActionNoise]):
+    """ Returns perturbed_output. """
+    if isinstance(noise, ParameterNoise):
+        return params_perturbed_output(inputs, network, noise)
+    return action_perturbed_output(inputs, network, noise)
+
+def params_perturbed_output(
+        inputs: torch.Tensor,
+        network: nn.Module,
+        parameter_noise: ParameterNoise):
     """ Returns perturbed output. """
     with torch.no_grad():
         for p, p_noise in zip(network.parameters(), parameter_noise):
@@ -26,3 +38,11 @@ def perturbed_output(inputs: torch.Tensor, network: nn.Module, parameter_noise: 
         for p, p_noise in zip(network.parameters(), parameter_noise):
             p.copy_(p.data - p_noise)
         return perturbed_output
+
+def action_perturbed_output(
+        inputs: torch.Tensor,
+        network: nn.Module,
+        action_noise: ActionNoise):
+    """ Returns perturbed output. """
+    with torch.no_grad():
+        return network(inputs) + action_noise.noise
