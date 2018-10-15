@@ -41,6 +41,7 @@ class SubprocVecEnv(VecEnv):
     def __init__(self, envs):
         self.waiting = False
         self.closed = False
+        self.envs = envs
         nenvs = len(envs)
         self.remotes, self.work_remotes = zip(*[Pipe() for _ in range(nenvs)])
         self.ps = [Process(target=worker, args=(work_remote, CloudpickleWrapper(env)))
@@ -91,6 +92,14 @@ class SubprocVecEnv(VecEnv):
         self.closed = True
 
     def render(self, mode='human'):
+        self.remotes[0].send(('render', None))
+        img = self.remotes[0].recv()
+        if mode == 'rgb_array':
+            return img
+        elif mode != 'human':
+            raise NotImplementedError
+
+    def full_render(self, mode='human'):
         for remote in self.remotes:
             remote.send(('render', None))
         imgs = [remote.recv() for remote in self.remotes]

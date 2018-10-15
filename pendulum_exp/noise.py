@@ -2,11 +2,13 @@
 from typing import Callable, Optional, Tuple
 import numpy as np
 import torch
-import torch.nn as nn # pylint: disable=useless-import-alias
+import torch.nn as nn
+from abstract import Noise, Arrayable, ParametricFunction
+from convert import th_to_arr
 
-class ParameterNoise: # pylint: disable=too-few-public-methods
+class ParameterNoise(Noise):
     """ Ornstein Ulhenbeck parameter noise. """
-    def __init__(self, # pylint: disable=too-many-arguments
+    def __init__(self,
                  network: nn.Module,
                  theta: float,
                  sigma: float,
@@ -20,7 +22,10 @@ class ParameterNoise: # pylint: disable=too-few-public-methods
         self._sigma_decay = sigma_decay
         self._dt = dt
         self._count = 0
+        self._device = torch.device('cpu')
 
+    def to(self, device):
+        self._device = device
 
     def step(self):
         """ Perform one step of update of parameter noise. """
@@ -34,7 +39,19 @@ class ParameterNoise: # pylint: disable=too-few-public-methods
     def __iter__(self):
         return iter(self._p_noise)
 
-class ActionNoise: # pylint: disable=too-few-public-methods
+    def perturb_output(
+            self,
+            inputs: Arrayable,
+            a_function: ParametricFunction):
+        with torch.no_grad():
+            for p, p_noise in zip(a_function.parameters(), self):
+                p.copy_(p.data + p_noise)
+            perturbed_output = a_function(inputs)
+            for p, p_noise in zip(a_function.parameters(), self):
+                p.copy_(p.data - p_noise)
+            return th_to_arr(perturbed_output)
+
+class ActionNoise(Noise): # pylint: disable=too-few-public-methods
     """ Ornstein Ulhenbeck action noise. """
     def __init__(self, # pylint: disable=too-many-arguments
                  action_shape: Tuple[int, int],
@@ -49,12 +66,22 @@ class ActionNoise: # pylint: disable=too-few-public-methods
         self._sigma_decay = sigma_decay
         self._dt = dt
         self._count = 0
+        self._device = torch.device('cpu')
+
+    def to(self, device):
+        self._device = device
 
     def step(self):
         """ Perform one step of update of parameter noise. """
-
         decay = 1 if self._sigma_decay is None else self._sigma_decay(self._count)
         dBt = torch.randn_like(self.noise, requires_grad=False) * self._sigma * \
             decay * np.sqrt(self._dt)
         self.noise = self.noise * (1 - self._theta * self._dt) + dBt
         self._count += 1
+
+    def perturb_output(
+            self,
+            inputs: Arrayable,
+            function: ParametricFunction):
+        with torch.no_grad():
+            return function(inputs) + self.noise
