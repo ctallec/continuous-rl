@@ -83,8 +83,15 @@ class AdvantagePolicy(Policy):
             max_adv = torch.max(adv, dim=1)[0]
             adv_a = adv.gather(1, indices.view(-1, 1)).squeeze()
 
-            discounted_next_v = self._gamma ** self._dt * self._val_function(
-                self._next_obs).squeeze()
+            if self._gamma == 1:
+                assert (1 - self._done).all(), "Gamma set to 1. with a potentially episodic problem..."
+                discounted_next_v = self._gamma ** self._dt * self._val_function(self._next_obs).squeeze()
+            else:
+                done = arr_to_th(self._done.astype('float'), self._device)
+                discounted_next_v = \
+                    (1 - done) * self._gamma ** self._dt * self._val_function(self._next_obs).squeeze() -\
+                    done * self._gamma ** self._dt * self._reward_avg.mean / (1 - self._gamma)
+
             expected_v = arr_to_th((self._reward - self._reward_avg.mean), self._device) * self._dt + \
                 discounted_next_v.detach()
             dv = (expected_v - v) / self._dt

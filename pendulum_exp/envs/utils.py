@@ -167,11 +167,15 @@ def wrap_pendulum(env):
 
 def make_env(env_id, dt):
     """ Make env. """
+    # pendulum
     if env_id == 'pendulum':
         env = gym.make('Pendulum-v0').unwrapped
-    else:
-        env = PusherEnv()
+        env.dt = dt
+        return wrap_pendulum(env)
+    if env_id == 'cartpole':
+        env = gym.make('CartPole-v1').unwrapped
+        env.tau = dt
+        return env
+    env = PusherEnv()
     env.dt = dt
-    if env_id == 'pendulum':
-        env = wrap_pendulum(env)
     return env

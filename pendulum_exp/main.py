@@ -13,6 +13,7 @@ from envs.utils import make_env
 from models import MLP
 from noise import ParameterNoise, ActionNoise
 from evaluation import specific_evaluation
+from utils import compute_return
 
 def train(
         nb_steps: int,
@@ -34,16 +35,24 @@ def evaluate(
         env: Env,
         policy: Policy):
     """ Evaluate. """
-    log = int(1 / dt)
+    log = int(.1 / dt)
+    video_log = 10
     policy.eval()
 
     if epoch % log == log - 1:
+        rewards, dones = [], []
         imgs = []
         nb_steps = int(10 / dt)
         obs = env.reset()
         for _ in range(nb_steps):
             obs, reward, done = interact(env, policy, obs)
-            imgs.append(env.render())
+            rewards.append(reward)
+            dones.append(done)
+            if (epoch // log) % video_log == video_log - 1:
+                imgs.append(env.render())
+        R = compute_return(np.stack(rewards, axis=0),
+                           np.stack(dones, axis=0))
+        print(f"At epoch {epoch}, return: {R}")
 
     specific_evaluation(epoch, log, dt, env, policy)
 
@@ -70,7 +79,8 @@ def main(
     # setting up envs
     nb_inputs, nb_actions = {
         'pendulum': (3, 2),
-        'pusher': (1, 3)
+        'pusher': (1, 3),
+        'cartpole': (4, 2)
     }[env_id]
     env_fn = partial(make_env, env_id=env_id, dt=dt)
     env: Env = SubprocVecEnv([env_fn() for _ in range(batch_size)]) # type: ignore
