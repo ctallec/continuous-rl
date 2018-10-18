@@ -88,7 +88,7 @@ def main(
     obs = env.reset()
 
     def lr_decay(t):
-        return 1 / np.power(1 + dt * t, 1/2)
+        return 1 / np.power(1 + dt * t, 1/4)
 
     def noise_decay(_):
         return 1
