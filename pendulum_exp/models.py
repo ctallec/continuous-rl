@@ -1,8 +1,7 @@
 """Define pytorch models."""
-import torch
 import torch.nn as nn
-from abstract import ParametricFunction
-from convert import arr_to_th
+from abstract import ParametricFunction, Tensorable
+from convert import check_tensor
 
 class MLP(nn.Module, ParametricFunction):
     """ MLP """
@@ -15,8 +14,6 @@ class MLP(nn.Module, ParametricFunction):
             [nn.Linear(hidden_size, nb_outputs)])
         self._core = nn.Sequential(*modules)
 
-    def forward(self, *inputs):
-        if not isinstance(inputs[0], torch.Tensor):
-            device = next(self.parameters()).device
-            inputs = (arr_to_th(inputs[0], device),)
-        return self._core(*inputs)
+    def forward(self, *inputs: Tensorable):
+        device = next(self.parameters())
+        return self._core(check_tensor(inputs[0], device))

@@ -2,9 +2,11 @@
 from typing import Union
 from abc import ABC, abstractmethod
 import numpy as np
+import torch
 from envs.vecenv import SubprocVecEnv
 
 Arrayable = Union[list, float, np.ndarray]
+Tensorable = Union[Arrayable, torch.Tensor]
 
 class Policy(ABC):
     @abstractmethod
@@ -37,7 +39,7 @@ class Policy(ABC):
 class ParametricFunction(ABC):
     """Wrap around a torch module."""
     @abstractmethod
-    def __call__(self, obs: Arrayable):
+    def __call__(self, *obs: Tensorable):
         pass
 
     @abstractmethod
