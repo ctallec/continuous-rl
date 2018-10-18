@@ -1,0 +1,59 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath,amssymb}
+
+\newcommand{\deltat}{{\delta t}}
+\newcommand{\gauss}{\mathcal{N}}
+\newcommand{\E}{\mathbb{E}}
+
+\title{Scaling continuous reinforcement learning up}
+\begin{document}
+\maketitle
+\begin{abstract}
+	Most reinforcement learning algorithms are not resilient to a change of
+	time discretization. Even worse, their time continuous limit is often
+	ill defined.  While continuous reinforcement methods have been
+	introduced in the past, they have been dismissed when scaling up from
+	reinforcement learning to deep reinforcement learning. We introduce the
+	first deep reinforcement learning that scales when faced with
+	diminishing discretization steps.
+\end{abstract}
+\paragraph{Problem at hand}
+Assume a stochastic continuous environment of the form
+\begin{align}
+	s_{t+\deltat} &= s_t + F(s_t, a_t) \deltat + \gauss(0, C(s_t, a_t)) \sqrt{\deltat}\\
+	r(s_t, a_t) &= \tilde{r}(s_t, a_t) \deltat
+\end{align}
+with $F$ a deterministic drift, and $C$ a noise covariance matrix
+associated to each $(s, a)$ pair. Our aim is to find, a policy $\pi$, that is a
+(potentially stochastic) mapping from states to actions that maximizes the
+average return, i.e. the expected average of rewards
+\begin{align}
+	R^\pi &= \lim\limits_{T\to+\infty}
+	\frac{1}{T}
+	\E_{s_0, a_0, \ldots, s_T, a_T\sim\pi}\left[
+		\sum\limits_{t = 0}^T \tilde{r}(s_t, a_t)
+	\right]
+\end{align}
+or the discounted sum of future rewards
+\begin{align}
+	R^\pi_\gamma &= \E_{s_0, a_0, \ldots, s_T, a_T \sim \pi}
+	\left[
+		\sum\limits_{t=0}^{+\infty}
+		(\gamma^\deltat)^t \tilde{r}(s_t, a_t) 
+	\right].
+\end{align}
+Further assume that for any policy, the environment admits an invariant
+measure, that is that there exists a distribution on states $\rho^\pi$ such that for
+any regular function $F$ and any infinite sequence $s_0, \ldots$ sampled using policy
+$\pi$,
+\begin{equation}
+	\lim\limits_{T\to+\infty}
+	\frac{1}{T}
+	\sum\limits_{t=0}^T F(s_t) =
+	\E_{s\sim \rho^\pi}\left[
+		F(s)
+	\right].
+\end{equation}
+\paragraph{Advantage updating}
+\end{document}
