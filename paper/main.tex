@@ -1,10 +1,13 @@
 \documentclass[11pt]{article}
 
 \usepackage{amsmath,amssymb}
+\usepackage{xcolor}
 
 \newcommand{\deltat}{{\delta t}}
 \newcommand{\gauss}{\mathcal{N}}
 \newcommand{\E}{\mathbb{E}}
+\newcommand{\TODO}[1]{\textcolor{red}{#1}}
+\newcommand{\bigO}[1]{O(#1)}
 
 \title{Scaling continuous reinforcement learning up}
 \begin{document}
@@ -85,7 +88,8 @@ optimal counterparts are defined as usual, e.g.
 		\sum\limits_{t=0}^{+\infty}
 		(\gamma^\deltat)^t \tilde{r}(s_t, a_t) \deltat
 		\mid s_0=s, a_0=a
-	\right]
+	\right]\\
+	A^\pi(s,a ) &= Q^\pi(s, a) - V^\pi(s)
 \end{align}
 and verify Bellman equations, e.g.
 \begin{align}
@@ -93,7 +97,7 @@ and verify Bellman equations, e.g.
 	\left[
 		\tilde{r}(s, a) \deltat +
 		\gamma^\deltat \E_{s'\mid a} V(s')
-	\right]
+	\right].
 \end{align}
 We assume that for any policy, the environment admits an invariant
 measure, that is that there exists a distribution on states $\rho^\pi$ such that for
@@ -107,6 +111,44 @@ $\pi$,
 		F(s)
 	\right].
 \end{equation}
+
+\paragraph{The Q-function action independant when $\deltat \to 0$}
+Q-learning, which uses the optimal Bellman equation on the state value function
+to approximate the optimal Q-function is a natural candidate for off-policy
+continuous time learning. However, as stated in \TODO{refs}, the state value function
+becomes independant of its action parameter as the discretization step decreases towards
+$0$. Indeed, approximating to first order in $\deltat$ in the Bellman equation defining
+$Q^\pi$, 
+\begin{align}
+	Q^\pi(s, a) &= \tilde{r}(s, a)\deltat + \gamma^\deltat \E_{s_{t+\deltat} \mid a, s} 
+	V^\pi(s_{t+\deltat})\nonumber\\
+	&= \tilde{r}(s, a)\deltat + \gamma^\deltat V^\pi(s) + \gamma^\deltat \partial_s V(s) F(s, a) \deltat
+	+ \frac{\gamma^\deltat}{2} \text{tr}\left(C(s, a)\partial^2_{s} V(s)\right) \deltat\nonumber\\
+	&\to\limits_{\deltat \to 0} V^\pi(s).
+\end{align}
+
+Consequently Q-learning is extremely sensitive both to noise and to approximation errors.
+To extract the optimal action from an estimate of the optimal Q-function, you need an estimate
+whose approximation error is of order $\bigO{\deltat}$.
+Typically, when learning the state-value function only from monte-carlo trajectory samples, 
+an optimistic number of timesteps required to learn an estimate with precision $\bigO{\deltat}$ is
+$\bigO{\frac{1}{\deltat^2}}$.\footnote{
+	Monte-carlo estimates of the Q function have typical variance of order
+	$\frac{1}{\deltat\sqrt{2(1 - \gamma)}}$. To obtain an estimate with precision $1$ of the mean
+	of a quantity with variance $\sigma^2$ by averaging independant samples, you
+	require at least $\sigma^2$ samples.}
+This notably means that when $\deltat \to 0$, you would require an infinite number of samples
+per infinitesimal timestep to actually learn correct actions.
+
+\paragraph{The average reward dominates when $\gamma$ gets close to $1$}
+\TODO{Make this formal and clear.}\\
+When the time horizon is unbounded, $V^\pi(s)$ can be rewritten as
+\begin{align}
+	V^\pi(s) = \frac{\E_{s\sim\rho^\pi}\tilde{r}}{1 - \gamma} +
+	\sigma^\pi(s) + \varepsilon^\pi(s, \gamma)
+\end{align}
+with $\lim\limits_{\gamma\to 1} = 0$. This means that when $\gamma$ gets close to $1$,
+if $\rho^\pi(s)$ is non-zero, the 
 \paragraph{Centralized advantage updating}
 The optimal centralized advantage function and the optimal centralized value
 function verify the following Bellman equation
