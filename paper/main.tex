@@ -27,7 +27,7 @@ Assume a stochastic continuous environment of the form
 with $F$ a deterministic drift, and $C$ a noise covariance matrix
 associated to each $(s, a)$ pair. Our aim is to find, a policy $\pi$, that is a
 (potentially stochastic) mapping from states to actions that maximizes the
-average return, i.e. the expected average of rewards
+average return, i.e.\ the expected average of rewards
 \begin{align}
 	R^\pi &= \lim\limits_{T\to+\infty}
 	\frac{1}{T}
@@ -35,7 +35,14 @@ average return, i.e. the expected average of rewards
 		\sum\limits_{t = 0}^T \tilde{r}(s_t, a_t)
 	\right]
 \end{align}
-or the discounted sum of future rewards
+or the discounted sum of future rewards for a physical discount factor of $\gamma$\footnote{
+	Having a physical discount factor of $\gamma$ induces a practical discretized discount
+	factors of $\gamma^\deltat$. Indeed, \eqref{eq:discounted} is the discretization of
+	\begin{equation}
+		R^\pi_\gamma = \int_{0}^{+\infty} \gamma^{t} r(t) dt.
+		\label{eq:discounted}
+	\end{equation}
+}
 \begin{align}
 	R^\pi_\gamma &= \E_{s_0, a_0, \ldots, s_T, a_T \sim \pi}
 	\left[
@@ -43,7 +50,28 @@ or the discounted sum of future rewards
 		(\gamma^\deltat)^t \tilde{r}(s_t, a_t) 
 	\right].
 \end{align}
-Further assume that for any policy, the environment admits an invariant
+We have the following desiderata for our algorithms:
+\begin{itemize}
+	\item To be resilient to a change in discretization. Precisely, this
+		means that increasing the sampling rate should not decrease the
+		performances of the algorithm. Notably, this means that if we consider
+		two discretization steps $\deltat$ and $\deltat'$, and two associated
+		runs of the learning algorithm, the first run should learn in $\frac{1}{\deltat}$
+		samples approximately the same thing as the second in $\frac{1}{\deltat'}$ samples.
+	\item To be able to handle $\gamma$ coeficients arbitrarily close to $1$.
+		Such a condition turns out to be necessary if we require to
+		be able to handle constant physical discount factors.
+	\item To be offline, i.e.\ to learn a policy that is different from
+		the policy used for sampling trajectories. This is useful in
+		two ways. First it decorrelates the problem of learning a good
+		policy from the problem of exploring the world. Second it
+		allows for learning from a fixed dataset of trajectories, or more
+		precisely, in the fully observable case, from a dataset of
+		states, actions, rewards, next states quadruplets.
+\end{itemize}
+
+\paragraph{Assumptions and notations}
+We assume that for any policy, the environment admits an invariant
 measure, that is that there exists a distribution on states $\rho^\pi$ such that for
 any regular function $F$ and any infinite sequence $s_0, \ldots$ sampled using policy
 $\pi$,
@@ -55,5 +83,22 @@ $\pi$,
 		F(s)
 	\right].
 \end{equation}
-\paragraph{Advantage updating}
+\paragraph{Centralized advantage updating}
+The optimal centralized advantage function and the optimal centralized value
+function verify the following Bellman equation
+\begin{align}
+	A^*(s, a) &= \max\limits_{a} A^*(s, a) + \frac{
+		(\tilde{r}(s, a) - \E^*\left[
+			\tilde{r}
+		\right]
+		)\deltat + \gamma \E_s'\left[
+			V^*(s')
+		\right] - V^*(s)
+		}{
+		\deltat
+	}\\
+	\max\limits_{a} A^*(s, a) &= 0
+\end{align}
+
+\paragraph{Approximate advantage updating and learning rates scalings}
 \end{document}
