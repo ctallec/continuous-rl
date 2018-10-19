@@ -32,7 +32,7 @@ average return, i.e.\ the expected average of rewards
 	R^\pi &= \lim\limits_{T\to+\infty}
 	\frac{1}{T}
 	\E_{s_0, a_0, \ldots, s_T, a_T\sim\pi}\left[
-		\sum\limits_{t = 0}^T \tilde{r}(s_t, a_t)
+		\sum\limits_{t = 0}^T \tilde{r}(s_t, a_t)\deltat
 	\right]
 \end{align}
 or the discounted sum of future rewards for a physical discount factor of $\gamma$\footnote{
@@ -47,7 +47,7 @@ or the discounted sum of future rewards for a physical discount factor of $\gamm
 	R^\pi_\gamma &= \E_{s_0, a_0, \ldots, s_T, a_T \sim \pi}
 	\left[
 		\sum\limits_{t=0}^{+\infty}
-		(\gamma^\deltat)^t \tilde{r}(s_t, a_t) 
+		(\gamma^\deltat)^t \tilde{r}(s_t, a_t)\deltat 
 	\right].
 \end{align}
 We have the following desiderata for our algorithms:
@@ -71,6 +71,30 @@ We have the following desiderata for our algorithms:
 \end{itemize}
 
 \paragraph{Assumptions and notations}
+Value, value-state and advantage functions as well as there
+optimal counterparts are defined as usual, e.g.
+\begin{align}
+	V^\pi(s) &= \E_{a_0, s_1, \ldots \sim \pi}
+	\left[
+		\sum\limits_{t=0}^{+\infty}
+		(\gamma^\deltat)^t \tilde{r}(s_t, a_t) \deltat
+		\mid s=s_0
+	\right]\\
+	Q^\pi(s, a) &= \E_{a_1, s_1\ldots \sim \pi}
+	\left[
+		\sum\limits_{t=0}^{+\infty}
+		(\gamma^\deltat)^t \tilde{r}(s_t, a_t) \deltat
+		\mid s_0=s, a_0=a
+	\right]
+\end{align}
+and verify Bellman equations, e.g.
+\begin{align}
+	V^\pi(s) = \E_{a\sim\pi(\cdot\mid s)}
+	\left[
+		\tilde{r}(s, a) \deltat +
+		\gamma^\deltat \E_{s'\mid a} V(s')
+	\right]
+\end{align}
 We assume that for any policy, the environment admits an invariant
 measure, that is that there exists a distribution on states $\rho^\pi$ such that for
 any regular function $F$ and any infinite sequence $s_0, \ldots$ sampled using policy
@@ -86,19 +110,20 @@ $\pi$,
 \paragraph{Centralized advantage updating}
 The optimal centralized advantage function and the optimal centralized value
 function verify the following Bellman equation
-\begin{align}
-	A^*(s, a) &= \max\limits_{a} A^*(s, a) + \frac{
+\begin{gather}
+	A^*(s, a) = \max\limits_{a'} A^*(s, a') + 
 		(\tilde{r}(s, a) - \E^*\left[
 			\tilde{r}
 		\right]
-		)\deltat + \gamma \E_s'\left[
+		) + 
+		\frac{\gamma \E_{s'\mid a}\left[
 			V^*(s')
 		\right] - V^*(s)
 		}{
 		\deltat
 	}\\
-	\max\limits_{a} A^*(s, a) &= 0
-\end{align}
+	\max\limits_{a} A^*(s, a) = 0
+\end{gather}
 
 \paragraph{Approximate advantage updating and learning rates scalings}
 \end{document}
