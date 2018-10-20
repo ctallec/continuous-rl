@@ -27,7 +27,6 @@ def specific_evaluation(
         plt.plot(state_space, vs)
         plt.pause(.1)
     elif isinstance(env.envs[0], WrapPendulum):
-        plt.figure()
         nb_pixels = 50
         theta_space = np.linspace(-np.pi, np.pi, nb_pixels)
         dtheta_space = np.linspace(-10, 10, nb_pixels)

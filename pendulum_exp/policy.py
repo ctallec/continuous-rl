@@ -107,7 +107,7 @@ class AdvantagePolicy(Policy):
 
             self._optimizers[0].zero_grad()
             self._optimizers[1].zero_grad()
-            (mean_loss / self._dt + loss).backward()
+            (mean_loss / np.power(self._dt, 3/2) + loss).backward()
             self._optimizers[0].step()
             self._schedulers[0].step()
             self._optimizers[1].step()
