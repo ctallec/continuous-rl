@@ -298,13 +298,16 @@ minimized over $b$, $\phi$ and $\theta$. Caution should be taken to minimize
 the third residual, as the gradient requires sampling of two different states.
 
 \paragraph{Learning rates scalings}
-\TODO{More on that later. In noisy setups we may need $\frac{1}{\deltat^\frac{3}{2}}$ for the last term of the loss.}
+\TODO{More on that later. I am not sure if we should have a $\frac{1}{\deltat}$
+	or a $\frac{1}{\deltat^\frac{3}{2}}$ in front of the mean normalization
+term. My bet is $\frac{1}{\deltat^\frac{3}{2}}$}.
 Actual loss we minimize on both $\theta$ and $\phi$
 \begin{equation}
 	\E_{s \sim \rho^\pi, a \sim \pi}\left[\delta^A_{\theta, \phi}(s, a)^2\right] +
 	\E_{s \sim \rho^\pi, a \sim \pi}\left[\delta^\text{norm}_{\theta}(s, a)^2\right] +
-	+ \frac{1}{\deltat}\E_{s \sim \rho^\pi}\left[\delta^\text{mean}_{\theta}(s)^2\right]
+	+ \frac{1}{\deltat^\frac{3}{2}}\E_{s \sim \rho^\pi}\left[\delta^\text{mean}_{\theta}(s)^2\right].
 \end{equation}
-Learning rate on $\phi$ and $b$ are of order $\deltat$, learning rate on $\theta$ is of order $\deltat^2$. This is to have gradients moving of approximately $\sqrt{dt}
+Learning rates on $\phi$ and $b$ are of order $\deltat$, learning rate on $\theta$ is of order $\deltat^2$. This is to have parameters
+moving by a distance of order $\sqrt{\deltat}$ per iteration.
 
 \end{document}
