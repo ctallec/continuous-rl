@@ -8,6 +8,7 @@
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\TODO}[1]{\textcolor{red}{#1}}
 \newcommand{\bigO}[1]{O(#1)}
+\newcommand{\Tdo}{TD($0$)}
 
 \title{Scaling continuous reinforcement learning up}
 \begin{document}
@@ -110,6 +111,7 @@ $\pi$,
 	\E_{s\sim \rho^\pi}\left[
 		F(s)
 	\right].
+	\label{eq:ergodic}
 \end{equation}
 
 \paragraph{The Q-function action independant when $\deltat \to 0$}
@@ -130,42 +132,179 @@ $Q^\pi$,
 Consequently Q-learning is extremely sensitive both to noise and to approximation errors.
 To extract the optimal action from an estimate of the optimal Q-function, you need an estimate
 whose approximation error is of order $\bigO{\deltat}$.
-Typically, when learning the state-value function only from monte-carlo trajectory samples, 
+Typically, when learning the state-action value function only from monte-carlo trajectory samples, 
 an optimistic number of timesteps required to learn an estimate with precision $\bigO{\deltat}$ is
-$\bigO{\frac{1}{\deltat^2}}$.\footnote{
+$\bigO{\frac{1}{\deltat^3}}$.\footnote{
 	Monte-carlo estimates of the Q function have typical variance of order
 	$\frac{1}{\deltat\sqrt{2(1 - \gamma)}}$. To obtain an estimate with precision $1$ of the mean
 	of a quantity with variance $\sigma^2$ by averaging independant samples, you
 	require at least $\sigma^2$ samples.}
 This notably means that when $\deltat \to 0$, you would require an infinite number of samples
-per infinitesimal timestep to actually learn correct actions.
+per infinitesimal timestep to actually learn correct actions. A more formal statement in a simple case
+is given in appendix.
 
 \paragraph{The average reward dominates when $\gamma$ gets close to $1$}
 \TODO{Make this formal and clear.}\\
-When the time horizon is unbounded, $V^\pi(s)$ can be rewritten as
+Under the ergodic condition eq.~\eqref{eq:ergodic}, $V^\pi(s)$ can be rewritten as
 \begin{align}
 	V^\pi(s) = \frac{\E_{s\sim\rho^\pi}\tilde{r}}{1 - \gamma} +
 	\sigma^\pi(s) + \varepsilon^\pi(s, \gamma)
+	\label{eq:dominate}
 \end{align}
-with $\lim\limits_{\gamma\to 1} = 0$. This means that when $\gamma$ gets close to $1$,
-if $\rho^\pi(s)$ is non-zero, the 
+with $\lim\limits_{\gamma\to 1}\varepsilon^\pi(s, \gamma) = 0$. This means that
+when $\gamma$ gets close to $1$, if the average reward under the stationary
+policy is non zero, the value function, as well as the state-action value
+function, are dominated by a constant term, independant of both the state and
+the action. When $\gamma$ is exactly equal to $1$, the constant term becomes
+infinite, making all standard algorithms that direcetly learn the value
+function or the state-action value function impractical. 
+
+Substracting arbitrary constants to all rewards does not change the relative
+performances of policies, and consequently does not change the optimal
+policy.\footnote{
+	This is only true for non episodic MDPs. For episodic MDPs, substracting
+	a constant factor to all rewards only leaves the relative performance of
+	policies unchanged if the agent if properly penalized (or rewarded) when
+	reaching a terminal state. More details are given in
+	\TODO{Probably in the appendix}.
+} If one is able to estimate the average reward of the current policy, substracting
+the average reward to all rewards negates the first term in eq.~\eqref{eq:dominate}.
+The average reward of the current policy is rarely readily available. When learning
+on-policy, the average reward can be estimated using running averages
+over trajectories\footnote{One must be aware that you cannot use TD(0) on the 
+	same trajectory as the one on which you are learning the average reward.
+	\TODO{Explain in more details: this creates a dependency of the average
+	reward on the current state, which biased learning.}
+}. When learning off policy, the average reward cannot be directly learnt from reward
+samples along the trajectories.
+
 \paragraph{Centralized advantage updating}
+The algorithm introduced hereby attends to both problematics in the following ways.
+It uses the advantage updating formulation introduced in~\TODO{ref} to learn
+in an offline fashion the advantage function. Contrary to the state-action value
+function, the difference of advantage between two actions does not vanish as the
+discretization step decreases. Combined with correctly scaled learning rates, this
+algorithm proves to be both efficient for high discretization steps, and resilient
+to wide changes in the discretization step, even for complex function approximators.
 The optimal centralized advantage function and the optimal centralized value
-function verify the following Bellman equation
+Second, by introducing a proper baseline parameter and adding a normalization term
+to the loss, the algorithm provide resilience to gamma values close to $1$, and
+equals to $1$ when eq.~\eqref{eq:ergodic} is verified.
+\subparagraph{Advantage updating}
+Advantage updating, as introduced in~\TODO{ref} relies on the fact that the advantage
+function and value function are the only functions that verify
 \begin{gather}
 	A^*(s, a) = \max\limits_{a'} A^*(s, a') + 
-		(\tilde{r}(s, a) - \E^*\left[
-			\tilde{r}
-		\right]
-		) + 
-		\frac{\gamma \E_{s'\mid a}\left[
+		\tilde{r}(s, a)
+		 + 
+		\frac{\gamma^\deltat \E_{s'\mid a}\left[
 			V^*(s')
 		\right] - V^*(s)
 		}{
 		\deltat
 	}\\
-	\max\limits_{a} A^*(s, a) = 0
+	\max\limits_{a} A^*(s, a) = 0.
 \end{gather}
+These equations can be used to learn approximations of both $A^*$ and $V^*$,
+$A_\theta$ and $V_\phi$. To that end, define the following residuals
+\begin{gather}
+	\delta^A_{\theta, \phi}(s, a) = A_\theta(s, a) -
+	\max\limits_{a'} A_\theta(s, a') + 
+	\tilde{r}(s, a)
+	+ 
+	\frac{\gamma^\deltat \E_{s'\mid a}\left[
+			V_\phi(s')
+		\right] - V_\phi(s)
+		}{
+		\deltat
+	}\\
+	\delta^\text{norm}_\theta(s, a) = \max\limits_{a} A_\theta(s, a).
+\end{gather}
+The mean squared residuals
+\begin{align}
+	\E_{s \sim \rho^\pi, a \sim \pi}\left[\delta^A_{\theta, \phi}(s, a)^2\right]\\
+	\E_{s \sim \rho^\pi, a \sim \pi}\left[\delta^\text{norm}_{\theta}(s, a)^2\right]
+\end{align}
+admit $V^*$ and $A^*$ as sole global minimizers.
 
-\paragraph{Approximate advantage updating and learning rates scalings}
+Estimates of the gradients of the first residual with respect to $\phi$ computed only
+from trajectories are not readily availables. Indeed, this would require computing two
+next states from each state, and this in turn requires a model of the world. Instead,
+the approximate \Tdo trick can be used, yielding gradient estimates of the form
+\begin{equation}
+	g^\phi_{\delta^A_{\theta, \phi}} =
+	\frac{1}{\deltat}
+	\partial_\phi V_\phi(s) \left(A_\theta(s, a) -
+		\max\limits_{a'} A_\theta(s, a') + 
+		\tilde{r}(s, a)
+		+ 
+		\frac{\gamma^\deltat 
+			V_\phi(s')
+			- V_\phi(s)
+			}{
+			\deltat
+	}\right).
+\end{equation}
+
+\subparagraph{Baseline centralization}
+As previously mentionned, using a non centralized reward may hurt learning, as the
+value function is bound to learn a very large constant which is not useful in the
+action selection process.
+
+To centralize rewards, we introduce a constant baseline $b$ the learning process.
+Consider the following set of equations on $A^*$, $V^*$ and $b$
+\begin{gather}
+	A^*(s, a) = \max\limits_{a'} A^*(s, a') + 
+		(\tilde{r}(s, a) - b)
+		 + 
+		\frac{\gamma^\deltat \E_{s'\mid a}\left[
+			V^*(s')
+		\right] - V^*(s)
+		}{
+		\deltat
+	}\\
+	\max\limits_{a} A^*(s, a) = 0\\
+	\E_{s\sim \rho^\pi}\left[V^*(s)\right] = 0
+	.
+\end{gather}
+It is unclear at first wether this system of equations admit a solution.
+Consider the two first equations. As we only substract a constant $b$ to all
+rewards, the only $V^*$ that verifies those equations takes the form
+\begin{equation}
+	V^*(s) = \frac{\E_{s\sim\rho^*}\tilde{r} - b}{1 - \gamma} +
+	\sigma^*(s) + \varepsilon^*(s, \gamma).
+\end{equation}
+Averaging under $\rho^\pi$, the following is obtained
+\begin{equation}
+	b = \E_{s\sim\rho^*}\tilde{r} +
+	(1 - \gamma) \E_{s\sim\rho^\pi}\left[\sigma^*(s) +
+		\varepsilon^*(s, \gamma) +
+		V^*(s)
+	\right].
+\end{equation}
+Consequently, for the third equation to hold, $b$ takes the value
+\begin{equation}
+	b = \E_{s\sim\rho^*}\tilde{r} +
+	(1 - \gamma) \E_{s\sim\rho^\pi}\left[\sigma^*(s) +
+		\varepsilon^*(s, \gamma)
+	\right]
+\end{equation}
+and notably, as $\gamma$ gets closer to $1$, $b$ gets closer to the
+average reward under the optimal policy.
+
+\TODO{More on that later}
+To approximately verify the three equations, the corresponding residuals are
+minimized over $b$, $\phi$ and $\theta$. Caution should be taken to minimize
+the third residual, as the gradient requires sampling of two different states.
+
+\paragraph{Learning rates scalings}
+\TODO{More on that later. In noisy setups we may need $\frac{1}{\deltat^\frac{3}{2}}$ for the last term of the loss.}
+Actual loss we minimize on both $\theta$ and $\phi$
+\begin{equation}
+	\E_{s \sim \rho^\pi, a \sim \pi}\left[\delta^A_{\theta, \phi}(s, a)^2\right] +
+	\E_{s \sim \rho^\pi, a \sim \pi}\left[\delta^\text{norm}_{\theta}(s, a)^2\right] +
+	+ \frac{1}{\deltat}\E_{s \sim \rho^\pi}\left[\delta^\text{mean}_{\theta}(s)^2\right]
+\end{equation}
+Learning rate on $\phi$ and $b$ are of order $\deltat$, learning rate on $\theta$ is of order $\deltat^2$. This is to have gradients moving of approximately $\sqrt{dt}
+
 \end{document}
