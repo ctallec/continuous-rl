@@ -4,7 +4,24 @@ import numpy as np
 import torch
 import torch.nn as nn
 from abstract import Noise, Arrayable, ParametricFunction
+from config import NoiseConfig, ParameterNoiseConfig, ActionNoiseConfig
 from convert import th_to_arr
+
+def setup_noise(
+        noise_config: NoiseConfig,
+        **kwargs) -> Noise:
+    assert isinstance(noise_config, (ParameterNoise, ActionNoiseConfig))
+    keywords_args = dict(sigma=noise_config.sigma, theta=noise_config.theta,
+                         dt=noise_config.dt, sigma_decay=noise_config.sigma_decay)
+
+    if isinstance(noise_config, ParameterNoiseConfig):
+        assert kwargs['network'] is not None
+        keywords_args['network'] = kwargs['network']
+        return ParameterNoise(**keywords_args)
+    if isinstance(noise_config, ActionNoiseConfig):
+        assert kwargs['action_shape'] is not None
+        keywords_args['action_shape'] = kwargs['action_shape']
+        return ActionNoise(**keywords_args)
 
 class ParameterNoise(Noise):
     """ Ornstein Ulhenbeck parameter noise. """

@@ -1,9 +1,10 @@
 """Define continuous policy."""
+from itertools import chain
 import torch
 import numpy as np
 from abstract import Policy, ParametricFunction, Arrayable, Noise
 from convert import arr_to_th, th_to_arr
-from stats import FloatingAvg, penalize_mean
+from stats import penalize_mean
 from typing import Callable
 
 class AdvantagePolicy(Policy):
@@ -13,20 +14,21 @@ class AdvantagePolicy(Policy):
                  policy_function: ParametricFunction,
                  policy_noise: Noise,
                  gamma: float,
-                 avg_alpha: float,
                  dt: float,
                  lr: float,
                  lr_decay: Callable[[int], float],
                  device) -> None:
         self._adv_function = adv_function.to(device)
         self._val_function = val_function.to(device)
+        self._baseline = torch.nn.Parameter(torch.Tensor([0.])).to(device)
         self._policy_function = policy_function.to(device)
         self._policy_noise = policy_noise
 
         # optimization/storing
         self._device = device
+        # TODO: I think we could optimize by gathering policy and advantage parameters
         self._optimizers = (
-            torch.optim.SGD(adv_function.parameters(), lr=lr * dt),
+            torch.optim.SGD(chain(adv_function.parameters(), [self._baseline]), lr=lr * dt),
             torch.optim.SGD(policy_function.parameters(), lr=lr * dt),
             torch.optim.SGD(val_function.parameters(), lr=lr * dt ** 2))
         self._schedulers = (
@@ -44,8 +46,6 @@ class AdvantagePolicy(Policy):
         self._reward = np.array([])
         self._next_obs = np.array([])
         self._done = np.array([])
-
-        self._reward_avg = FloatingAvg(avg_alpha * self._dt)
 
         self._train = True
 
@@ -92,12 +92,11 @@ class AdvantagePolicy(Policy):
                 done = arr_to_th(self._done.astype('float'), self._device)
                 discounted_next_v = \
                     (1 - done) * self._gamma ** self._dt * self._val_function(self._next_obs).squeeze() -\
-                    done * self._gamma ** self._dt * self._reward_avg.mean / (1 - self._gamma)
+                    done * self._gamma ** self._dt * self._baseline / (1 - self._gamma)
 
-            expected_v = arr_to_th((self._reward - self._reward_avg.mean), self._device) * self._dt + \
+            expected_v = arr_to_th((self._reward - self._baseline), self._device) * self._dt + \
                 discounted_next_v.detach()
             dv = (expected_v - v) / self._dt
-            self._reward_avg.step(self._reward)
             a_update = dv - adv_a + max_adv
 
             adv_update_loss = (a_update ** 2).mean()
@@ -131,11 +130,13 @@ class AdvantagePolicy(Policy):
         self._train = True
         self._val_function.train()
         self._adv_function.train()
+        self._policy_function.train()
 
     def eval(self):
         self._train = False
         self._val_function.eval()
         self._adv_function.eval()
+        self._policy_function.eval()
 
     def value(self, obs: Arrayable):
         return th_to_arr(self._val_function(obs))

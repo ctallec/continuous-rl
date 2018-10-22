@@ -1,5 +1,5 @@
 """Define abstractions."""
-from typing import Union
+from typing import Union, Callable
 from abc import ABC, abstractmethod
 import numpy as np
 import torch
@@ -7,6 +7,7 @@ from envs.vecenv import SubprocVecEnv
 
 Arrayable = Union[list, float, np.ndarray]
 Tensorable = Union[Arrayable, torch.Tensor]
+DecayFunction = Callable[[int], float]
 
 class Policy(ABC):
     @abstractmethod

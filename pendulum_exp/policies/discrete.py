@@ -4,7 +4,7 @@ import torch
 import numpy as np
 from abstract import Policy, ParametricFunction, Arrayable, Noise
 from convert import arr_to_th, th_to_arr
-from stats import FloatingAvg, penalize_mean
+from stats import penalize_mean
 from typing import Callable
 
 class AdvantagePolicy(Policy):
@@ -13,7 +13,6 @@ class AdvantagePolicy(Policy):
                  val_function: ParametricFunction,
                  adv_noise: Noise,
                  gamma: float,
-                 avg_alpha: float,
                  dt: float,
                  lr: float,
                  lr_decay: Callable[[int], float],
@@ -42,8 +41,6 @@ class AdvantagePolicy(Policy):
         self._reward = np.array([])
         self._next_obs = np.array([])
         self._done = np.array([])
-
-        self._reward_avg = FloatingAvg(avg_alpha * self._dt)
 
         self._train = True
 
@@ -97,7 +94,6 @@ class AdvantagePolicy(Policy):
             expected_v = (arr_to_th(self._reward, self._device) - self._baseline) * self._dt + \
                 discounted_next_v.detach()
             dv = (expected_v - v) / self._dt
-            self._reward_avg.step(self._reward)
             a_update = dv - adv_a + max_adv
 
             adv_update_loss = (a_update ** 2).mean()
