@@ -5,7 +5,7 @@ from abstract import Policy, Env
 from policy import AdvantagePolicy
 from envs.vecenv import SubprocVecEnv
 from envs.pusher import PusherEnv
-from gym.envs.classic_control import PendulumEnv
+from envs.utils import WrapPendulum
 
 def specific_evaluation(
         epoch: int,
@@ -26,7 +26,7 @@ def specific_evaluation(
         plt.clf()
         plt.plot(state_space, vs)
         plt.pause(.1)
-    elif isinstance(env.envs[0], PendulumEnv):
+    elif isinstance(env.envs[0], WrapPendulum):
         nb_pixels = 50
         theta_space = np.linspace(-np.pi, np.pi, nb_pixels)
         dtheta_space = np.linspace(-10, 10, nb_pixels)

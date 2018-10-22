@@ -1,4 +1,5 @@
 """Define policies."""
+from itertools import chain
 import torch
 import numpy as np
 from abstract import Policy, ParametricFunction, Arrayable, Noise
@@ -19,12 +20,13 @@ class AdvantagePolicy(Policy):
                  device) -> None:
         self._adv_function = adv_function.to(device)
         self._val_function = val_function.to(device)
+        self._baseline = torch.nn.Parameter(torch.Tensor([0.])).to(device)
         self._adv_noise = adv_noise
 
         # optimization/storing
         self._device = device
         self._optimizers = (
-            torch.optim.SGD(adv_function.parameters(), lr=lr * dt),
+            torch.optim.SGD(chain(adv_function.parameters(), [self._baseline]), lr=lr * dt),
             torch.optim.SGD(val_function.parameters(), lr=lr * dt ** 2))
         self._schedulers = (
             torch.optim.lr_scheduler.LambdaLR(self._optimizers[0], lr_decay),
@@ -90,9 +92,9 @@ class AdvantagePolicy(Policy):
                 done = arr_to_th(self._done.astype('float'), self._device)
                 discounted_next_v = \
                     (1 - done) * self._gamma ** self._dt * self._val_function(self._next_obs).squeeze() -\
-                    done * self._gamma ** self._dt * self._reward_avg.mean / (1 - self._gamma)
+                    done * self._gamma ** self._dt * self._baseline / (1 - self._gamma)
 
-            expected_v = arr_to_th((self._reward - self._reward_avg.mean), self._device) * self._dt + \
+            expected_v = (arr_to_th(self._reward, self._device) - self._baseline) * self._dt + \
                 discounted_next_v.detach()
             dv = (expected_v - v) / self._dt
             self._reward_avg.step(self._reward)
