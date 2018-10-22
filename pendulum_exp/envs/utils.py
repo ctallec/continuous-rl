@@ -157,12 +157,13 @@ class CloudpickleWrapper: # pylint: disable=R0903
         import pickle
         self.x = pickle.loads(ob)
 
+class WrapPendulum(ActionWrapper):
+    """ Wrap pendulum. """
+    def action(self, action):
+        return 4 * np.array(action)[np.newaxis] - 2
+
 def wrap_pendulum(env):
     """ Wrap pendulum env. """
-    class WrapPendulum(ActionWrapper):
-        """ Wrap pendulum. """
-        def action(self, action):
-            return 4 * np.array(action)[np.newaxis] - 2
     return WrapPendulum(env)
 
 def make_env(env_id, dt):
