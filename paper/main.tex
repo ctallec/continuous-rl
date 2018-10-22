@@ -35,14 +35,22 @@ Assume a stochastic continuous environment of the form
 	r(s_t, a_t) &= \tilde{r}(s_t, a_t) \deltat
 \end{align}
 with $F$ a deterministic drift, and $C$ a noise covariance matrix
-associated to each $(s, a)$ pair. Our aim is to find, a policy $\pi$, that is a
+associated to each $(s, a)$ pair. For a discretization $\deltat$, we use the notation $t = k \delta t$. An action is performed every $\deltat$ time step.
+Our aim is to find, a policy $\pi$, that is a
 (potentially stochastic) mapping from states to actions that maximizes the
 average return, i.e.\ the expected average of rewards
 \begin{align}
-	R^\pi &= \lim\limits_{T\to+\infty}
-	\frac{1}{T}
-	\E_{s_0, a_0, \ldots, s_T, a_T\sim\pi}\left[
-		\sum\limits_{t = 0}^T \tilde{r}(s_t, a_t)\deltat
+	R^\pi &= \lim\limits_{K\to+\infty}
+	\E_{s_0, a_0, \ldots, s_{\lfloor T/\deltat\rfloor\deltat}, a_{\lfloor T/\deltat\rfloor\deltat\sim\pi}}\left[
+		\frac{1}{K} \sum\limits_{k = 0}^K \tilde{r}(s_{k\deltat}, a_{k\deltat})
+                \right] \\
+              &= \lim\limits_{T\to+\infty}
+	\E_{s_0, a_0, \ldots, s_{\lfloor T/\deltat\rfloor\deltat}, a_{\lfloor T/\deltat\rfloor\deltat\sim\pi}}\left[
+		\frac{1}{T}\sum\limits_{k = 0}^{\lfloor T/\deltat\rfloor} \tilde{r}(s_{k\deltat}, a_{k\deltat})\deltat
+                \right]\\
+              &= \lim\limits_{T\to+\infty}	
+	\E_{s_0, a_0, \ldots, s_{\lfloor T/\deltat\rfloor\deltat}, a_{\lfloor T/\deltat\rfloor\deltat\sim\pi}}\left[
+		\frac{1}{T}\int\limits_{t = 0}^{T} \tilde{r}(s_{\lfloor t/\deltat\rfloor\deltat}, a_{\lfloor t/\deltat\rfloor\deltat})dt
 	\right]
 \end{align}
 or the discounted sum of future rewards for a physical discount factor of $\gamma$\footnote{
@@ -54,10 +62,15 @@ or the discounted sum of future rewards for a physical discount factor of $\gamm
 	\end{equation}
 }
 \begin{align}
-	R^\pi_\gamma &= \E_{s_0, a_0, \ldots, s_T, a_T \sim \pi}
+	R^\pi_\gamma &= \E_{s_0, a_0, \ldots, s_K, aK \sim \pi}
 	\left[
-		\sum\limits_{t=0}^{+\infty}
-		(\gamma^\deltat)^t \tilde{r}(s_t, a_t)\deltat 
+		\sum\limits_{k=0}^{+\infty}
+		(\gamma^\deltat)^k \tilde{r}(s_k, a_k)\deltat 
+                       \right].\\
+                     &= \E_{s_0, a_0, \ldots, s_K, aK \sim \pi}
+	\left[
+		\int\limits_{t=0}^{+\infty}
+		\gamma^{\lfloor t/\deltat\rfloor \deltat} \tilde{r}(s_{\lfloor t/\deltat\rfloor\deltat}, a_{\lfloor t/\deltat \rfloor\deltat})dt 
 	\right].
 \end{align}
 We have the following desiderata for our algorithms:
@@ -86,15 +99,27 @@ optimal counterparts are defined as usual, e.g.
 \begin{align}
 	V^\pi(s) &= \E_{a_0, s_1, \ldots \sim \pi}
 	\left[
-		\sum\limits_{t=0}^{+\infty}
-		(\gamma^\deltat)^t \tilde{r}(s_t, a_t) \deltat
-		\mid s=s_0
-	\right]\\
-	Q^\pi(s, a) &= \E_{a_1, s_1\ldots \sim \pi}
+		\sum\limits_{k=0}^{+\infty}
+		(\gamma^{\deltat})^k \tilde{r}(s_{k\deltat}, a_{k\deltat}) \deltat
+		\mid s_0 = s 
+                   \right]\\
+                 &= \E_{a_0, s_1, \ldots \sim \pi}
 	\left[
-		\sum\limits_{t=0}^{+\infty}
-		(\gamma^\deltat)^t \tilde{r}(s_t, a_t) \deltat
-		\mid s_0=s, a_0=a
+		\int\limits_{t=0}^{+\infty}
+		\gamma^{\lfloor t / \deltat \rfloor \deltat} \tilde{r}(s_{\lfloor t / \deltat \rfloor \deltat}, a_{\lfloor t / \deltat \rfloor \deltat}) dt
+		\mid s_0 = s 
+	\right]\\
+	Q^\pi(s, a) &= \E_{a_0, s_1, \ldots \sim \pi}
+	\left[
+		\sum\limits_{k=0}^{+\infty}
+		(\gamma^{\deltat})^k \tilde{r}(s_{k\deltat}, a_{k\deltat}) \deltat
+		\mid s_0 = s, a_0 = a
+                   \right]\\
+                 &= \E_{a_0, s_1, \ldots \sim \pi}
+	\left[
+		\int\limits_{t=0}^{+\infty}
+		\gamma^{\lfloor t / \deltat \rfloor \deltat} \tilde{r}(s_{\lfloor t / \deltat \rfloor \deltat}, a_{\lfloor t / \deltat \rfloor \deltat}) dt
+		\mid s_0 = s , a_0 = a
 	\right]\\
 	A^\pi(s,a ) &= Q^\pi(s, a) - V^\pi(s)
 \end{align}
@@ -132,7 +157,7 @@ $Q^\pi$,
 	V^\pi(s_{t+\deltat})\nonumber\\
 	&= \tilde{r}(s, a)\deltat + \gamma^\deltat V^\pi(s) + \gamma^\deltat \partial_s V(s) F(s, a) \deltat
 	+ \frac{\gamma^\deltat}{2} \text{tr}\left(C(s, a)\partial^2_{s} V(s)\right) \deltat\nonumber\\
-	&\to_{\deltat \to 0} V^\pi(s).
+	&= V^\pi(s) + O_{\deltat \to 0}(\deltat).
 \end{align}
 
 Consequently Q-learning is extremely sensitive both to noise and to approximation errors.
@@ -142,7 +167,7 @@ Typically, when learning the state-action value function only from monte-carlo t
 an optimistic number of timesteps required to learn an estimate with precision $\bigO{\deltat}$ is
 $\bigO{\frac{1}{\deltat^3}}$.\footnote{
 	Monte-carlo estimates of the Q function have typical variance of order
-	$\frac{1}{\deltat\sqrt{2(1 - \gamma)}}$. To obtain an estimate with precision $1$ of the mean
+	$\frac{1}{\deltat\sqrt{2(1 - \gamma)}}$\TODO{Pourquoi?}. To obtain an estimate with precision $1$ of the mean
 	of a quantity with variance $\sigma^2$ by averaging independant samples, you
 	require at least $\sigma^2$ samples.}
 This notably means that when $\deltat \to 0$, you would require an infinite number of samples
@@ -201,6 +226,16 @@ Advantage updating, as introduced in~\TODO{ref} relies on the fact that the adva
 function and value function are the only functions that verify
 \begin{gather}
 	A^*(s, a) = \max\limits_{a'} A^*(s, a') + 
+		\tilde{r}(s, a)\deltat
+		 + 
+		\gamma^\deltat \E_{s'\mid a}\left[
+			V^*(s')
+		\right] - V^*(s) \\
+	\max\limits_{a} A^*(s, a) = 0.
+      \end{gather}
+Since we know that \TODO{REF EQ} the advantage is of order $O(\deltat)$, we define $\tilde{A} = A/\deltat$, and we have the following
+      \begin{gather}
+	\tilde{A}^*(s, a) = \max\limits_{a'} \tilde{A}^*(s, a') + 
 		\tilde{r}(s, a)
 		 + 
 		\frac{\gamma^\deltat \E_{s'\mid a}\left[
@@ -209,13 +244,13 @@ function and value function are the only functions that verify
 		}{
 		\deltat
 	}\\
-	\max\limits_{a} A^*(s, a) = 0.
+	\max\limits_{a} \tilde{A}^*(s, a) = 0.
 \end{gather}
-These equations can be used to learn approximations of both $A^*$ and $V^*$,
-$A_\theta$ and $V_\phi$. To that end, define the following residuals
+These equations can be used to learn approximations of both $\tilde{A}^*$ and $V^*$,
+$\tilde{A}_\theta$ and $V_\phi$. To that end, define the following residuals
 \begin{gather}
-	\delta^A_{\theta, \phi}(s, a) = A_\theta(s, a) -
-	\max\limits_{a'} A_\theta(s, a') + 
+	\delta^A_{\theta, \phi}(s, a) = \tilde{A}_\theta(s, a) -
+	\max\limits_{a'} \tilde{A}_\theta(s, a') + 
 	\tilde{r}(s, a)
 	+ 
 	\frac{\gamma^\deltat \E_{s'\mid a}\left[
@@ -224,7 +259,7 @@ $A_\theta$ and $V_\phi$. To that end, define the following residuals
 		}{
 		\deltat
 	}\\
-	\delta^\text{norm}_\theta(s, a) = \max\limits_{a} A_\theta(s, a).
+	\delta^\text{norm}_\theta(s, a) = \max\limits_{a} \tilde{A}_\theta(s, a).
 \end{gather}
 The mean squared residuals
 \begin{align}
@@ -240,8 +275,8 @@ the approximate \Tdo trick can be used, yielding gradient estimates of the form
 \begin{equation}
 	g^\phi_{\delta^A_{\theta, \phi}} =
 	\frac{1}{\deltat}
-	\partial_\phi V_\phi(s) \left(A_\theta(s, a) -
-		\max\limits_{a'} A_\theta(s, a') + 
+	\partial_\phi V_\phi(s) \left(\tilde{A}_\theta(s, a) -
+		\max\limits_{a'} \tilde{A}_\theta(s, a') + 
 		\tilde{r}(s, a)
 		+ 
 		\frac{\gamma^\deltat 
@@ -260,7 +295,7 @@ action selection process.
 To centralize rewards, we introduce a constant baseline $b$ the learning process.
 Consider the following set of equations on $A^*$, $V^*$ and $b$
 \begin{gather}
-	A^*(s, a) = \max\limits_{a'} A^*(s, a') + 
+	\tilde{A}^*(s, a) = \max\limits_{a'} \tilde{A}^*(s, a') + 
 		(\tilde{r}(s, a) - b)
 		 + 
 		\frac{\gamma^\deltat \E_{s'\mid a}\left[
@@ -269,7 +304,7 @@ Consider the following set of equations on $A^*$, $V^*$ and $b$
 		}{
 		\deltat
 	}\\
-	\max\limits_{a} A^*(s, a) = 0\\
+	\max\limits_{a} \tilde{A}^*(s, a) = 0\\
 	\E_{s\sim \rho^\pi}\left[V^*(s)\right] = 0
 	.
 \end{gather}
