@@ -1,7 +1,13 @@
 \documentclass[11pt]{article}
 
-\usepackage{amsmath,amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
 \usepackage{xcolor}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
 
 \newcommand{\deltat}{{\delta t}}
 \newcommand{\gauss}{\mathcal{N}}
@@ -126,7 +132,7 @@ $Q^\pi$,
 	V^\pi(s_{t+\deltat})\nonumber\\
 	&= \tilde{r}(s, a)\deltat + \gamma^\deltat V^\pi(s) + \gamma^\deltat \partial_s V(s) F(s, a) \deltat
 	+ \frac{\gamma^\deltat}{2} \text{tr}\left(C(s, a)\partial^2_{s} V(s)\right) \deltat\nonumber\\
-	&\to\limits_{\deltat \to 0} V^\pi(s).
+	&\to_{\deltat \to 0} V^\pi(s).
 \end{align}
 
 Consequently Q-learning is extremely sensitive both to noise and to approximation errors.
