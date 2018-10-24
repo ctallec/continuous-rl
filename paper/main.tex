@@ -28,6 +28,17 @@
 	first deep reinforcement learning that scales when faced with
 	diminishing discretization steps.
 \end{abstract}
+\TODO{
+	\begin{itemize}
+		\item Write paragraph on advantage updating and notably why the equation on
+			$max_a A^*(s, a)$ is only a numerical trick not necessary to properly learn
+			$A^*$.
+		\item $Q$ est difficile à estimer à $\deltat$. $A$ est difficile à estimer en utilisant $Q$ et $V$. Mieux de le faire directement.
+		\item Pour que l'apprentissage en $(V(s') - V(s)) / \deltat$, pas hurler les gens, il faut bien expliquer que c'est d'ordre $\frac{1}{\sqrt{\deltat}}$, qui est "annulable" en $\frac{1}{\deltat}$ samples.
+		\item \'Ecrire algo vite.
+		\item Test algo avec 19 remplacé par sampling de 10 actions et prise de max.
+	\end{itemize}
+}
 \paragraph{Problem at hand}
 Assume a stochastic continuous environment of the form
 \begin{align}
