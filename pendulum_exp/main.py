@@ -5,13 +5,12 @@ import argparse
 import numpy as np
 import torch
 
-from abstract import Policy, Env, Arrayable, Noise
-from policy import AdvantagePolicy
+from abstract import Policy, Env, Arrayable
+from config import NoiseConfig, ActionNoiseConfig, ParameterNoiseConfig
+from policies import setup_policy
 from interact import interact
 from envs.vecenv import SubprocVecEnv
 from envs.utils import make_env
-from models import MLP
-from noise import ParameterNoise, ActionNoise
 from evaluation import specific_evaluation
 from utils import compute_return
 
@@ -93,27 +92,21 @@ def main(
     def noise_decay(_):
         return 1
 
-    # setting up models
-    val_function = MLP(nb_inputs=nb_inputs, nb_outputs=1,
-                       nb_layers=nb_layers, hidden_size=hidden_size).to(device)
-    adv_function = MLP(nb_inputs=nb_inputs, nb_outputs=nb_actions,
-                       nb_layers=nb_layers, hidden_size=hidden_size).to(device)
     if noise_type == 'parameter':
-        adv_noise: Noise = \
-            ParameterNoise(adv_function, theta, sigma, dt, noise_decay)
-        adv_noise_eval: Noise = \
-            ParameterNoise(adv_function, theta, sigma_eval, dt, noise_decay)
+        noise_config: NoiseConfig = ParameterNoiseConfig(
+            sigma, theta, dt, noise_decay)
+        eval_noise_config: NoiseConfig = ParameterNoiseConfig(
+            sigma_eval, theta, dt, noise_decay)
     else:
-        adv_noise = ActionNoise((batch_size, nb_actions), theta, sigma, dt, noise_decay)
-        adv_noise_eval = ActionNoise((1, nb_actions), theta, sigma_eval, dt, noise_decay)
+        noise_config = ActionNoiseConfig(
+            sigma, theta, dt, noise_decay)
+        eval_noise_config = ActionNoiseConfig(
+            sigma_eval, theta, dt, noise_decay)
 
-    policy = AdvantagePolicy(
-        adv_function=adv_function, val_function=val_function, adv_noise=adv_noise,
-        gamma=gamma, avg_alpha=avg_alpha, dt=dt, lr=lr, lr_decay=lr_decay, device=device)
-    eval_policy = AdvantagePolicy(
-        adv_function=adv_function, val_function=val_function, adv_noise=adv_noise_eval,
-        gamma=gamma, avg_alpha=avg_alpha, dt=dt, lr=lr, lr_decay=lr_decay, device=device)
-
+    policy, eval_policy = \
+        setup_policy(env.observation_space, env.action_space, gamma, lr, dt,
+                     lr_decay, nb_layers, batch_size, hidden_size, noise_config,
+                     eval_noise_config, device)
 
     for e in range(nb_epochs):
         print(f"Epoch {e}...")

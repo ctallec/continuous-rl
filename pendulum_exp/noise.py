@@ -17,11 +17,11 @@ def setup_noise(
     if isinstance(noise_config, ParameterNoiseConfig):
         assert kwargs['network'] is not None
         keywords_args['network'] = kwargs['network']
-        return ParameterNoise(**keywords_args)
+        return ParameterNoise(**keywords_args) # type: ignore
     if isinstance(noise_config, ActionNoiseConfig):
         assert kwargs['action_shape'] is not None
         keywords_args['action_shape'] = kwargs['action_shape']
-        return ActionNoise(**keywords_args)
+        return ActionNoise(**keywords_args) # type: ignore
 
 class ParameterNoise(Noise):
     """ Ornstein Ulhenbeck parameter noise. """

@@ -76,6 +76,16 @@ class Env(ABC):
     def close(self):
         pass
 
+    @abstractmethod
+    @property
+    def observation_space(self):
+        pass
+
+    @abstractmethod
+    @property
+    def action_space(self):
+        pass
+
 
 Env.register(SubprocVecEnv)
 

@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 import gym
 from gym import ActionWrapper
+from gym.spaces import Discrete, Box
 import numpy as np
 from envs.pusher import PusherEnv
 
@@ -159,12 +160,19 @@ class CloudpickleWrapper: # pylint: disable=R0903
 
 class WrapPendulum(ActionWrapper):
     """ Wrap pendulum. """
+    def action_space(self):
+        return Discrete(2)
+
     def action(self, action):
         return 4 * np.array(action)[np.newaxis] - 2
 
-def wrap_pendulum(env):
-    """ Wrap pendulum env. """
-    return WrapPendulum(env)
+class WrapContinuousPendulum(ActionWrapper):
+    """ Wrap Continuous Pendulum. """
+    def action_space(self):
+        return Box(low=-1, high=1, shape=(1,))
+
+    def action(self, action):
+        return 2 * action
 
 def make_env(env_id, dt):
     """ Make env. """
@@ -172,11 +180,15 @@ def make_env(env_id, dt):
     if env_id == 'pendulum':
         env = gym.make('Pendulum-v0').unwrapped
         env.dt = dt
-        return wrap_pendulum(env)
+        return WrapPendulum(env)
     if env_id == 'cartpole':
         env = gym.make('CartPole-v1').unwrapped
         env.tau = dt
         return env
+    if env_id == 'continuous_pendulum':
+        env = gym.make('Pendulum-v0').unwrapped
+        env.dt = dt
+        return WrapContinuousPendulum(env)
     env = PusherEnv()
     env.dt = dt
     return env

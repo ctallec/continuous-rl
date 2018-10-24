@@ -1,9 +1,6 @@
 """Define some configuration facitilies."""
-from abc import ABCMeta
-from typing import NamedTuple, Callable
+from typing import NamedTuple, Callable, Union
 
-class NoiseConfig:
-    __metaclass__ = ABCMeta
 
 class ParameterNoiseConfig(NamedTuple):
     sigma: float
@@ -18,5 +15,4 @@ class ActionNoiseConfig(NamedTuple):
     sigma_decay: Callable[[int], float]
 
 
-NoiseConfig.register(ParameterNoiseConfig) # type: ignore
-NoiseConfig.register(ActionNoiseConfig) # type: ignore
+NoiseConfig = Union[ParameterNoiseConfig, ActionNoiseConfig]
