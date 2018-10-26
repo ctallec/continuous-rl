@@ -23,7 +23,7 @@ class MLP(nn.Module, ParametricFunction):
 class ContinuousPolicyMLP(MLP, ParametricFunction):
     """MLP with a Tanh on top..."""
     def forward(self, *inputs: Tensorable):
-        return f.tanh(super().forward(inputs))
+        return f.tanh(super().forward(*inputs))
 
 class ContinuousAdvantageMLP(MLP, ParametricFunction):
     """MLP with 2 inputs, 1 output."""
@@ -34,7 +34,7 @@ class ContinuousAdvantageMLP(MLP, ParametricFunction):
 
     def forward(self, *inputs: Tensorable):
         device = next(self.parameters())
-        return super().forward(torch.concat(
+        return super().forward(torch.cat(
             [
                 check_tensor(inputs[0], device),
                 check_tensor(inputs[1], device)],

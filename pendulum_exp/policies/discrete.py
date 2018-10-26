@@ -12,11 +12,13 @@ class AdvantagePolicy(Policy):
                  adv_function: ParametricFunction,
                  val_function: ParametricFunction,
                  adv_noise: Noise,
+                 alpha: float,
                  gamma: float,
                  dt: float,
                  lr: float,
                  lr_decay: Callable[[int], float],
                  device) -> None:
+        self._alpha = alpha
         self._adv_function = adv_function.to(device)
         self._val_function = val_function.to(device)
         self._baseline = torch.nn.Parameter(torch.Tensor([0.])).to(device)
@@ -25,8 +27,8 @@ class AdvantagePolicy(Policy):
         # optimization/storing
         self._device = device
         self._optimizers = (
-            torch.optim.SGD(chain(adv_function.parameters(), [self._baseline]), lr=lr * dt),
-            torch.optim.SGD(val_function.parameters(), lr=lr * dt ** 2))
+            torch.optim.SGD(chain(self._adv_function.parameters(), [self._baseline]), lr=lr * dt),
+            torch.optim.SGD(self._val_function.parameters(), lr=lr * dt ** 2))
         self._schedulers = (
             torch.optim.lr_scheduler.LambdaLR(self._optimizers[0], lr_decay),
             torch.optim.lr_scheduler.LambdaLR(self._optimizers[1], lr_decay))
@@ -98,7 +100,7 @@ class AdvantagePolicy(Policy):
 
             adv_update_loss = (a_update ** 2).mean()
             adv_norm_loss = (max_adv ** 2).mean()
-            mean_loss = penalize_mean(v)
+            mean_loss = self._alpha * penalize_mean(v)
             loss = adv_update_loss + adv_norm_loss
 
             self._optimizers[0].zero_grad()

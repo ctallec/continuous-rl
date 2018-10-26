@@ -11,6 +11,7 @@ from config import NoiseConfig
 
 def setup_policy(observation_space: Space,
                  action_space: Space,
+                 alpha: float,
                  gamma: float,
                  lr: float,
                  dt: float,
@@ -34,10 +35,10 @@ def setup_policy(observation_space: Space,
                                  action_shape=(batch_size, action_space.n))
         policy = AdvantagePolicy(
             adv_function=adv_function, val_function=val_function, adv_noise=noise,
-            gamma=gamma, dt=dt, lr=lr, lr_decay=lr_decay, device=device)
+            alpha=alpha, gamma=gamma, dt=dt, lr=lr, lr_decay=lr_decay, device=device)
         eval_policy = AdvantagePolicy(
             adv_function=adv_function, val_function=val_function, adv_noise=eval_noise,
-            gamma=gamma, dt=dt, lr=lr, lr_decay=lr_decay, device=device)
+            alpha=alpha, gamma=gamma, dt=dt, lr=lr, lr_decay=lr_decay, device=device)
 
     elif isinstance(action_space, Box):
         nb_actions = action_space.shape[-1]
@@ -48,15 +49,15 @@ def setup_policy(observation_space: Space,
             nb_inputs=nb_state_feats, nb_outputs=nb_actions,
             nb_layers=nb_layers, hidden_size=hidden_size).to(device)
         noise = setup_noise(noise_config, network=policy_function,
-                            action_shape=(batch_size, action_space.n))
+                            action_shape=(batch_size, action_space.shape[0]))
         eval_noise = setup_noise(eval_noise_config, network=policy_function,
-                                 action_shape=(batch_size, action_space.n))
+                                 action_shape=(batch_size, action_space.shape[0]))
         policy = ContinuousAdvantagePolicy(
             adv_function=adv_function, val_function=val_function, policy_function=policy_function,
-            policy_noise=noise, gamma=gamma, dt=dt, lr=lr, lr_decay=lr_decay, device=device)
+            policy_noise=noise, alpha=alpha, gamma=gamma, dt=dt, lr=lr, lr_decay=lr_decay, device=device)
         eval_policy = ContinuousAdvantagePolicy(
             adv_function=adv_function, val_function=val_function, policy_function=policy_function,
-            policy_noise=eval_noise, gamma=gamma, dt=dt, lr=lr, lr_decay=lr_decay, device=device)
+            policy_noise=eval_noise, alpha=alpha, gamma=gamma, dt=dt, lr=lr, lr_decay=lr_decay, device=device)
     return policy, eval_policy
 
 

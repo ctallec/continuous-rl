@@ -2,22 +2,20 @@
 Implement simple pusher environment.
 """
 import gym
-from gym import spaces
+from gym.spaces import Discrete, Box
 from gym.utils import seeding
 import numpy as np
+from abstract import Env
 
-class PusherEnv(gym.Env): # pylint: disable=too-many-instance-attributes
-    """
-    Pusher environment.
-    """
+class AbstractPusher(gym.Env, Env):
+    """ Abstract pusher class """
     metadata = {
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second': 50
     }
 
     def __init__(self):
-        self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Box(low=-9999, high=9999, shape=(1,), dtype=np.float32)
+        self.observation_space = Box(low=-9999, high=9999, shape=(1,), dtype=np.float32)
         self._x = None
         self.dt = .1
 
@@ -27,16 +25,23 @@ class PusherEnv(gym.Env): # pylint: disable=too-many-instance-attributes
         self.pusher = None
         self.pushertrans = None
 
+    @property
+    def action_space(self):
+        raise NotImplementedError()
+
+    def action(self, action):
+        raise NotImplementedError()
+
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
     def step(self, action):
-        assert self.action_space.contains(action), "%r (%s) invalid"%(action, type(action))
+        assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
 
-        action = action - 1
+        action = self.action(action)
         self._x -= action * self.dt
-        return self._x, - self._x[0] ** 2, False, None
+        return self._x, np.exp(- self._x[0] ** 2), False, None
 
     def reset(self):
         # without this, all thread have the same seed
@@ -76,10 +81,31 @@ class PusherEnv(gym.Env): # pylint: disable=too-many-instance-attributes
         if self.viewer:
             self.viewer.close()
 
+class DiscretePusherEnv(AbstractPusher): # pylint: disable=too-many-instance-attributes
+    """Discrete pusher environment."""
+    @property
+    def action_space(self):
+        return Discrete(3)
+
+    def action(self, action):
+        return action - 1
+
+class ContinuousPusherEnv(AbstractPusher):
+    """Continuous pusher environment."""
+    @property
+    def action_space(self):
+        return Box(low=-1, high=1, shape=(1,), dtype=np.float32)
+
+    def action(self, action):
+        return action
+
+
+
 if __name__ == '__main__':
     from pyglet.window import key
 
     a = [1]
+
     def key_press(k, _):
         """ What happens when a key is pressed """
         if k == key.LEFT:
@@ -94,7 +120,7 @@ if __name__ == '__main__':
         if k == key.RIGHT:
             a[0] = 1
 
-    env = PusherEnv()
+    env = DiscretePusherEnv()
     env.render()
 
     env.viewer.window.on_key_press = key_press

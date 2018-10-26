@@ -3,7 +3,6 @@ from typing import Union, Callable
 from abc import ABC, abstractmethod
 import numpy as np
 import torch
-from envs.vecenv import SubprocVecEnv
 
 Arrayable = Union[list, float, np.ndarray]
 Tensorable = Union[Arrayable, torch.Tensor]
@@ -76,18 +75,15 @@ class Env(ABC):
     def close(self):
         pass
 
-    @abstractmethod
     @property
+    @abstractmethod
     def observation_space(self):
         pass
 
-    @abstractmethod
     @property
+    @abstractmethod
     def action_space(self):
         pass
-
-
-Env.register(SubprocVecEnv)
 
 class Noise(ABC):
     @abstractmethod

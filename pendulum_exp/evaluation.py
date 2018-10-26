@@ -2,10 +2,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from abstract import Policy, Env
-from policy import AdvantagePolicy
+from policies import AdvantagePolicy, ContinuousAdvantagePolicy
 from envs.vecenv import SubprocVecEnv
-from envs.pusher import PusherEnv
-from envs.utils import WrapPendulum
+from envs.pusher import AbstractPusher, ContinuousPusherEnv
+from envs.utils import WrapPendulum, WrapContinuousPendulum
 
 def specific_evaluation(
         epoch: int,
@@ -13,20 +13,33 @@ def specific_evaluation(
         dt: float,
         env: Env,
         policy: Policy):
-    assert isinstance(policy, AdvantagePolicy), f"Incorrect policy type: {type(policy)}, "\
+    assert isinstance(policy, (AdvantagePolicy, ContinuousAdvantagePolicy)), f"Incorrect policy type: {type(policy)}, "\
         "AdvantagePolicy expected."
     assert isinstance(env, SubprocVecEnv), f"Incorrect environment type: {type(env)}, "\
         "SubprocVecEnv expected."
 
-    if isinstance(env.envs[0], PusherEnv):
+    if isinstance(env.envs[0], AbstractPusher):
         nb_pixels = 50
         state_space = np.linspace(-1.5, 1.5, nb_pixels)[:, np.newaxis]
 
         vs = policy.value(state_space)
+        actions = policy.step(state_space).squeeze()
         plt.clf()
+        plt.subplot(131)
         plt.plot(state_space, vs)
+        plt.subplot(132)
+        plt.plot(state_space, actions)
+        if isinstance(env.envs[0], ContinuousPusherEnv):
+            assert isinstance(policy, ContinuousAdvantagePolicy)
+            action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
+            states, actions = np.meshgrid(state_space, action_space)
+            states = states[..., np.newaxis]
+            actions = actions[..., np.newaxis]
+            adv = policy.advantage(states, actions).squeeze()
+            plt.subplot(133)
+            plt.imshow(adv)
         plt.pause(.1)
-    elif isinstance(env.envs[0], WrapPendulum):
+    elif isinstance(env.envs[0], (WrapPendulum, WrapContinuousPendulum)):
         nb_pixels = 50
         theta_space = np.linspace(-np.pi, np.pi, nb_pixels)
         dtheta_space = np.linspace(-10, 10, nb_pixels)
@@ -34,7 +47,7 @@ def specific_evaluation(
         state_space = np.stack([np.cos(theta), np.sin(theta), dtheta], axis=-1)
 
         vs = policy.value(state_space).squeeze()
-        actions = policy.step(state_space)
+        actions = policy.step(state_space).squeeze()
         plt.clf()
         plt.subplot(121)
         plt.imshow(actions, origin='lower')

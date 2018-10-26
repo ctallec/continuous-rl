@@ -4,7 +4,7 @@ import gym
 from gym import ActionWrapper
 from gym.spaces import Discrete, Box
 import numpy as np
-from envs.pusher import PusherEnv
+from envs.pusher import DiscretePusherEnv, ContinuousPusherEnv
 
 def tile_images(img_nhwc):
     """
@@ -160,19 +160,29 @@ class CloudpickleWrapper: # pylint: disable=R0903
 
 class WrapPendulum(ActionWrapper):
     """ Wrap pendulum. """
+    @property
     def action_space(self):
         return Discrete(2)
+
+    @action_space.setter
+    def action_space(self, value):
+        self.env.action_space = value
 
     def action(self, action):
         return 4 * np.array(action)[np.newaxis] - 2
 
 class WrapContinuousPendulum(ActionWrapper):
     """ Wrap Continuous Pendulum. """
+    @property
     def action_space(self):
         return Box(low=-1, high=1, shape=(1,))
 
+    @action_space.setter
+    def action_space(self, value):
+        self.env.action_space = value
+
     def action(self, action):
-        return 2 * action
+        return np.clip(2 * action, -2, 2)
 
 def make_env(env_id, dt):
     """ Make env. """
@@ -189,6 +199,11 @@ def make_env(env_id, dt):
         env = gym.make('Pendulum-v0').unwrapped
         env.dt = dt
         return WrapContinuousPendulum(env)
-    env = PusherEnv()
+    if env_id == 'continuous_pusher':
+        env = ContinuousPusherEnv()
+        env.dt = dt
+        return env
+
+    env = DiscretePusherEnv()
     env.dt = dt
     return env

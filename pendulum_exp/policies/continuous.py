@@ -13,11 +13,13 @@ class AdvantagePolicy(Policy):
                  val_function: ParametricFunction,
                  policy_function: ParametricFunction,
                  policy_noise: Noise,
+                 alpha: float,
                  gamma: float,
                  dt: float,
                  lr: float,
                  lr_decay: Callable[[int], float],
                  device) -> None:
+        self._alpha = alpha
         self._adv_function = adv_function.to(device)
         self._val_function = val_function.to(device)
         self._baseline = torch.nn.Parameter(torch.Tensor([0.])).to(device)
@@ -28,9 +30,9 @@ class AdvantagePolicy(Policy):
         self._device = device
         # TODO: I think we could optimize by gathering policy and advantage parameters
         self._optimizers = (
-            torch.optim.SGD(chain(adv_function.parameters(), [self._baseline]), lr=lr * dt),
-            torch.optim.SGD(policy_function.parameters(), lr=lr * dt),
-            torch.optim.SGD(val_function.parameters(), lr=lr * dt ** 2))
+            torch.optim.SGD(chain(self._adv_function.parameters(), [self._baseline]), lr=lr * dt),
+            torch.optim.SGD(self._val_function.parameters(), lr=lr * dt ** 2),
+            torch.optim.SGD(self._policy_function.parameters(), lr=lr * dt))
         self._schedulers = (
             torch.optim.lr_scheduler.LambdaLR(self._optimizers[0], lr_decay),
             torch.optim.lr_scheduler.LambdaLR(self._optimizers[1], lr_decay),
@@ -80,10 +82,9 @@ class AdvantagePolicy(Policy):
 
     def learn(self):
         if self._obs.shape == self._next_obs.shape:
-            # for now, discrete actions
             v = self._val_function(self._obs).squeeze()
-            adv_a = self._adv_function(self._obs, self._action)
-            max_adv = self._adv_function(self._obs, self._policy_function(self._obs))
+            adv_a = self._adv_function(self._obs, self._action).squeeze()
+            max_adv = self._adv_function(self._obs, self._policy_function(self._obs)).squeeze()
 
             if self._gamma == 1:
                 assert (1 - self._done).all(), "Gamma set to 1. with a potentially episodic problem..."
@@ -94,28 +95,30 @@ class AdvantagePolicy(Policy):
                     (1 - done) * self._gamma ** self._dt * self._val_function(self._next_obs).squeeze() -\
                     done * self._gamma ** self._dt * self._baseline / (1 - self._gamma)
 
-            expected_v = arr_to_th((self._reward - self._baseline), self._device) * self._dt + \
+            expected_v = (arr_to_th(self._reward, self._device) - self._baseline) * self._dt + \
                 discounted_next_v.detach()
             dv = (expected_v - v) / self._dt
             a_update = dv - adv_a + max_adv
 
             adv_update_loss = (a_update ** 2).mean()
             adv_norm_loss = (max_adv ** 2).mean()
-            mean_loss = penalize_mean(v)
+            mean_loss = self._alpha * penalize_mean(v)
             loss = adv_update_loss + adv_norm_loss
-            policy_loss = - max_adv.mean()
 
             self._optimizers[0].zero_grad()
             self._optimizers[1].zero_grad()
-            self._optimizers[2].zero_grad()
-            (mean_loss / self._dt + loss).backward()
-            policy_loss.backward()
+            (mean_loss / self._dt + loss).backward(retain_graph=True)
             self._optimizers[0].step()
             self._schedulers[0].step()
             self._optimizers[1].step()
             self._schedulers[1].step()
+
+            policy_loss = - max_adv.mean()
+            self._optimizers[2].zero_grad()
+            policy_loss.backward()
             self._optimizers[2].step()
             self._schedulers[2].step()
+
 
             # logging
             self._cum_loss += loss.item()
@@ -141,8 +144,8 @@ class AdvantagePolicy(Policy):
     def value(self, obs: Arrayable):
         return th_to_arr(self._val_function(obs))
 
-    def advantage(self, obs: Arrayable):
-        return th_to_arr(self._adv_function(obs))
+    def advantage(self, obs: Arrayable, action: Arrayable):
+        return th_to_arr(self._adv_function(obs, action))
 
     def reset(self):
         # internals

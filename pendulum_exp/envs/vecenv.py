@@ -3,6 +3,7 @@ from multiprocessing import Pipe, Process
 from envs.utils import CloudpickleWrapper, VecEnv
 from envs.utils import tile_images
 import numpy as np
+from abstract import Env
 
 def worker(remote, env_wrapper):
     """
@@ -113,10 +114,13 @@ class SubprocVecEnv(VecEnv):
         else:
             raise NotImplementedError
 
+
+Env.register(SubprocVecEnv)
+
 if __name__ == '__main__':
-    from envs.pusher import PusherEnv
+    from envs.pusher import DiscretePusherEnv
     nenvs = 64
-    envs = [PusherEnv() for _ in range(nenvs)]
+    envs = [DiscretePusherEnv() for _ in range(nenvs)]
     vec_env = SubprocVecEnv(envs)
 
     obs = vec_env.reset()

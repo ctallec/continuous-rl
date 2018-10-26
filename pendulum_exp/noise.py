@@ -10,7 +10,7 @@ from convert import th_to_arr
 def setup_noise(
         noise_config: NoiseConfig,
         **kwargs) -> Noise:
-    assert isinstance(noise_config, (ParameterNoise, ActionNoiseConfig))
+    assert isinstance(noise_config, (ParameterNoiseConfig, ActionNoiseConfig))
     keywords_args = dict(sigma=noise_config.sigma, theta=noise_config.theta,
                          dt=noise_config.dt, sigma_decay=noise_config.sigma_decay)
 

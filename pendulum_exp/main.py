@@ -69,6 +69,7 @@ def main(
         sigma_eval: float,
         theta: float,
         lr: float,
+        alpha: float,
         gamma: float,
         avg_alpha: float):
     """ Starts training. """
@@ -76,18 +77,13 @@ def main(
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # setting up envs
-    nb_inputs, nb_actions = {
-        'pendulum': (3, 2),
-        'pusher': (1, 3),
-        'cartpole': (4, 2)
-    }[env_id]
     env_fn = partial(make_env, env_id=env_id, dt=dt)
     env: Env = SubprocVecEnv([env_fn() for _ in range(batch_size)]) # type: ignore
     eval_env: Env = SubprocVecEnv([env_fn() for _ in range(nb_eval_env)]) # type: ignore
     obs = env.reset()
 
     def lr_decay(t):
-        return 1 / np.power(1 + dt * t, 1/4)
+        return 1 / np.power(1 + dt * t, 0)
 
     def noise_decay(_):
         return 1
@@ -104,7 +100,7 @@ def main(
             sigma_eval, theta, dt, noise_decay)
 
     policy, eval_policy = \
-        setup_policy(env.observation_space, env.action_space, gamma, lr, dt,
+        setup_policy(env.observation_space, env.action_space, alpha, gamma, lr, dt,
                      lr_decay, nb_layers, batch_size, hidden_size, noise_config,
                      eval_noise_config, device)
 
@@ -124,6 +120,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--hidden_size', type=int, default=64)
     parser.add_argument('--nb_layers', type=int, default=1)
+    parser.add_argument('--alpha', type=float, default=3.)
     parser.add_argument('--gamma', type=float, default=1.)
     parser.add_argument('--nb_epochs', type=int, default=50000)
     parser.add_argument('--nb_steps', type=int, default=500)
