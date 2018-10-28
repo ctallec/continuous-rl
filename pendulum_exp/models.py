@@ -1,7 +1,6 @@
 """Define pytorch models."""
 import torch
 import torch.nn as nn
-import torch.nn.functional as f
 from abstract import ParametricFunction, Tensorable
 from convert import check_tensor
 
@@ -23,7 +22,7 @@ class MLP(nn.Module, ParametricFunction):
 class ContinuousPolicyMLP(MLP, ParametricFunction):
     """MLP with a Tanh on top..."""
     def forward(self, *inputs: Tensorable):
-        return f.tanh(super().forward(*inputs))
+        return torch.tanh(super().forward(*inputs))
 
 class ContinuousAdvantageMLP(MLP, ParametricFunction):
     """MLP with 2 inputs, 1 output."""

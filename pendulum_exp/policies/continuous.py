@@ -32,7 +32,7 @@ class AdvantagePolicy(Policy):
         self._optimizers = (
             torch.optim.SGD(chain(self._adv_function.parameters(), [self._baseline]), lr=lr * dt),
             torch.optim.SGD(self._val_function.parameters(), lr=lr * dt ** 2),
-            torch.optim.SGD(self._policy_function.parameters(), lr=lr * dt))
+            torch.optim.SGD(self._policy_function.parameters(), lr=2 * lr * dt))
         self._schedulers = (
             torch.optim.lr_scheduler.LambdaLR(self._optimizers[0], lr_decay),
             torch.optim.lr_scheduler.LambdaLR(self._optimizers[1], lr_decay),
