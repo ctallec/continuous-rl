@@ -6,7 +6,7 @@ import numpy as np
 import torch
 
 from abstract import Policy, Env, Arrayable
-from config import NoiseConfig, ActionNoiseConfig, ParameterNoiseConfig
+from config import NoiseConfig, PolicyConfig, EnvConfig, read_config
 from policies import setup_policy
 from interact import interact
 from envs.vecenv import SubprocVecEnv
@@ -56,58 +56,35 @@ def evaluate(
     specific_evaluation(epoch, log, dt, env, policy)
 
 def main(
-        env_id: str,
-        dt: float,
         batch_size: int,
         hidden_size: int,
         nb_layers: int,
         nb_epochs: int,
         nb_steps: int,
         nb_eval_env: int,
-        noise_type: str,
-        sigma: float,
-        sigma_eval: float,
-        theta: float,
-        lr: float,
-        alpha: float,
-        gamma: float,
-        avg_alpha: float):
+        policy_config: PolicyConfig,
+        noise_config: NoiseConfig,
+        eval_noise_config: NoiseConfig,
+        env_config: EnvConfig):
     """ Starts training. """
     # device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # setting up envs
-    env_fn = partial(make_env, env_id=env_id, dt=dt)
+    env_fn = partial(make_env, env_config)
     env: Env = SubprocVecEnv([env_fn() for _ in range(batch_size)]) # type: ignore
     eval_env: Env = SubprocVecEnv([env_fn() for _ in range(nb_eval_env)]) # type: ignore
     obs = env.reset()
 
-    def lr_decay(t):
-        return 1 / np.power(1 + dt * t, 0)
-
-    def noise_decay(_):
-        return 1
-
-    if noise_type == 'parameter':
-        noise_config: NoiseConfig = ParameterNoiseConfig(
-            sigma, theta, dt, noise_decay)
-        eval_noise_config: NoiseConfig = ParameterNoiseConfig(
-            sigma_eval, theta, dt, noise_decay)
-    else:
-        noise_config = ActionNoiseConfig(
-            sigma, theta, dt, noise_decay)
-        eval_noise_config = ActionNoiseConfig(
-            sigma_eval, theta, dt, noise_decay)
-
     policy, eval_policy = \
-        setup_policy(env.observation_space, env.action_space, alpha, gamma, lr, dt,
-                     lr_decay, nb_layers, batch_size, hidden_size, noise_config,
+        setup_policy(env.observation_space, env.action_space, policy_config,
+                     nb_layers, batch_size, hidden_size, noise_config,
                      eval_noise_config, device)
 
     for e in range(nb_epochs):
         print(f"Epoch {e}...")
         obs = train(nb_steps, env, policy, obs)
-        evaluate(dt, e, eval_env, eval_policy)
+        evaluate(env_config.dt, e, eval_env, eval_policy)
     env.close()
     eval_env.close()
 
@@ -128,7 +105,14 @@ if __name__ == '__main__':
     parser.add_argument('--sigma', type=float, default=.3)
     parser.add_argument('--theta', type=float, default=1)
     parser.add_argument('--nb_eval_env', type=int, default=100)
-    parser.add_argument('--avg_alpha', type=float, default=1.)
+    parser.add_argument('--memory_size', type=int, default=10000)
+    parser.add_argument('--learn_per_step', type=int, default=3)
     parser.add_argument('--lr', type=float, default=.003)
     args = parser.parse_args()
-    main(**vars(args))
+    policy_config, noise_config, eval_noise_config, env_config = read_config(args)
+    main(batch_size=args.batch_size,
+         hidden_size=args.hidden_size, nb_layers=args.nb_layers,
+         nb_epochs=args.nb_epochs, nb_steps=args.nb_steps,
+         nb_eval_env=args.nb_eval_env, policy_config=policy_config,
+         noise_config=noise_config, eval_noise_config=eval_noise_config,
+         env_config=env_config)

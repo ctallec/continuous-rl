@@ -5,6 +5,7 @@ from gym import ActionWrapper
 from gym.spaces import Discrete, Box
 import numpy as np
 from envs.pusher import DiscretePusherEnv, ContinuousPusherEnv
+from config import EnvConfig
 
 def tile_images(img_nhwc):
     """
@@ -184,8 +185,10 @@ class WrapContinuousPendulum(ActionWrapper):
     def action(self, action):
         return np.clip(2 * action, -2, 2)
 
-def make_env(env_id, dt):
+def make_env(env_config: EnvConfig):
     """ Make env. """
+    dt = env_config.dt
+    env_id = env_config.id
     # pendulum
     if env_id == 'pendulum':
         env = gym.make('Pendulum-v0').unwrapped
