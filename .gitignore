@@ -7,4 +7,5 @@
 *.out
 **/*/.mypy_cache
 **/__pycache__/
+**/dock_config.json
 exp/logs*
