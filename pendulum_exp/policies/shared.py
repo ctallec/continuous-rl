@@ -5,7 +5,7 @@ from config import PolicyConfig
 from memory import MemorySampler
 
 class SharedAdvantagePolicy(Policy):
-    def __init__(self, policy_config: PolicyConfig):
+    def __init__(self, policy_config: PolicyConfig) -> None:
         self._train = True
         self.reset()
 

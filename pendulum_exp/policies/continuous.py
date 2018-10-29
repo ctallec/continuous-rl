@@ -58,15 +58,15 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
                 if self._gamma == 1:
                     assert (1 - done).all(), "Gamma set to 1. with a potentially episodic problem..."
-                    discounted_next_v = self._gamma ** self._dt * self._val_function(next_obs).squeeze()
+                    discounted_next_v = self._gamma ** self._dt * self._val_function(next_obs).squeeze().detach()
                 else:
                     done = arr_to_th(done.astype('float'), self._device)
                     discounted_next_v = \
-                        (1 - done) * self._gamma ** self._dt * self._val_function(next_obs).squeeze() -\
+                        (1 - done) * self._gamma ** self._dt * self._val_function(next_obs).squeeze().detach() -\
                         done * self._gamma ** self._dt * self._baseline / (1 - self._gamma)
 
                 expected_v = (arr_to_th(reward, self._device) - self._baseline) * self._dt + \
-                    discounted_next_v.detach()
+                    discounted_next_v
                 dv = (expected_v - v) / self._dt
                 a_update = dv - adv_a + max_adv
 

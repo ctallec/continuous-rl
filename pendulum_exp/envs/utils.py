@@ -206,6 +206,11 @@ def make_env(env_config: EnvConfig):
         env = ContinuousPusherEnv()
         env.dt = dt
         return env
+    if env_id == 'lunar_lander':
+        from gym.envs.box2d import lunar_lander
+        lunar_lander.FPS = 1. / dt
+        env = gym.make('LunarLander-v2').unwrapped
+        return env
 
     env = DiscretePusherEnv()
     env.dt = dt

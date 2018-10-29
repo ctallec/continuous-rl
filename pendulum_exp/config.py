@@ -38,11 +38,15 @@ def read_config(
         config_file: Optional[str]=None) -> Tuple[
             PolicyConfig, NoiseConfig, NoiseConfig, EnvConfig]:
     # No configuration file at the moment
+    if args.cyclic_exploration:
+        def noise_decay(t: int) -> float:
+            return np.sin(t * args.dt) ** 2
+    else:
+        def noise_decay(_: int) -> float: # type: ignore
+            return 1
+
     def lr_decay(t):
         return 1 / np.power(1 + args.dt * t, 0)
-
-    def noise_decay(_):
-        return 1
 
     policy_config = AdvantagePolicyConfig(
         alpha=args.alpha, gamma=args.gamma, dt=args.dt,

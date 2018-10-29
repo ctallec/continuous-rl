@@ -107,6 +107,7 @@ if __name__ == '__main__':
     parser.add_argument('--nb_eval_env', type=int, default=100)
     parser.add_argument('--memory_size', type=int, default=10000)
     parser.add_argument('--learn_per_step', type=int, default=3)
+    parser.add_argument('--cyclic_exploration', action='store_true')
     parser.add_argument('--lr', type=float, default=.003)
     args = parser.parse_args()
     policy_config, noise_config, eval_noise_config, env_config = read_config(args)
