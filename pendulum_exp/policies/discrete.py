@@ -17,7 +17,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         super().__init__(policy_config)
         self._adv_function = adv_function.to(device)
         self._val_function = val_function.to(device)
-        self._baseline = torch.nn.Parameter(torch.Tensor([0.])).to(device)
+        self._baseline = torch.nn.Parameter(torch.Tensor([0.]).to(device))
         self._adv_noise = adv_noise
 
         # optimization/storing

@@ -43,6 +43,9 @@ class ParameterNoise(Noise):
 
     def to(self, device):
         self._device = device
+        for i, _ in enumerate(self._p_noise):
+            self._p_noise[i] = self._p_noise[i].to(device)
+        return self
 
     def step(self):
         """ Perform one step of update of parameter noise. """
@@ -87,6 +90,7 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
 
     def to(self, device):
         self._device = device
+        return self
 
     def step(self):
         """ Perform one step of update of parameter noise. """

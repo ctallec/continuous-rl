@@ -19,7 +19,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
         self._adv_function = adv_function.to(device)
         self._val_function = val_function.to(device)
-        self._baseline = torch.nn.Parameter(torch.Tensor([0.])).to(device)
+        self._baseline = torch.nn.Parameter(torch.Tensor([0.]).to(device))
         self._policy_function = policy_function.to(device)
         self._policy_noise = policy_noise
 
