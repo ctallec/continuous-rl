@@ -105,4 +105,4 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
             inputs: Arrayable,
             function: ParametricFunction):
         with torch.no_grad():
-            return function(inputs) + self.noise
+            return th_to_arr(function(inputs) + self.noise)
