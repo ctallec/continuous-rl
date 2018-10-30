@@ -211,6 +211,10 @@ def make_env(env_config: EnvConfig):
         lunar_lander.FPS = 1. / dt
         env = gym.make('LunarLander-v2').unwrapped
         return env
+    if env_id == 'bipedal_walker':
+        from gym.envs.box2d import bipedal_walker
+        bipedal_walker.FPS = 1. / dt
+        env = gym.make('BipedalWalker-v2').unwrapped
 
     env = DiscretePusherEnv()
     env.dt = dt
