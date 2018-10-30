@@ -47,6 +47,10 @@ class ParametricFunction(ABC):
         pass
 
     @abstractmethod
+    def named_parameters(self):
+        pass
+
+    @abstractmethod
     def train(self):
         pass
 

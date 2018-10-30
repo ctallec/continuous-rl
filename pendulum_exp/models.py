@@ -1,4 +1,5 @@
 """Define pytorch models."""
+from collections import OrderedDict
 import torch
 import torch.nn as nn
 from abstract import ParametricFunction, Tensorable
@@ -9,11 +10,15 @@ class MLP(nn.Module, ParametricFunction):
     def __init__(self, nb_inputs: int, nb_outputs: int,
                  nb_layers: int, hidden_size: int) -> None:
         super().__init__()
-        modules = (
-            [nn.Linear(nb_inputs, hidden_size), nn.ReLU()] +
-            nb_layers * [nn.Linear(hidden_size, hidden_size), nn.ReLU()] +
-            [nn.Linear(hidden_size, nb_outputs)])
-        self._core = nn.Sequential(*modules)
+        modules = [('fc0', nn.Linear(nb_inputs, hidden_size)), # type: ignore
+                   ('ln0', nn.LayerNorm(hidden_size)),
+                   ('relu0', nn.ReLU())]
+        sub_core = [[(f'fc{i+1}', nn.Linear(hidden_size, hidden_size)),
+                     (f'ln{i+1}', nn.LayerNorm(hidden_size)),
+                     (f'relu{i+1}', nn.ReLU())] for i in range(nb_layers)]
+        modules += [mod for mods in sub_core for mod in mods]
+        modules += [(f'fc{nb_layers+1}', nn.Linear(hidden_size, nb_outputs))]
+        self._core = nn.Sequential(OrderedDict(modules))
 
     def forward(self, *inputs: Tensorable):
         device = next(self.parameters())

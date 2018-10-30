@@ -29,7 +29,7 @@ def setup_policy(observation_space: Space,
         noise = setup_noise(noise_config, network=adv_function,
                             action_shape=(batch_size, action_space.n)).to(device)
         eval_noise = setup_noise(eval_noise_config, network=adv_function,
-                                 action_shape=(batch_size, action_space.n)).to(device)
+                                 action_shape=(nb_eval_env, action_space.n)).to(device)
         policy = AdvantagePolicy(
             adv_function=adv_function, val_function=val_function, adv_noise=noise,
             policy_config=policy_config, device=device)

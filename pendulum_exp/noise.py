@@ -31,9 +31,9 @@ class ParameterNoise(Noise):
                  sigma: float,
                  dt: float,
                  sigma_decay: Optional[Callable[[int], float]] = None) -> None:
-        self._p_noise = [
-            sigma / np.sqrt(2 * theta) * torch.randn_like(p, requires_grad=False)
-            for p in network.parameters()]
+        self._p_noise = {
+            name: sigma / np.sqrt(2 * theta) * torch.randn_like(p, requires_grad=False)
+            for name, p in network.named_parameters() if 'ln' not in name}
         self._theta = theta
         self._sigma = sigma
         self._sigma_decay = sigma_decay
@@ -43,13 +43,13 @@ class ParameterNoise(Noise):
 
     def to(self, device):
         self._device = device
-        for i, _ in enumerate(self._p_noise):
-            self._p_noise[i] = self._p_noise[i].to(device)
+        for name in self._p_noise:
+            self._p_noise[name] = self._p_noise[name].to(device)
         return self
 
     def step(self):
         """ Perform one step of update of parameter noise. """
-        for p in self._p_noise:
+        for _, p in self._p_noise.items():
             decay = 1 if self._sigma_decay is None else self._sigma_decay(self._count)
             dBt = torch.randn_like(p, requires_grad=False) * self._sigma * \
                 decay * np.sqrt(self._dt)
@@ -64,11 +64,13 @@ class ParameterNoise(Noise):
             inputs: Arrayable,
             a_function: ParametricFunction):
         with torch.no_grad():
-            for p, p_noise in zip(a_function.parameters(), self):
-                p.copy_(p.data + p_noise)
+            for name, p in a_function.named_parameters():
+                if 'ln' not in name:
+                    p.copy_(p.data + self._p_noise[name])
             perturbed_output = a_function(inputs)
-            for p, p_noise in zip(a_function.parameters(), self):
-                p.copy_(p.data - p_noise)
+            for name, p in a_function.named_parameters():
+                if 'ln' not in name:
+                    p.copy_(p.data - self._p_noise[name])
             return th_to_arr(perturbed_output)
 
 class ActionNoise(Noise): # pylint: disable=too-few-public-methods
@@ -104,5 +106,8 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
             self,
             inputs: Arrayable,
             function: ParametricFunction):
+        if self._sigma == 0.:
+            with torch.no_grad():
+                return th_to_arr(function(inputs))
         with torch.no_grad():
             return th_to_arr(function(inputs) + self.noise)
