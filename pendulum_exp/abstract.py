@@ -96,3 +96,9 @@ class Noise(ABC):
             inputs: Arrayable,
             a_function: ParametricFunction):
         pass
+
+    @abstractmethod
+    def to(
+            self,
+            device):
+        pass
