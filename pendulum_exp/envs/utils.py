@@ -215,6 +215,7 @@ def make_env(env_config: EnvConfig):
         from gym.envs.box2d import bipedal_walker
         bipedal_walker.FPS = 1. / dt
         env = gym.make('BipedalWalker-v2').unwrapped
+        return env
 
     env = DiscretePusherEnv()
     env.dt = dt

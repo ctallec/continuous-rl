@@ -78,7 +78,7 @@ def main(
 
     policy, eval_policy = \
         setup_policy(env.observation_space, env.action_space, policy_config,
-                     nb_layers, batch_size, hidden_size, noise_config,
+                     nb_layers, batch_size, nb_eval_env, hidden_size, noise_config,
                      eval_noise_config, device)
 
     for e in range(nb_epochs):
