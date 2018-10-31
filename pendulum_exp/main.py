@@ -11,6 +11,7 @@ from policies import setup_policy
 from interact import interact
 from envs.vecenv import SubprocVecEnv
 from envs.utils import make_env
+from envs.wrappers import ObservationNormalizedWrapper
 from evaluation import specific_evaluation
 from utils import compute_return
 
@@ -62,6 +63,7 @@ def main(
         nb_epochs: int,
         nb_steps: int,
         nb_eval_env: int,
+        normalize_state: bool,
         policy_config: PolicyConfig,
         noise_config: NoiseConfig,
         eval_noise_config: NoiseConfig,
@@ -74,6 +76,9 @@ def main(
     env_fn = partial(make_env, env_config)
     env: Env = SubprocVecEnv([env_fn() for _ in range(batch_size)]) # type: ignore
     eval_env: Env = SubprocVecEnv([env_fn() for _ in range(nb_eval_env)]) # type: ignore
+    if normalize_state:
+        env = ObservationNormalizedWrapper(env)
+        eval_env = ObservationNormalizedWrapper(eval_env)
     obs = env.reset()
 
     policy, eval_policy = \
@@ -108,6 +113,7 @@ if __name__ == '__main__':
     parser.add_argument('--memory_size', type=int, default=10000)
     parser.add_argument('--learn_per_step', type=int, default=3)
     parser.add_argument('--cyclic_exploration', action='store_true')
+    parser.add_argument('--normalize_state', action='store_true')
     parser.add_argument('--lr', type=float, default=.003)
     args = parser.parse_args()
     policy_config, noise_config, eval_noise_config, env_config = read_config(args)
@@ -116,4 +122,4 @@ if __name__ == '__main__':
          nb_epochs=args.nb_epochs, nb_steps=args.nb_steps,
          nb_eval_env=args.nb_eval_env, policy_config=policy_config,
          noise_config=noise_config, eval_noise_config=eval_noise_config,
-         env_config=env_config)
+         env_config=env_config, normalize_state=args.normalize_state)
