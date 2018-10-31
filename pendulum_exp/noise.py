@@ -92,6 +92,7 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
 
     def to(self, device):
         self._device = device
+        self.noise = self.noise.to(device)
         return self
 
     def step(self):
