@@ -1,11 +1,12 @@
 """Define continuous policy."""
 from itertools import chain
 import torch
-from abstract import ParametricFunction, Arrayable, Noise
+from abstract import ParametricFunction, Arrayable, Noise, StateDict
 from convert import arr_to_th, th_to_arr
 from stats import penalize_mean
 from config import PolicyConfig
 from policies.shared import SharedAdvantagePolicy
+from logging import info
 
 class AdvantagePolicy(SharedAdvantagePolicy):
     def __init__(self,
@@ -93,8 +94,8 @@ class AdvantagePolicy(SharedAdvantagePolicy):
                 self._cum_loss += loss.item()
                 self._cum_policy_loss += policy_loss.item()
                 if self._count % self._log == self._log - 1:
-                    print(f'At iteration {self._count}, avg_loss: {self._cum_loss/self._count}, '
-                          f'avg_policy_loss: {self._cum_policy_loss / self._count}')
+                    info(f'At iteration {self._count}, avg_loss: {self._cum_loss/self._count}, '
+                         f'avg_policy_loss: {self._cum_policy_loss / self._count}')
 
                 self._count += 1
         except IndexError:
@@ -118,3 +119,23 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
     def advantage(self, obs: Arrayable, action: Arrayable):
         return th_to_arr(self._adv_function(obs, action))
+
+    def load_state_dict(self, state_dict: StateDict):
+        self._optimizers[0].load_state_dict(state_dict['advantage_optimizer'])
+        self._optimizers[1].load_state_dict(state_dict['value_optimizer'])
+        self._optimizers[2].load_state_dict(state_dict['policy_optimizer'])
+        self._adv_function.load_state_dict(state_dict['adv_function'])
+        self._val_function.load_state_dict(state_dict['val_function'])
+        self._policy_function.load_state_dict(state_dict['policy_function'])
+        self._schedulers[0].last_epoch = state_dict['iteration']
+        self._schedulers[1].last_epoch = state_dict['iteration']
+
+    def state_dict(self) -> StateDict:
+        return {
+            "advantage_optimizer": self._optimizers[0].state_dict(),
+            "value_optimizer": self._optimizers[1].state_dict(),
+            "policy_optimizer": self._optimizers[2].state_dict(),
+            "adv_function": self._adv_function.state_dict(),
+            "val_function": self._val_function.state_dict(),
+            "policy_function": self._policy_function.state_dict(),
+            "iteration": self._schedulers[0].last_epoch}

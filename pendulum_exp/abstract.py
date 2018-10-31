@@ -1,5 +1,5 @@
 """Define abstractions."""
-from typing import Union, Callable
+from typing import Union, Callable, Dict, Any
 from abc import ABC, abstractmethod
 import numpy as np
 import torch
@@ -7,6 +7,7 @@ import torch
 Arrayable = Union[list, float, np.ndarray]
 Tensorable = Union[Arrayable, torch.Tensor]
 DecayFunction = Callable[[int], float]
+StateDict = Dict[str, Any]
 
 class Policy(ABC):
     @abstractmethod
@@ -36,6 +37,14 @@ class Policy(ABC):
     def eval(self):
         pass
 
+    @abstractmethod
+    def load_state_dict(self, state_dict: StateDict):
+        pass
+
+    @abstractmethod
+    def state_dict(self) -> StateDict:
+        pass
+
 class ParametricFunction(ABC):
     """Wrap around a torch module."""
     @abstractmethod
@@ -60,6 +69,14 @@ class ParametricFunction(ABC):
 
     @abstractmethod
     def to(self, device):
+        pass
+
+    @abstractmethod
+    def load_state_dict(self, state_dict: StateDict):
+        pass
+
+    @abstractmethod
+    def state_dict(self) -> StateDict:
         pass
 
 class Env(ABC):

@@ -15,10 +15,9 @@ def specific_evaluation(
         policy: Policy):
     assert isinstance(policy, (AdvantagePolicy, ContinuousAdvantagePolicy)), f"Incorrect policy type: {type(policy)}, "\
         "AdvantagePolicy expected."
-    assert isinstance(env, SubprocVecEnv), f"Incorrect environment type: {type(env)}, "\
-        "SubprocVecEnv expected."
+    assert isinstance(env.unwrapped, SubprocVecEnv), f"Incorrect environment type: {type(env)}, SubprocVecEnv expected." # type: ignore
 
-    if isinstance(env.envs[0], AbstractPusher):
+    if isinstance(env.unwrapped.envs[0], AbstractPusher): # type: ignore
         nb_pixels = 50
         state_space = np.linspace(-1.5, 1.5, nb_pixels)[:, np.newaxis]
 
@@ -29,7 +28,7 @@ def specific_evaluation(
         plt.plot(state_space, vs)
         plt.subplot(132)
         plt.plot(state_space, actions)
-        if isinstance(env.envs[0], ContinuousPusherEnv):
+        if isinstance(env.unwrapped.envs[0], ContinuousPusherEnv): # type: ignore
             assert isinstance(policy, ContinuousAdvantagePolicy)
             action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
             states, actions = np.meshgrid(state_space, action_space)
@@ -39,10 +38,10 @@ def specific_evaluation(
             plt.subplot(133)
             plt.imshow(adv)
         plt.pause(.1)
-    elif isinstance(env.envs[0], (WrapPendulum, WrapContinuousPendulum)):
+    elif isinstance(env.unwrapped.envs[0], (WrapPendulum, WrapContinuousPendulum)): # type: ignore
         nb_pixels = 50
-        theta_space = np.linspace(-np.pi, np.pi, nb_pixels)
-        dtheta_space = np.linspace(-10, 10, nb_pixels)
+        theta_space = np.linspace(-3, 3, nb_pixels)
+        dtheta_space = np.linspace(-3, 3, nb_pixels)
         theta, dtheta = np.meshgrid(theta_space, dtheta_space)
         state_space = np.stack([np.cos(theta), np.sin(theta), dtheta], axis=-1)
 
