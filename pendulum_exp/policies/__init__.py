@@ -14,7 +14,7 @@ def setup_policy(observation_space: Space,
                  action_space: Space,
                  policy_config: PolicyConfig,
                  nb_layers: int,
-                 batch_size: int,
+                 nb_train_env: int,
                  nb_eval_env: int,
                  hidden_size: int,
                  normalize_state: bool,
@@ -34,7 +34,7 @@ def setup_policy(observation_space: Space,
         adv_function = MLP(nb_inputs=nb_state_feats, nb_outputs=action_space.n,
                            nb_layers=nb_layers, hidden_size=hidden_size).to(device)
         noise = setup_noise(noise_config, network=adv_function,
-                            action_shape=(batch_size, action_space.n)).to(device)
+                            action_shape=(nb_train_env, action_space.n)).to(device)
         eval_noise = setup_noise(eval_noise_config, network=adv_function,
                                  action_shape=(nb_eval_env, action_space.n)).to(device)
         policy: Policy = AdvantagePolicy(
@@ -53,7 +53,7 @@ def setup_policy(observation_space: Space,
             nb_inputs=nb_state_feats, nb_outputs=nb_actions,
             nb_layers=nb_layers, hidden_size=hidden_size).to(device)
         noise = setup_noise(noise_config, network=policy_function,
-                            action_shape=(batch_size, action_space.shape[0])).to(device)
+                            action_shape=(nb_train_env, action_space.shape[0])).to(device)
         eval_noise = setup_noise(eval_noise_config, network=policy_function,
                                  action_shape=(nb_eval_env, action_space.shape[0])).to(device)
         policy = ContinuousAdvantagePolicy(

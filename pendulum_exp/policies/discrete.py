@@ -32,7 +32,6 @@ class AdvantagePolicy(SharedAdvantagePolicy):
             torch.optim.lr_scheduler.LambdaLR(self._optimizers[1], policy_config.lr_decay))
         # logging
         self._cum_loss = 0
-        self._count = 0
         self._log = 100
 
     def act(self, obs: Arrayable):
@@ -43,53 +42,53 @@ class AdvantagePolicy(SharedAdvantagePolicy):
             return pre_action.argmax(axis=-1)
 
     def learn(self):
-        try:
-            for _ in range(self._learn_per_step):
-                obs, action, next_obs, reward, done = self._sampler.sample()
-                # for now, discrete actions
-                indices = arr_to_th(action, self._device).long()
-                v = self._val_function(obs).squeeze()
-                adv = self._adv_function(obs)
-                max_adv = torch.max(adv, dim=1)[0]
-                adv_a = adv.gather(1, indices.view(-1, 1)).squeeze()
+        if self._count % self._steps_btw_train == self._steps_btw_train - 1:
+            try:
+                for _ in range(self._learn_per_step):
+                    obs, action, next_obs, reward, done = self._sampler.sample()
+                    # for now, discrete actions
+                    indices = arr_to_th(action, self._device).long()
+                    v = self._val_function(obs).squeeze()
+                    adv = self._adv_function(obs)
+                    max_adv = torch.max(adv, dim=1)[0]
+                    adv_a = adv.gather(1, indices.view(-1, 1)).squeeze()
 
-                if self._gamma == 1:
-                    assert (1 - done).all(), "Gamma set to 1. with a potentially episodic problem..."
-                    discounted_next_v = self._gamma ** self._dt * self._val_function(next_obs).squeeze().detach()
-                else:
-                    done = arr_to_th(done.astype('float'), self._device)
-                    discounted_next_v = \
-                        (1 - done) * self._gamma ** self._dt * self._val_function(next_obs).squeeze().detach() -\
-                        done * self._gamma ** self._dt * self._baseline / (1 - self._gamma)
+                    if self._gamma == 1:
+                        assert (1 - done).all(), "Gamma set to 1. with a potentially episodic problem..."
+                        discounted_next_v = self._gamma ** self._dt * self._val_function(next_obs).squeeze().detach()
+                    else:
+                        done = arr_to_th(done.astype('float'), self._device)
+                        discounted_next_v = \
+                            (1 - done) * self._gamma ** self._dt * self._val_function(next_obs).squeeze().detach() -\
+                            done * self._gamma ** self._dt * self._baseline / (1 - self._gamma)
 
-                expected_v = (arr_to_th(reward, self._device) - self._baseline) * self._dt + \
-                    discounted_next_v
-                dv = (expected_v - v) / self._dt
-                a_update = dv - adv_a + max_adv
+                    expected_v = (arr_to_th(reward, self._device) - self._baseline) * self._dt + \
+                        discounted_next_v
+                    dv = (expected_v - v) / self._dt
+                    a_update = dv - adv_a + max_adv
 
-                adv_update_loss = (a_update ** 2).mean()
-                adv_norm_loss = (max_adv ** 2).mean()
-                mean_loss = self._alpha * penalize_mean(v)
-                loss = adv_update_loss + adv_norm_loss
+                    adv_update_loss = (a_update ** 2).mean()
+                    adv_norm_loss = (max_adv ** 2).mean()
+                    mean_loss = self._alpha * penalize_mean(v)
+                    loss = adv_update_loss + adv_norm_loss
 
-                self._optimizers[0].zero_grad()
-                self._optimizers[1].zero_grad()
-                (mean_loss / self._dt + loss).backward()
-                self._optimizers[0].step()
-                self._schedulers[0].step()
-                self._optimizers[1].step()
-                self._schedulers[1].step()
+                    self._optimizers[0].zero_grad()
+                    self._optimizers[1].zero_grad()
+                    (mean_loss / self._dt + loss).backward()
+                    self._optimizers[0].step()
+                    self._schedulers[0].step()
+                    self._optimizers[1].step()
+                    self._schedulers[1].step()
 
-                # logging
-                self._cum_loss += loss.item()
-                if self._count % self._log == self._log - 1:
-                    log("Avg_adv_loss", self._cum_loss / self._count, self._count)
-                    info(f'At iteration {self._count}, avg_loss: {self._cum_loss/self._count}')
+                    # logging
+                    self._cum_loss += loss.item()
+                    self._learn_count += 1
+                log("Avg_adv_loss", self._cum_loss / self._count, self._count)
+                info(f'At iteration {self._learn_count}, avg_loss: {self._cum_loss/self._learn_count}')
 
-                self._count += 1
-        except IndexError:
-            # If not enough data in the buffer, do nothing
-            pass
+            except IndexError:
+                # If not enough data in the buffer, do nothing
+                pass
 
     def train(self):
         self._train = True

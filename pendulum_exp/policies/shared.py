@@ -14,7 +14,12 @@ class SharedAdvantagePolicy(Policy):
         self._dt = policy_config.dt
         self._alpha = policy_config.alpha
         self._learn_per_step = policy_config.learn_per_step
-        self._sampler = MemorySampler(policy_config.memory_size)
+        self._steps_btw_train = policy_config.steps_btw_train
+        self._sampler = MemorySampler(
+            size=policy_config.memory_size,
+            batch_size=policy_config.batch_size)
+        self._count = 0
+        self._learn_count = 0
 
     def reset(self):
         # internals
@@ -42,6 +47,7 @@ class SharedAdvantagePolicy(Policy):
                 reward: Arrayable,
                 done: Arrayable):
         if self._train:
+            self._count += 1
             self._next_obs = next_obs
             self._reward = reward
             self._done = done

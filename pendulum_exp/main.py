@@ -63,7 +63,7 @@ def evaluate(
 
 def main(
         logdir: str,
-        batch_size: int,
+        nb_train_env: int,
         hidden_size: int,
         nb_layers: int,
         nb_epochs: int,
@@ -80,14 +80,14 @@ def main(
 
     # setting up envs
     env_fn = partial(make_env, env_config)
-    env: Env = SubprocVecEnv([env_fn() for _ in range(batch_size)]) # type: ignore
+    env: Env = SubprocVecEnv([env_fn() for _ in range(nb_train_env)]) # type: ignore
     eval_env: Env = SubprocVecEnv([env_fn() for _ in range(nb_eval_env)]) # type: ignore
     obs = env.reset()
 
     policy, eval_policy = \
         setup_policy(observation_space=env.observation_space,
                      action_space=env.action_space, policy_config=policy_config,
-                     nb_layers=nb_layers, batch_size=batch_size,
+                     nb_layers=nb_layers, nb_train_env=nb_train_env,
                      nb_eval_env=nb_eval_env, hidden_size=hidden_size,
                      noise_config=noise_config, eval_noise_config=eval_noise_config,
                      normalize_state=normalize_state, device=device)
@@ -119,21 +119,23 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--logdir', type=str, required=True)
     parser.add_argument('--dt', type=float, default=.05)
+    parser.add_argument('--steps_btw_train', type=int, default=10)
     parser.add_argument('--env_id', type=str, default='pendulum')
     parser.add_argument('--noise_type', type=str, default='parameter')
-    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--hidden_size', type=int, default=64)
     parser.add_argument('--nb_layers', type=int, default=1)
-    parser.add_argument('--alpha', type=float, default=3.)
+    parser.add_argument('--alpha', type=float, default=1.)
     parser.add_argument('--gamma', type=float, default=1.)
     parser.add_argument('--nb_epochs', type=int, default=50000)
-    parser.add_argument('--nb_steps', type=int, default=500)
+    parser.add_argument('--nb_steps', type=int, default=100)
     parser.add_argument('--sigma_eval', type=float, default=0)
     parser.add_argument('--sigma', type=float, default=.3)
     parser.add_argument('--theta', type=float, default=1)
-    parser.add_argument('--nb_eval_env', type=int, default=100)
+    parser.add_argument('--nb_train_env', type=int, default=32)
+    parser.add_argument('--nb_eval_env', type=int, default=50)
     parser.add_argument('--memory_size', type=int, default=10000)
-    parser.add_argument('--learn_per_step', type=int, default=3)
+    parser.add_argument('--learn_per_step', type=int, default=50)
     parser.add_argument('--cyclic_exploration', action='store_true')
     parser.add_argument('--normalize_state', action='store_true')
     parser.add_argument('--lr', type=float, default=.003)
@@ -150,7 +152,7 @@ if __name__ == '__main__':
 
     policy_config, noise_config, eval_noise_config, env_config = read_config(args)
     main(
-        logdir=args.logdir, batch_size=args.batch_size,
+        logdir=args.logdir, nb_train_env=args.nb_train_env,
         hidden_size=args.hidden_size, nb_layers=args.nb_layers,
         nb_epochs=args.nb_epochs, nb_steps=args.nb_steps,
         nb_eval_env=args.nb_eval_env, policy_config=policy_config,

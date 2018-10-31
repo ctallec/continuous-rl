@@ -17,6 +17,7 @@ class ActionNoiseConfig(NamedTuple):
     sigma_decay: DecayFunction
 
 class AdvantagePolicyConfig(NamedTuple):
+    batch_size: int
     alpha: float
     gamma: float
     dt: float
@@ -24,6 +25,8 @@ class AdvantagePolicyConfig(NamedTuple):
     lr_decay: DecayFunction
     memory_size: int
     learn_per_step: int
+    steps_btw_train: int
+
 
 class EnvConfig(NamedTuple):
     id: str
@@ -49,8 +52,9 @@ def read_config(
         return 1 / np.power(1 + args.dt * t, 0)
 
     policy_config = AdvantagePolicyConfig(
-        alpha=args.alpha, gamma=args.gamma, dt=args.dt,
-        lr=args.lr, lr_decay=lr_decay, memory_size=args.memory_size, learn_per_step=args.learn_per_step)
+        batch_size=args.batch_size, alpha=args.alpha, gamma=args.gamma, dt=args.dt,
+        lr=args.lr, lr_decay=lr_decay, memory_size=args.memory_size,
+        learn_per_step=args.learn_per_step, steps_btw_train=args.steps_btw_train)
     if args.noise_type == 'parameter':
         noise_config: NoiseConfig = ParameterNoiseConfig(
             args.sigma, args.theta, args.dt, noise_decay)
