@@ -1,4 +1,4 @@
-""" Trying to solve pendulum using a robust advantage learning. """
+"""Trying to solve pendulum using a robust advantage learning."""
 import sys
 from os.path import join, exists
 from logging import info, basicConfig, INFO
@@ -13,7 +13,6 @@ from policies import setup_policy
 from interact import interact
 from envs.vecenv import SubprocVecEnv
 from envs.utils import make_env
-from envs.wrappers import ObservationNormalizedWrapper
 from evaluation import specific_evaluation
 from utils import compute_return
 from mylog import log, logto
@@ -83,15 +82,15 @@ def main(
     env_fn = partial(make_env, env_config)
     env: Env = SubprocVecEnv([env_fn() for _ in range(batch_size)]) # type: ignore
     eval_env: Env = SubprocVecEnv([env_fn() for _ in range(nb_eval_env)]) # type: ignore
-    if normalize_state:
-        env = ObservationNormalizedWrapper(env)
-        eval_env = ObservationNormalizedWrapper(eval_env, env)
     obs = env.reset()
 
     policy, eval_policy = \
-        setup_policy(env.observation_space, env.action_space, policy_config,
-                     nb_layers, batch_size, nb_eval_env, hidden_size, noise_config,
-                     eval_noise_config, device)
+        setup_policy(observation_space=env.observation_space,
+                     action_space=env.action_space, policy_config=policy_config,
+                     nb_layers=nb_layers, batch_size=batch_size,
+                     nb_eval_env=nb_eval_env, hidden_size=hidden_size,
+                     noise_config=noise_config, eval_noise_config=eval_noise_config,
+                     normalize_state=normalize_state, device=device)
 
     # load checkpoints if directory is not empty
     policy_file = join(args.logdir, 'best_policy.pt')

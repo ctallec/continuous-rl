@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from abstract import Policy, Env
 from policies import AdvantagePolicy, ContinuousAdvantagePolicy
+from policies.wrappers import StateNormalization
 from envs.vecenv import SubprocVecEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv
 from envs.utils import WrapPendulum, WrapContinuousPendulum
@@ -13,7 +14,7 @@ def specific_evaluation(
         dt: float,
         env: Env,
         policy: Policy):
-    assert isinstance(policy, (AdvantagePolicy, ContinuousAdvantagePolicy)), f"Incorrect policy type: {type(policy)}, "\
+    assert isinstance(policy, (AdvantagePolicy, ContinuousAdvantagePolicy, StateNormalization)), f"Incorrect policy type: {type(policy)}, "\
         "AdvantagePolicy expected."
     assert isinstance(env.unwrapped, SubprocVecEnv), f"Incorrect environment type: {type(env)}, SubprocVecEnv expected." # type: ignore
 
@@ -40,8 +41,8 @@ def specific_evaluation(
         plt.pause(.1)
     elif isinstance(env.unwrapped.envs[0], (WrapPendulum, WrapContinuousPendulum)): # type: ignore
         nb_pixels = 50
-        theta_space = np.linspace(-3, 3, nb_pixels)
-        dtheta_space = np.linspace(-3, 3, nb_pixels)
+        theta_space = np.linspace(-np.pi, np.pi, nb_pixels)
+        dtheta_space = np.linspace(-10, 10, nb_pixels)
         theta, dtheta = np.meshgrid(theta_space, dtheta_space)
         state_space = np.stack([np.cos(theta), np.sin(theta), dtheta], axis=-1)
 

@@ -5,6 +5,7 @@ from gym.spaces import Discrete, Box
 from abstract import Policy
 from policies.discrete import AdvantagePolicy
 from policies.continuous import AdvantagePolicy as ContinuousAdvantagePolicy
+from policies.wrappers import StateNormalization
 from models import ContinuousAdvantageMLP, ContinuousPolicyMLP, MLP
 from noise import setup_noise
 from config import NoiseConfig, PolicyConfig
@@ -16,6 +17,7 @@ def setup_policy(observation_space: Space,
                  batch_size: int,
                  nb_eval_env: int,
                  hidden_size: int,
+                 normalize_state: bool,
                  noise_config: NoiseConfig,
                  eval_noise_config: NoiseConfig,
                  device) -> Tuple[Policy, Policy]:
@@ -23,6 +25,11 @@ def setup_policy(observation_space: Space,
     nb_state_feats = observation_space.shape[0]
     val_function = MLP(nb_inputs=nb_state_feats, nb_outputs=1,
                        nb_layers=nb_layers, hidden_size=hidden_size).to(device)
+    if normalize_state:
+        normalization_state = { # we need to share normalization between policies
+            'mean': None,
+            'mean_squares': None
+        }
     if isinstance(action_space, Discrete):
         adv_function = MLP(nb_inputs=nb_state_feats, nb_outputs=action_space.n,
                            nb_layers=nb_layers, hidden_size=hidden_size).to(device)
@@ -30,10 +37,10 @@ def setup_policy(observation_space: Space,
                             action_shape=(batch_size, action_space.n)).to(device)
         eval_noise = setup_noise(eval_noise_config, network=adv_function,
                                  action_shape=(nb_eval_env, action_space.n)).to(device)
-        policy = AdvantagePolicy(
+        policy: Policy = AdvantagePolicy(
             adv_function=adv_function, val_function=val_function, adv_noise=noise,
             policy_config=policy_config, device=device)
-        eval_policy = AdvantagePolicy(
+        eval_policy: Policy = AdvantagePolicy(
             adv_function=adv_function, val_function=val_function, adv_noise=eval_noise,
             policy_config=policy_config, device=device)
 
@@ -55,6 +62,10 @@ def setup_policy(observation_space: Space,
         eval_policy = ContinuousAdvantagePolicy(
             adv_function=adv_function, val_function=val_function, policy_function=policy_function,
             policy_noise=eval_noise, policy_config=policy_config, device=device)
+
+    if normalize_state:
+        policy = StateNormalization(policy, normalization_state)
+        eval_policy = StateNormalization(eval_policy, normalization_state)
     return policy, eval_policy
 
 
