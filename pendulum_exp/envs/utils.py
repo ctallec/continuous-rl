@@ -6,6 +6,8 @@ from envs.pusher import DiscretePusherEnv, ContinuousPusherEnv
 from config import EnvConfig
 from envs.wrappers import WrapContinuousPendulum, WrapPendulum
 
+from logging import info
+
 def tile_images(img_nhwc):
     """
     Tile N images into one big PxQ image
@@ -188,6 +190,13 @@ def make_env(env_config: EnvConfig):
         from gym.envs.box2d import bipedal_walker
         bipedal_walker.FPS = 1. / dt
         env = gym.make('BipedalWalker-v2').unwrapped
+        return env
+    if env_id == 'half_cheetah':
+        # from gym.envs.mujoco import HalfCheetahEnv
+        env = gym.make('HalfCheetah-v2').unwrapped
+        dt = env.dt
+        info('The timestep dt is {}'.format(dt))
+        # env.model.opt.timestep = dt / env.frame_skip
         return env
 
     env = DiscretePusherEnv()
