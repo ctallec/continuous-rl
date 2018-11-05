@@ -17,7 +17,7 @@ from envs.vecenv import SubprocVecEnv
 from envs.utils import make_env
 from evaluation import specific_evaluation
 from utils import compute_return
-from mylog import log, logto
+from mylog import log, logto, log_video
 
 def train(
         nb_steps: int,
@@ -56,11 +56,13 @@ def evaluate(
             rewards.append(reward)
             dones.append(done)
             if (epoch // log_gap) % video_log == video_log - 1:
-                imgs.append(env.render())
+                imgs.append(env.render(mode='rgb_array'))
         R = compute_return(np.stack(rewards, axis=0),
                            np.stack(dones, axis=0))
         info(f"At epoch {epoch}, return: {R}")
         log("Return", R, epoch)
+        if (epoch // log_gap) % video_log == video_log - 1:
+            log_video("demo", epoch, np.stack(imgs, axis=0))
 
     specific_evaluation(epoch, log_gap, dt, env, policy)
     return R
@@ -137,7 +139,7 @@ if __name__ == '__main__':
     parser.add_argument('--sigma', type=float, default=.3)
     parser.add_argument('--theta', type=float, default=1)
     parser.add_argument('--nb_train_env', type=int, default=32)
-    parser.add_argument('--nb_eval_env', type=int, default=50)
+    parser.add_argument('--nb_eval_env', type=int, default=16)
     parser.add_argument('--memory_size', type=int, default=10000)
     parser.add_argument('--learn_per_step', type=int, default=50)
     parser.add_argument('--cyclic_exploration', action='store_true')
@@ -159,7 +161,7 @@ if __name__ == '__main__':
     else:
         basicConfig(stream=sys.stdout, level=INFO)
 
-    logto(join(args.logdir, 'logs.pkl'))
+    logto(args.logdir)
 
     policy_config, noise_config, eval_noise_config, env_config = read_config(args)
     main(
