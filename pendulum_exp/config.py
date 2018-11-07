@@ -31,6 +31,7 @@ class AdvantagePolicyConfig(NamedTuple):
 class EnvConfig(NamedTuple):
     id: str
     dt: float
+    time_limit: Optional[float]
 
 
 NoiseConfig = Union[ParameterNoiseConfig, ActionNoiseConfig]
@@ -66,5 +67,5 @@ def read_config(
         eval_noise_config = ActionNoiseConfig(
             args.sigma_eval, args.theta, args.dt, noise_decay)
 
-    env_config = EnvConfig(args.env_id, args.dt)
+    env_config = EnvConfig(args.env_id, args.dt, args.time_limit)
     return policy_config, noise_config, eval_noise_config, env_config

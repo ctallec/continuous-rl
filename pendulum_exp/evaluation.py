@@ -6,7 +6,7 @@ from policies import AdvantagePolicy, ContinuousAdvantagePolicy
 from policies.wrappers import StateNormalization
 from envs.vecenv import SubprocVecEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv
-from envs.utils import WrapPendulum, WrapContinuousPendulum
+from gym.envs.classic_control import PendulumEnv
 
 def specific_evaluation(
         epoch: int,
@@ -16,9 +16,9 @@ def specific_evaluation(
         policy: Policy):
     assert isinstance(policy, (AdvantagePolicy, ContinuousAdvantagePolicy, StateNormalization)), f"Incorrect policy type: {type(policy)}, "\
         "AdvantagePolicy expected."
-    assert isinstance(env.unwrapped, SubprocVecEnv), f"Incorrect environment type: {type(env)}, SubprocVecEnv expected." # type: ignore
+    assert isinstance(env, SubprocVecEnv), f"Incorrect environment type: {type(env)}, SubprocVecEnv expected." # type: ignore
 
-    if isinstance(env.unwrapped.envs[0], AbstractPusher): # type: ignore
+    if isinstance(env.envs[0].unwrapped, AbstractPusher): # type: ignore
         nb_pixels = 50
         state_space = np.linspace(-1.5, 1.5, nb_pixels)[:, np.newaxis]
 
@@ -29,7 +29,7 @@ def specific_evaluation(
         plt.plot(state_space, vs)
         plt.subplot(132)
         plt.plot(state_space, actions)
-        if isinstance(env.unwrapped.envs[0], ContinuousPusherEnv): # type: ignore
+        if isinstance(env.envs[0].unwrapped, ContinuousPusherEnv): # type: ignore
             assert isinstance(policy, ContinuousAdvantagePolicy)
             action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
             states, actions = np.meshgrid(state_space, action_space)
@@ -39,7 +39,7 @@ def specific_evaluation(
             plt.subplot(133)
             plt.imshow(adv)
         plt.pause(.1)
-    elif isinstance(env.unwrapped.envs[0], (WrapPendulum, WrapContinuousPendulum)): # type: ignore
+    elif isinstance(env.envs[0].unwrapped, PendulumEnv): # type: ignore
         nb_pixels = 50
         theta_space = np.linspace(-np.pi, np.pi, nb_pixels)
         dtheta_space = np.linspace(-10, 10, nb_pixels)

@@ -23,7 +23,7 @@ class StateNormalization(Policy):
                 self._state['mean_squares'] = (self._state['mean_squares'] * self._count +
                                                (obs ** 2).sum(axis=0)) / new_count
             self._count = new_count
-        std = np.sqrt(self._state['mean_squares'] - self._state['mean'] ** 2)
+        std = np.sqrt(self._state['mean_squares'] - self._state['mean'] ** 2) + 1e-5
         normalized_obs = (obs - self._state['mean'][np.newaxis, ...]) / std[np.newaxis, ...]
         return np.clip(normalized_obs, -10, 10)
 
