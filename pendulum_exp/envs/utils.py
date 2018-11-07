@@ -6,6 +6,7 @@ import numpy as np
 from envs.pusher import DiscretePusherEnv, ContinuousPusherEnv
 from config import EnvConfig
 from envs.wrappers import WrapContinuousPendulum, WrapPendulum
+from envs.biped import WalkerHardcore
 
 from logging import info
 
@@ -185,13 +186,12 @@ def make_env(env_config: EnvConfig): # noqa: C901
         from gym.envs.box2d import lunar_lander
         lunar_lander.FPS = 1. / dt
         env = gym.make('LunarLander-v2').unwrapped
-    if 'bipedal' in env_id:
+    if env_id == 'bipedal_walker':
         from gym.envs.box2d import bipedal_walker
         bipedal_walker.FPS = 1. / dt
-    if env_id == 'bipedal_walker':
         env = gym.make('BipedalWalker-v2').unwrapped
     if env_id == 'bipedal_hardcore':
-        env = gym.make('BipedalWalkerHardcore-v2').unwrapped
+        env = WalkerHardcore(dt)
     if env_id == 'half_cheetah':
         # from gym.envs.mujoco import HalfCheetahEnv
         env = gym.make('HalfCheetah-v2').unwrapped
