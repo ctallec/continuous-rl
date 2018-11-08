@@ -27,6 +27,18 @@ class AdvantagePolicyConfig(NamedTuple):
     learn_per_step: int
     steps_btw_train: int
 
+class SampledAdvantagePolicyConfig(NamedTuple):
+    batch_size: int
+    alpha: float
+    gamma: float
+    dt: float
+    lr: float
+    lr_decay: DecayFunction
+    memory_size: int
+    learn_per_step: int
+    steps_btw_train: int
+    nb_samples: int
+
 
 class EnvConfig(NamedTuple):
     id: str
@@ -35,7 +47,7 @@ class EnvConfig(NamedTuple):
 
 
 NoiseConfig = Union[ParameterNoiseConfig, ActionNoiseConfig]
-PolicyConfig = AdvantagePolicyConfig
+PolicyConfig = Union[SampledAdvantagePolicyConfig, AdvantagePolicyConfig]
 
 def read_config(
         args,
@@ -52,10 +64,15 @@ def read_config(
     def lr_decay(t):
         return 1 / np.power(1 + args.dt * t, 0)
 
-    policy_config = AdvantagePolicyConfig(
+    policy_config_dict = dict(
         batch_size=args.batch_size, alpha=args.alpha, gamma=args.gamma, dt=args.dt,
         lr=args.lr, lr_decay=lr_decay, memory_size=args.memory_size,
         learn_per_step=args.learn_per_step, steps_btw_train=args.steps_btw_train)
+    if args.policy_type == 'sampled':
+        policy_config_dict['nb_samples'] = args.nb_policy_samples
+        policy_config: PolicyConfig = SampledAdvantagePolicyConfig(**policy_config_dict)
+    else:
+        policy_config = AdvantagePolicyConfig(**policy_config_dict)
     if args.noise_type == 'parameter':
         noise_config: NoiseConfig = ParameterNoiseConfig(
             args.sigma, args.theta, args.dt, noise_decay)

@@ -37,7 +37,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
     def act(self, obs: Arrayable):
         with torch.no_grad():
             pre_action = self._adv_noise.perturb_output(
-                obs, self._adv_function)
+                obs, function=self._adv_function)
             self._adv_noise.step()
             return pre_action.argmax(axis=-1)
 
@@ -83,7 +83,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
                     # logging
                     self._cum_loss += loss.item()
                     self._learn_count += 1
-                log("Avg_adv_loss", self._cum_loss / self._count, self._count)
+                log("Avg_adv_loss", self._cum_loss / self._learn_count, self._learn_count)
                 info(f'At iteration {self._learn_count}, avg_loss: {self._cum_loss/self._learn_count}')
 
             except IndexError:

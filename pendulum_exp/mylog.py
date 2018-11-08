@@ -10,7 +10,7 @@ class Logger:
 
     def __init__(self):
         self._logs: Dict[str, Dict[int, float]] = dict()
-        self._buffering = 10
+        self._buffering = 300
         self._count = 0
         self._dir = None
 
