@@ -1,14 +1,17 @@
 """Log facilities"""
 from os import makedirs
-from os.path import join, exists
+from os.path import join, exists, isfile
 from typing import Dict
 import pickle
 import numpy as np
+
+from logging import info
 
 class Logger:
     CURRENT = None # current logger
 
     def __init__(self):
+        assert Logger.CURRENT is None
         self._logs: Dict[str, Dict[int, float]] = dict()
         self._buffering = 10
         self._count = 0
@@ -32,6 +35,15 @@ class Logger:
 
     def set_dir(self, logdir):
         self._dir = logdir
+        if isfile(join(self._dir, 'logs.pkl')):
+            self.load()
+        info("logfile: {}".format(join(self._dir, 'logs.pkl')))
+
+    def load(self):
+        assert self._file is not None
+        with open(self.filename, 'rb') as f:
+            self._logs = pickle.load(f)
+            
 
     def dump(self):
         assert self._dir is not None
@@ -49,8 +61,6 @@ def log_video(tag: str, timestamp: int, frames):
     assert Logger.CURRENT is not None
     Logger.CURRENT.log_video(tag, timestamp, frames)
 
-def _configure():
+
+if Logger.CURRENT is None:
     Logger.CURRENT = Logger()
-
-
-_configure() # configure logger on import

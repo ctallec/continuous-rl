@@ -36,10 +36,9 @@ def summary(logs):
     metrics = [("Avg_adv_loss", min), ("Return", max)]
     for met, f in metrics:
         metval = logs[met]
-        curr_ts, curr_val = max(metval, key=lambda x: x[0])
-        best_ts, best_val = f(metval, key=lambda x: x[1])
-        print("{}\tBest value: {:.2e} at ts {}\t Current value: {:.2e} at ts {}\t".format(\
-            met, best_val, curr_val, best_ts, curr_ts))
+        curr_ts, curr_val = max(metval.items(), key=lambda x: x[0])
+        best_ts, best_val = f(metval.items(), key=lambda x: x[1])
+        print(f"{met}\tBest value: {best_val:.2e} at ts {best_ts}\t Current value: {curr_val:.2e} at ts {curr_ts}\t")
 
 
 if __name__ == '__main__':
