@@ -15,6 +15,7 @@
 \newcommand{\TODO}[1]{\textcolor{red}{#1}}
 \newcommand{\bigO}[1]{O(#1)}
 \newcommand{\Tdo}{TD($0$)}
+\newcommand{\tdres}{\delta_\text{TD}}
 
 \title{Scaling continuous reinforcement learning up}
 \begin{document}
@@ -363,5 +364,33 @@ Learning rates on $\phi$ and $b$ are of order $\deltat$, learning rate on
 $\theta$ is of order $\deltat^2$. This is to have parameters moving by a
 distance of order $\deltat$, with at most a $\sqrt{\deltat}$ centered noise per
 iteration.
+
+\paragraph{Resulting update equations}
+The resulting update equations on $\theta$, $\phi$ and $b$, for a transition
+quadruplet $(s, a, s', \tilde{r}(s, a))$ and a state $s''$ independant from the
+quadruplet are
+\begin{align}
+	\tdres &= A_\theta(s, a) - 
+	\max\limits_{a'} A_\theta(s, a')-
+	\tilde{r}(s, a) + b - \frac{\gamma^\deltat V_\phi(s') - V_\phi(s)}{\deltat}\\
+	\delta \theta &= \deltat \left(\alpha_1 \tdres \partial_\theta \left(A_\theta(s, a) - 
+		\max\limits_{a'} A_\theta(s, a')\right)
+	+ \alpha_2 \max\limits_{a'} A_\theta(s, a')\partial_\theta \max\limits_{a'} A_\theta(s, a')\right)\\
+	\delta \phi &= \deltat \left( \alpha_3 \tdres \partial_\phi V_\phi(s) + \alpha_4 V_\phi(s'')\partial_\phi V_\phi(s)\right)\\
+	\delta b &= \deltat \alpha_5 \tdres\\
+	\theta &\leftarrow \theta - \delta \theta\\
+	\phi &\leftarrow \phi - \delta \phi\\
+	b &\leftarrow b - \delta b\\
+\end{align}
+
+\paragraph{Alternate update rule for $b$}
+Averaging advantage updating bellman equation over the stationary distribution of the current policy $\pi$, $b$ can be shown to verify
+\begin{equation}
+	b = \E_{(s, a) \sim \rho^\pi \times \pi}\left[\tilde{r}(s, a) - A^*(s, a)\right]
+\end{equation}
+yielding a different update rule for $b$
+\begin{equation}
+	b \leftarrow (1 - \alpha_5 \deltat) b + \alpha_5 \deltat \left(\tilde{r}(s, a) - A^*(s, a)\right).
+\end{equation}
 
 \end{document}
