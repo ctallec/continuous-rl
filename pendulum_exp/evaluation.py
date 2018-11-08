@@ -2,8 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from abstract import Policy, Env
-from policies import AdvantagePolicy, ContinuousAdvantagePolicy
-from policies.wrappers import StateNormalization
+from policies import ContinuousAdvantagePolicy
 from envs.vecenv import SubprocVecEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv
 from gym.envs.classic_control import PendulumEnv
@@ -14,8 +13,6 @@ def specific_evaluation(
         dt: float,
         env: Env,
         policy: Policy):
-    assert isinstance(policy, (AdvantagePolicy, ContinuousAdvantagePolicy, StateNormalization)), f"Incorrect policy type: {type(policy)}, "\
-        "AdvantagePolicy expected."
     assert isinstance(env, SubprocVecEnv), f"Incorrect environment type: {type(env)}, SubprocVecEnv expected." # type: ignore
 
     if isinstance(env.envs[0].unwrapped, AbstractPusher): # type: ignore
@@ -45,9 +42,10 @@ def specific_evaluation(
         dtheta_space = np.linspace(-10, 10, nb_pixels)
         theta, dtheta = np.meshgrid(theta_space, dtheta_space)
         state_space = np.stack([np.cos(theta), np.sin(theta), dtheta], axis=-1)
+        target_shape = state_space.shape[:2]
 
-        vs = policy.value(state_space).squeeze()
-        actions = policy.step(state_space).squeeze()
+        vs = policy.value(state_space.reshape(-1, 3)).reshape(target_shape).squeeze()
+        actions = policy.step(state_space.reshape(-1, 3)).reshape(target_shape).squeeze()
         plt.clf()
         plt.subplot(121)
         plt.imshow(actions, origin='lower')
@@ -55,5 +53,3 @@ def specific_evaluation(
         plt.imshow(vs, origin='lower')
         plt.colorbar()
         plt.pause(.1)
-        if epoch % log == log - 1:
-            plt.savefig(f'logs/results_{dt}_{epoch}.pdf')

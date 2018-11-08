@@ -42,12 +42,17 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
     def act(self, obs: Arrayable):
         with torch.no_grad():
             obs = check_array(obs)
+            batch_size = obs.shape[0]
+            o_dim = obs.ndim
+
             proposed_actions = np.random.uniform(
-                -1, 1, [self._nb_samples, obs.shape[0]] + self._action_shape)
+                -1, 1, [self._nb_samples, batch_size, *self._action_shape])
             advantages = self._adv_noise.perturb_output(
-                obs[np.newaxis, ...], proposed_actions, function=proposed_actions)
+                np.tile(obs, [self._nb_samples] + o_dim * [1]),
+                proposed_actions, function=self._adv_function).squeeze()
             self._adv_noise.step()
-            action = proposed_actions[np.argmax(advantages, axis=0)]
+            action_idx = np.argmax(advantages, axis=0)
+            action = proposed_actions[action_idx, np.arange(obs.shape[0])]
         return action
 
     def learn(self):
@@ -59,10 +64,10 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
                     adv_a = self._adv_function(obs, action).squeeze()
 
                     proposed_actions = np.random.uniform(
-                        -1, 1, [self._nb_samples, obs.shape[0]] + self._action_shape)
+                        -1, 1, [self._nb_samples, obs.shape[0], *self._action_shape])
                     max_adv = torch.max(
                         self._adv_function(
-                            obs[np.newaxis, ...],
+                            np.tile(obs, [self._nb_samples] + obs.ndim * [1]),
                             proposed_actions).squeeze(), dim=0)[0]
 
                     if self._gamma == 1:
@@ -106,13 +111,11 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
         self._train = True
         self._val_function.train()
         self._adv_function.train()
-        self._policy_function.train()
 
     def eval(self):
         self._train = False
         self._val_function.eval()
         self._adv_function.eval()
-        self._policy_function.eval()
 
     def value(self, obs: Arrayable):
         return th_to_arr(self._val_function(obs))

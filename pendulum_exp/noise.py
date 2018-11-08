@@ -67,7 +67,7 @@ class ParameterNoise(Noise):
             for name, p in function.named_parameters():
                 if 'ln' not in name:
                     p.copy_(p.data + self._p_noise[name])
-            perturbed_output = function(inputs)
+            perturbed_output = function(*inputs)
             for name, p in function.named_parameters():
                 if 'ln' not in name:
                     p.copy_(p.data - self._p_noise[name])
