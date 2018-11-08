@@ -28,6 +28,7 @@ def plots(logs, namefile):
         ax.set_xlabel("timestamps")
 
     plt.tight_layout()
+    print(f'Plot: {namefile}')
     plt.savefig(namefile, format="eps")
 
 
