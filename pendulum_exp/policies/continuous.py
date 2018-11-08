@@ -224,10 +224,10 @@ class AdvantagePolicy(SharedAdvantagePolicy):
                     self._cum_loss += loss.item()
                     self._cum_policy_loss += policy_loss.item()
                     self._learn_count += 1
+                info(f'At iteration {self._learn_count}, Avg_adv_loss: {self._cum_loss/self._learn_count}, '
+                     f'Avg_policy_loss: {self._cum_policy_loss / self._learn_count}')
                 log("Avg_adv_loss", self._cum_loss / self._learn_count, self._learn_count)
                 log("Avg_policy_loss", self._cum_policy_loss / self._learn_count, self._learn_count)
-                info(f'At iteration {self._learn_count}, avg_loss: {self._cum_loss/self._learn_count}, '
-                     f'avg_policy_loss: {self._cum_policy_loss / self._learn_count}')
 
             except IndexError:
                 # Do nothing if not enough elements in the buffer
