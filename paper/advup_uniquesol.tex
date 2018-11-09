@@ -28,7 +28,7 @@
 Let $\pi$ be any policy (or set of observed transitions) and let
 $\rho^\pi$ be the associated distribution on states.
 
-Let us start again from  the equations on $A^*$, $V^*$ and $b$:
+Let us start again from  the equations on $A$, $V$ and $b$:
 \begin{gather}
 	A(s, a) = \max\limits_{a'} A(s, a') + 
 		(r(s, a) - b)
@@ -84,7 +84,7 @@ and $b$ even if $A$ is not perfect (namely, the value function associated
 with $\pi_A$). This provides some numerical protection.
 
 [TODO: this assumes we only apply Bellman to $(s,a^\ast)$ not every
-$(s,a)$. SHOULD WE RESTRICT UPDATES OF $V$ and $b$ TO SUCH PAIRS? Using
+$(s,a)$! SHOULD WE RESTRICT UPDATES OF $V$ and $b$ TO SUCH PAIRS? Using
 Bellman for $a\neq a^\ast$ might just pollute $V$ and $b$. Eg, if using
 eps-greedy, don't update $V$ when exploring, only update $A$?]
 
