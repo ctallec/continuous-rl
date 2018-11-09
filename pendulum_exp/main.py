@@ -145,18 +145,17 @@ if __name__ == '__main__':
     parser.add_argument('--cyclic_exploration', action='store_true')
     parser.add_argument('--normalize_state', action='store_true')
     parser.add_argument('--lr', type=float, default=.03)
-    parser.add_argument('--policy_lr', type=float, default=.01)
+    parser.add_argument('--policy_lr', type=float, default=None)
     parser.add_argument('--time_limit', type=float, default=None)
     parser.add_argument('--redirect_stdout', action='store_true')
-    parser.add_argument('--policy_type', type=str, default='default')
-    parser.add_argument('--nb_policy_samples', type=int)
+    parser.add_argument('--nb_policy_samples', type=int, default=None)
     parser.add_argument('--noreload', action='store_true')
     parser = argload.ArgumentLoader(parser, to_reload=[
         'dt', 'steps_btw_train', 'env_id', 'noise_type', 'batch_size',
         'hidden_size', 'nb_layers', 'alpha', 'gamma', 'nb_epochs', 'nb_steps',
         'sigma_eval', 'sigma', 'theta', 'nb_train_env', 'nb_eval_env', 'memory_size',
         'learn_per_step', 'cyclic_expliration', 'normalize_state', 'lr', 'time_limit',
-        'policy_type', 'nb_policy_samples'
+        'nb_policy_samples', 'policy_lr'
     ])
     args = parser.parse_args()
 
