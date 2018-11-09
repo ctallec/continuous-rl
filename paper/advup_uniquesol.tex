@@ -163,11 +163,11 @@ of this gradient step is
 \begin{equation}
 V(s)=V^{\pi_A}(s)-\frac{b+\E_{\rho^\pi} V^{\pi_A}}{1+\alpha-\gamma}
 \end{equation}
-which looks different from the solution
-\begin{equation}
-V(s)=V^{\pi_A}(s)-\frac{b}{1-\gamma}
-\end{equation}
-considered above.
+% which looks different from the solution
+% \begin{equation}
+% V(s)=V^{\pi_A}(s)-\frac{b}{1-\gamma}
+% \end{equation}
+% considered above.
 Meanwhile, $b$ is trained to minimize $\E_{s\sim \rho^\pi}
 (r(s,a^\ast)-b+\gamma \E_{s'|s,a^\ast}V(s')-V(s))^2$ whose unique
 solution given $V$ is
