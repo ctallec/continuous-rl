@@ -59,7 +59,7 @@ Applying the equation to $a^\ast$ we find
 
 This is the Bellman equation for the policy $\pi_A$ with rewards $r-b$.
 Shifting rewards by $b$ shifts value functions by $b/(1-\gamma)$. So
-under ergodicity, we know that the unique solution is
+the unique solution is
 \begin{equation}
 V(s)=V^{\pi_A}(s)-\frac{b}{1-\gamma}
 \end{equation}
@@ -72,7 +72,7 @@ b=(1-\gamma)\E_{s\sim \rho^\pi} V^{\pi_A}(s)
 
 Conversely, defining 
 \begin{equation}
-V(s)\deq V^{\pi_A}(s)-\frac{b}{1-\gamma},\qquad
+V(s)\deq V^{\pi_A}(s)-\E_{s\sim \rho^\pi} V^{\pi_A}(s),\qquad
 b\deq (1-\gamma)\E_{s\sim \rho^\pi} V^{\pi_A}(s)
 \end{equation}
 these functions satisfy
@@ -116,5 +116,84 @@ Since $b=(1-\gamma)\E_{\rho^\pi} V^{\pi_A}$ we just find
 b=\E_{(s,a^\ast)\sim\rho^{\pi_A}}\,r(s,a^\ast)+O(1-\gamma)
 \end{equation}
 namely, $b$ is the average reward under policy $\pi^A$.
+
+\paragraph{Convergence of $V$ given $b$.} For robustness analysis, we now
+derive what happens to one variable when the other is wrong. Let us first
+study convergence of $V$ given $b$. There is a subtlety with the
+respective strength of the Bellman objective and the $\E V=0$ objective.
+This is because TD is not a gradient and behaves badly when added to the
+gradient of another loss.
+
+The loss corresponding to $\E_{\rho^\pi}V=0$ is $\frac12
+(\E_{\rho^\pi}V)^2$. We can estimate its gradient as $(\E_{\rho^\pi}\partial_\theta
+V)(\E_{\rho^\pi}V)$ where the two expectations require two independent
+samples from the current policy, eg, sampling twice from the training
+dataset.
+
+Assume that we learn $V$ via TD, to which we add $\alpha$ times the
+centering objective on $V$. Adding the TD step and the centering gradient
+step, the average step is
+\begin{equation}
+\E_{(s,a)\sim\rho^\pi}\partial_\theta
+V(s)(A(s,a^\ast)-A(s,a)+r(s,a)-b+\gamma \E_{s'|s,a}V(s')-V(s) - \alpha
+\E_{\rho^\pi}V)
+\end{equation}
+which corresponds to using TD to solve the modified Bellman equation
+with rewards $A(s,a^\ast)-A(s,a)+r(s,a)-b-\alpha \E_{\rho^\pi}V$. The
+solution is... TODO
+
+\paragraph{Only $\alpha=1$, i.e. penalty $\frac12
+(\E_{\rho^\pi}V)^2$, works for balancing the constraint on $\E V$
+and TD on $V$.}
+
+Let us consider the case when we just train $V$ on pairs $(s,a^\ast)$.
+Then the combined TD+centering step on $V$, with centering loss
+$\frac{\alpha}{2} (\E_{\rho^\pi}V)^2$, is
+\begin{equation}
+\E_{s\sim\rho^\pi}\partial_\theta
+V(s)(r(s,a^\ast)-b+\gamma \E_{s'|s,a^\ast}V(s')-V(s) - \alpha
+\E_{\rho^\pi}V)
+\end{equation}
+
+This is equivalent to using TD
+to solve the modified Bellman equation with
+rewards $r(s,a)-b-\alpha \E_{\rho^\pi}V$. Thus we are trying to solve
+$r(s,a)-b-\alpha \E_{\rho^\pi}V+\gamma PV-V=0$, and the only fixed point
+of this gradient step is
+\begin{equation}
+V(s)=V^{\pi_A}(s)-\frac{b+\E_{\rho^\pi} V^{\pi_A}}{1+\alpha-\gamma}
+\end{equation}
+% which looks different from the solution
+% \begin{equation}
+% V(s)=V^{\pi_A}(s)-\frac{b}{1-\gamma}
+% \end{equation}
+% considered above.
+Meanwhile, $b$ is trained to minimize $\E_{s\sim \rho^\pi}
+(r(s,a^\ast)-b+\gamma \E_{s'|s,a^\ast}V(s')-V(s))^2$ whose unique
+solution given $V$ is
+\begin{equation}
+b=\E_{s\sim \rho^\pi}(r(s,a^\ast)+\gamma \E_{s'|s,a^\ast}V(s')-V(s))
+\end{equation}
+and substituting the fixed point
+$V(s)=V^{\pi_A}(s)-\frac{b+\E V^{\pi_A}}{1-\gamma+\alpha}$ we find
+\begin{equation}
+b=-(\gamma-1) \frac{b+\E V^{\pi_A}}{1-\gamma+\alpha}
+\end{equation}
+which yields
+\begin{equation}
+b=\frac{1-\gamma}{\alpha} \E V^{\pi_A}
+\end{equation}
+contrary to $b=(1-\gamma)\E V^{\pi_A}$ we had before. 
+This translates back to
+\begin{equation}
+V(s)=V^{\pi_A}(s)-\frac{b+\E_{\rho^\pi} V^{\pi_A}}{1+\alpha-\gamma}
+=V^{\pi_A}(s)-\frac1\alpha \E_{\rho^\pi} V^{\pi_A}
+\end{equation}
+with this value of $b$.
+
+The constraint $\E V=0$ is satisfied if and only if $\alpha=1$.
+
+In conclusion, when $\alpha=1$, everything coincides with the desired
+solution; however for $\alpha\neq 1$ this is not the case.
 
 \end{document}
