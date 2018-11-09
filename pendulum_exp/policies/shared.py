@@ -111,7 +111,7 @@ class SharedAdvantagePolicy(Policy):
         done = arr_to_th(check_array(done).astype('float'), self._device)
         next_v = self._val_function(next_obs).squeeze().detach()
         if self._gamma == 1:
-            assert (1 - done).all(), "Gamma set to 1. with a potentially"\
+            assert (1 - done).byte().all(), "Gamma set to 1. with a potentially"\
                 "episodic problem..."
             return next_v
         return (1 - done) * next_v - done * self._baseline / (1 - self._gamma)
