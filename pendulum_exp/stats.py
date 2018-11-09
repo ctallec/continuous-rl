@@ -42,4 +42,4 @@ def penalize_mean(arr: torch.Tensor):
     length = min(torch.sum(mask), torch.sum(1 - mask)).item()
     if length == 0:
         return torch.Tensor([0]).to(arr.device)
-    return (arr[mask][:length] * arr[1 - mask][:length]).mean()
+    return (arr[mask][:length] * arr[1 - mask][:length]).mean() / 2
