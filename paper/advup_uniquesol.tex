@@ -158,7 +158,8 @@ V(s)(r(s,a^\ast)-b+\gamma \E_{s'|s,a^\ast}V(s')-V(s) - \alpha
 This is equivalent to using TD
 to solve the modified Bellman equation with
 rewards $r(s,a)-b-\alpha \E_{\rho^\pi}V$. Thus we are trying to solve
-$r(s,a)-b-\alpha \E_{\rho^\pi}V+\gamma PV-V=0$, and the only fixed point is
+$r(s,a)-b-\alpha \E_{\rho^\pi}V+\gamma PV-V=0$, and the only fixed point
+of this gradient step is
 \begin{equation}
 V(s)=V^{\pi_A}(s)-\frac{b+\E_{\rho^\pi} V^{\pi_A}}{1+\alpha-\gamma}
 \end{equation}
