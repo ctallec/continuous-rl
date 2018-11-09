@@ -145,6 +145,7 @@ if __name__ == '__main__':
     parser.add_argument('--cyclic_exploration', action='store_true')
     parser.add_argument('--normalize_state', action='store_true')
     parser.add_argument('--lr', type=float, default=.03)
+    parser.add_argument('--policy_lr', type=float, default=.01)
     parser.add_argument('--time_limit', type=float, default=None)
     parser.add_argument('--redirect_stdout', action='store_true')
     parser.add_argument('--policy_type', type=str, default='default')

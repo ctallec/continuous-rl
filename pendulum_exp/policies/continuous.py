@@ -5,7 +5,7 @@ from torch import Tensor
 import numpy as np
 from abstract import ParametricFunction, Arrayable, Noise, StateDict
 from convert import th_to_arr, check_array
-from config import SampledAdvantagePolicyConfig, AdvantagePolicyConfig
+from config import SampledAdvantagePolicyConfig, ApproximateAdvantagePolicyConfig
 from policies.shared import SharedAdvantagePolicy
 from logging import info
 from mylog import log
@@ -128,7 +128,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
                  val_function: ParametricFunction,
                  policy_function: ParametricFunction,
                  policy_noise: Noise,
-                 policy_config: AdvantagePolicyConfig,
+                 policy_config: ApproximateAdvantagePolicyConfig,
                  device) -> None:
         super().__init__(policy_config, val_function, device)
 
@@ -143,7 +143,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
             torch.optim.SGD(self._val_function.parameters(),
                             lr=policy_config.lr * self._dt ** 2),
             torch.optim.SGD(self._policy_function.parameters(),
-                            lr=policy_config.lr * self._dt))
+                            lr=policy_config.policy_lr * self._dt))
         self._schedulers = (
             torch.optim.lr_scheduler.LambdaLR(self._optimizers[0],
                                               policy_config.lr_decay),

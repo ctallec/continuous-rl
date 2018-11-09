@@ -10,6 +10,7 @@ from policies.wrappers import StateNormalization
 from models import ContinuousAdvantageMLP, ContinuousPolicyMLP, MLP
 from noise import setup_noise
 from config import NoiseConfig, PolicyConfig, AdvantagePolicyConfig
+from config import SampledAdvantagePolicyConfig, ApproximateAdvantagePolicyConfig
 
 def setup_policy(observation_space: Space,
                  action_space: Space,
@@ -57,7 +58,7 @@ def setup_policy(observation_space: Space,
         adv_function = ContinuousAdvantageMLP(
             nb_state_feats=nb_state_feats, nb_actions=nb_actions,
             nb_layers=nb_layers, hidden_size=hidden_size).to(device)
-        if isinstance(policy_config, AdvantagePolicyConfig):
+        if isinstance(policy_config, ApproximateAdvantagePolicyConfig):
             policy_function = ContinuousPolicyMLP(
                 nb_inputs=nb_state_feats, nb_outputs=nb_actions,
                 nb_layers=nb_layers, hidden_size=hidden_size).to(device)
@@ -71,7 +72,7 @@ def setup_policy(observation_space: Space,
             eval_policy = ContinuousAdvantagePolicy(
                 adv_function=adv_function, val_function=val_function, policy_function=policy_function,
                 policy_noise=eval_noise, policy_config=policy_config, device=device)
-        else:
+        elif isinstance(policy_config, SampledAdvantagePolicyConfig):
             noise = setup_noise(noise_config, network=adv_function,
                                 action_shape=(nb_train_env, 1)).to(device)
             eval_noise = setup_noise(eval_noise_config, network=adv_function,
@@ -84,6 +85,8 @@ def setup_policy(observation_space: Space,
                 adv_function=adv_function, val_function=val_function,
                 adv_noise=eval_noise, policy_config=policy_config, action_shape=action_space.shape,
                 device=device)
+        else:
+            raise NotImplementedError()
 
     if normalize_state:
         policy = StateNormalization(policy, normalization_state)
