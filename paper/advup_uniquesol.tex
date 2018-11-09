@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+\usepackage{xcolor}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+\newcommand{\deltat}{{\delta t}}
+\newcommand{\gauss}{\mathcal{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\TODO}[1]{\textcolor{red}{#1}}
+\newcommand{\bigO}[1]{O(#1)}
+\newcommand{\Tdo}{TD($0$)}
+\newcommand{\tdres}{\delta_\text{TD}}
+
+\newcommand{\deq}{\mathrel{\mathop{:}}=}
+\newcommand{\eqd}{=\mathrel{\mathop{:}}}
+
+
+\title{Baseline centering problem}
+\begin{document}
+\maketitle
+
+Let $\pi$ be any policy (or set of observed transitions) and let
+$\rho^\pi$ be the associated distribution on states.
+
+Let us start again from  the equations on $A^*$, $V^*$ and $b$:
+\begin{gather}
+	A(s, a) = \max\limits_{a'} A(s, a') + 
+		(r(s, a) - b)
+		 + 
+		\gamma \E_{s'\mid a}\left[
+			V(s')
+		\right] - V(s)
+	\\
+	\max\limits_{a} A(s, a) = 0\\
+	\E_{s\sim \rho^\pi}\left[V(s)\right] = 0
+	.
+\end{gather}
+
+Let us prove existence and uniqueness of the solution over $(V,b)$ for a
+given function $A$. Moreover, let us prove that when $\gamma\to 1$, $b$
+tends to the average reward under the policy derived from $A$.
+
+\paragraph{Existence of a solution.}
+
+Let $\pi_A$ be the (or any in case of ties) policy described by the advantage function $A$,
+namely, that returns an action $a^\ast$ that maximizes $A(s,a)$.
+
+Applying the equation to $a^\ast$ we find
+\begin{equation}
+\label{eq:optbellman}
+0=r(s,a^\ast)-b+\gamma \E_{s'|a^\ast} V(s')-V(s)
+\end{equation}
+
+This is the Bellman equation for the policy $\pi_A$ with rewards $r-b$.
+Shifting rewards by $b$ shifts value functions by $b/(1-\gamma)$. So
+under ergodicity, we know that the unique solution is
+\begin{equation}
+V(s)=V^{\pi_A}(s)-\frac{b}{1-\gamma}
+\end{equation}
+and averaging under the current empirical policy $\pi$ and using
+$\E_{\rho^\pi} V=0$ we find
+\begin{equation}
+b=(1-\gamma)\E_{s\sim \rho^\pi} V^{\pi_A}(s)
+\end{equation}
+
+Conversely, the function $V(s)\deq V^{\pi_A}(s)-\frac{b}{1-\gamma}$ with
+$b\deq (1-\gamma)\E_{s\sim \rho^\pi} V^{\pi_A}(s)$ satisfies 
+both $\E_{\rho^\pi} V=0$ (by construction) and the Bellman equation for
+every pair $(s,a^\ast)$, that is, the Bellman equation for $\pi_A$.
+
+TODO Satisfying Bellman for every pair $(s,a)$ instead of just $(s,a^\ast)$
+tells that $A$ is indeed the advantage function of $\pi_A$.
+
+Thus, interestingly, the system provides a well-defined solution for $V$
+and $b$ even if $A$ is not perfect (namely, the value function associated
+with $\pi_A$). This provides some numerical protection.
+
+\paragraph{The value of $b$ when $\gamma\to 1$.}
+We know that when $\gamma\to 1$, the value function for $\pi_A$ takes the form
+\begin{equation}
+\label{eq:reladv}
+	V^{\pi_A}(s) = \frac{\E_{(s,a^\ast)\sim\rho^{\pi_A}}r(s,a^\ast) }{1 - \gamma} +
+	U(s) + O(1-\gamma)
+\end{equation}
+where $U(s)$ is the relative advantage function of the policy $\pi^A$.
+The function $U$
+is bounded when $\gamma\to 1$.
+
+Since $b=(1-\gamma)\E_{\rho^\pi} V^{\pi_A}$ we just find
+\begin{equation}
+b=\E_{(s,a^\ast)\sim\rho^{\pi_A}}r(s,a^\ast)+O(1-\gamma)
+\end{equation}
+namely, $b$ is the average reward under policy $\pi^A$.
+
+\end{document}
