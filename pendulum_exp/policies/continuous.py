@@ -60,7 +60,7 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
         obs = check_array(obs)
         action = check_array(action)
         proposed_actions = np.random.uniform(
-            -1, 1, [self._nb_samples, obs.shape[0], self._action_shape])
+            -1, 1, [self._nb_samples, obs.shape[0], *self._action_shape])
         adv = self._adv_function(obs, action).squeeze()
         max_adv = torch.max(
             self._adv_function(

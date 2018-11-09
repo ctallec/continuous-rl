@@ -88,7 +88,7 @@ class SharedAdvantagePolicy(Policy):
                     mean_loss = self._alpha * penalize_mean(v)
                     bell_loss = adv_update_loss + adv_norm_loss
 
-                    self.optimize_value(bell_loss, mean_loss / self.dt)
+                    self.optimize_value(bell_loss, mean_loss / self._dt)
                     self.optimize_policy(max_adv)
 
                 self.log()
