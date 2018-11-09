@@ -142,8 +142,21 @@ which corresponds to using TD to solve the modified Bellman equation
 with rewards $A(s,a^\ast)-A(s,a)+r(s,a)-b-\alpha \E_{\rho^\pi}V$. The
 solution is... TODO
 
+\paragraph{Only $\alpha=1$, i.e. penalty $\frac12
+(\E_{\rho^\pi}V)^2$, works for balancing the constraint on $\E V$
+and TD on $V$.}
+
 Let us consider the case when we just train $V$ on pairs $(s,a^\ast)$.
-Then the above uses TD to solve the modified Bellman equation with
+Then the combined TD+centering step on $V$, with centering loss
+$\frac{\alpha}{2} (\E_{\rho^\pi}V)^2$, is
+\begin{equation}
+\E_{s\sim\rho^\pi}\partial_\theta
+V(s)(r(s,a^\ast)-b+\gamma \E_{s'|s,a^\ast}V(s')-V(s) - \alpha
+\E_{\rho^\pi}V)
+\end{equation}
+
+This is equivalent to using TD
+to solve the modified Bellman equation with
 rewards $r(s,a)-b-\alpha \E_{\rho^\pi}V$. Thus we are trying to solve
 $r(s,a)-b-\alpha \E_{\rho^\pi}V+\gamma PV-V=0$, and the only fixed point is
 \begin{equation}
@@ -153,8 +166,7 @@ which looks different from the solution
 \begin{equation}
 V(s)=V^{\pi_A}(s)-\frac{b}{1-\gamma}
 \end{equation}
-considered above; however, these two may still coincide for the value of $b$ at
-equilibrium.
+considered above.
 Meanwhile, $b$ is trained to minimize $\E_{s\sim \rho^\pi}
 (r(s,a^\ast)-b+\gamma \E_{s'|s,a^\ast}V(s')-V(s))^2$ whose unique
 solution given $V$ is
@@ -170,10 +182,17 @@ which yields
 \begin{equation}
 b=\frac{1-\gamma}{\alpha} \E V^{\pi_A}
 \end{equation}
-contrary to $b=(1-\gamma)\E V^{\pi_A}$ we had before. Let us check that
-the constraint $\E V=0$ is satisfied:
+contrary to $b=(1-\gamma)\E V^{\pi_A}$ we had before. 
+This translates back to
 \begin{equation}
-\E V= \E V^{\pi_A} -\frac{b+\E_{\rho^\pi} V^{\pi_A}}{1+\alpha-\gamma}
+V(s)=V^{\pi_A}(s)-\frac{b+\E_{\rho^\pi} V^{\pi_A}}{1+\alpha-\gamma}
+=V^{\pi_A}(s)-\frac1\alpha \E_{\rho^\pi} V^{\pi_A}
 \end{equation}
+with this value of $b$.
+
+The constraint $\E V=0$ is satisfied if and only if $\alpha=1$.
+
+In conclusion, when $\alpha=1$, everything coincides with the desired
+solution; however for $\alpha\neq 1$ this is not the case.
 
 \end{document}
