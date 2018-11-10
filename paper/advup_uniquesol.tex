@@ -314,7 +314,8 @@ The TD step in that case is simply
 r(s,a)+\gamma(V(s')-V(\tilde s))-V(s)\right)
 \end{equation}
 ie we just bring $V(s)$ closer to $V(s')-V(\tilde s)$. This is the
-simplest trick ever to remove constants...
+simplest trick ever to remove constants... Let's call this \emph{relative
+TD}. (TODO check if name is preoccupied.)
 
 Would have to check what happens for training $A$, I think we have to
 take $\gamma(V(s')-V(\tilde s))-[V(s)-V(\tilde s)]$ if we want to remove
