@@ -208,7 +208,15 @@ r(s,a)-b+\gamma V(s')-V(s)+(1-\gamma)V(\tilde s)
 \end{equation}
 where $a$ is from some policy $\pi$, $s'$ is the next state given $s$ and
 $a$, and $\tilde s$ is a random state taken from any empirical
-distribution $\rho$. Minimize this by TD with $s$ taken from the same
+distribution $\rho$.
+
+With this expression, the Bellman gap is insensitive to constants on $V$.
+
+This expression does not change the optima of the original
+problem, since we have just added $(1-\gamma)\E_\rho V$ and the solution
+of the original problem makes this $0$ by definition.
+
+Let us minimize this by TD with $s$ taken from the same
 empirical distribution $\rho$, adding a gradient term to minimize
 $\frac{\alpha}{2} (\E_\rho V)^2$ as before.
 
@@ -225,16 +233,16 @@ V(s)=V^\pi(s)-\E_\rho V^\pi-\frac{b-(1-\gamma)\E_\rho V^\pi}{\alpha}
 \end{equation}
 
 Meanwhile, $b$ is trained to minimize $\E_s\E_{s'|s,a}\E_{\tilde s} (r-b+\gamma
-V(s')-V(s)+(1-\gamma)V(\tilde s))^2$ whose unique solution is
+V(s')-V(s)+(1-\gamma)V(\tilde s))^2$. Given $V$, the unique solution is
 \begin{equation}
 b=\E_s\E_{s'|s,a}\E_{\tilde s}(r+\gamma
 V(s')-V(s)+(1-\gamma)V(\tilde s))
 \end{equation}
-Substituting the equilibrium value for $V$, $V=V^\pi+c$ yields
+Substituting the equilibrium value for $V$, $V=V^\pi+\mathrm{cst}$ yields
 \begin{equation}
 b=(1-\gamma)\E_{\tilde s} V^\pi(\tilde s)=(1-\gamma)\E_\rho V^\pi
 \end{equation}
-whatever $c$ is. Thus, for this optimal value of $b$, we have
+whatever $\mathrm{cst}$ is. Thus, for this optimal value of $b$, we have
 \begin{equation}
 V(s)=V^\pi(s)-\E_\rho V^\pi
 \end{equation}
