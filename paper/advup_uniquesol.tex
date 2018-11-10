@@ -170,7 +170,8 @@ V(s)=V^{\pi_A}(s)-\frac{b+\E_{\rho^\pi} V^{\pi_A}}{1+\alpha-\gamma}
 % considered above.
 Meanwhile, $b$ is trained to minimize $\E_{s\sim \rho^\pi}
 (r(s,a^\ast)-b+\gamma \E_{s'|s,a^\ast}V(s')-V(s))^2$ whose unique
-solution given $V$ is
+solution given $V$ is TODO WRONG I THINK WE HAVE A DOUBLE SAMPLING
+PROBLEM FOR $b$!!!
 \begin{equation}
 b=\E_{s\sim \rho^\pi}(r(s,a^\ast)+\gamma \E_{s'|s,a^\ast}V(s')-V(s))
 \end{equation}
@@ -195,5 +196,35 @@ The constraint $\E V=0$ is satisfied if and only if $\alpha=1$.
 
 In conclusion, when $\alpha=1$, everything coincides with the desired
 solution; however for $\alpha\neq 1$ this is not the case.
+
+\paragraph{A variant to make the learning of $A$ and $b$ insensitive to
+translations of $V$, and the dynamics independent from
+$\alpha_3/\alpha_5$.} Consider the modified off-policy Bellman equation
+for all states $s$,
+\begin{equation}
+0=\E \left(
+r(s,a)-b+\gamma V(s')-V(s)+(1-\gamma)V(\tilde s)
+\right)
+\end{equation}
+where $a$ is from some policy $\pi$, $s'$ is the next state given $s$ and
+$a$, and $\tilde s$ is a random state taken from any empirical
+distribution $\rho$. Minimize this by TD with $s$ taken from the same
+empirical distribution $\rho$, adding a gradient term to minimize
+$\frac{\alpha}{2} (\E_\rho V)^2$ as before.
+
+The TD step is
+\begin{equation}
+\E_s \,\partial_\theta V(s)\left(
+r(s,a)-b+\gamma V(s')-V(s)+(1-\gamma)V(\tilde s)-\alpha V(s)
+\right)
+\end{equation}
+and its fixed point solves $r(s,a)-b+\gamma V(s')-V(s)+(1-\gamma)V(\tilde
+s)-\alpha V(s)$ for all $s$. The unique solution for $V$ given $b$ is
+\begin{equation}
+V(s)=V^\pi(s)-\E_\rho V^\pi-\frac{b-(1-\gamma)\E_\rho V^\pi}{\alpha}
+\end{equation}
+
+Meanwhile, $b$ is trained to minimize $\E_\rho (\E)$
+
 
 \end{document}
