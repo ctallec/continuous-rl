@@ -308,4 +308,11 @@ V(s)=U^\pi(s)-\gamma \E_{\tilde \rho}U^\pi +O(1-\gamma)
 \end{equation}
 which converges when $\gamma\to 1$???
 
+The TD step in that case is simply
+\begin{equation}
+\E_s \partial_\theta V(s) \left(
+r(s,a)+\gamma(V(s')-V(\tilde s))-V(s)\right)
+\end{equation}
+ie we just bring $V(s)$ closer to $V(s')-V(\tilde s)$
+
 \end{document}
