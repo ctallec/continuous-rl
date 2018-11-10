@@ -267,6 +267,12 @@ just training $V$ on transitions $(s,a,s')$ where $\pi$ was selected. The
 quantity $\eps$ does not have to be small and can be eg .9, as long as $1-\eps$ is not
 ridiculous.
 
+To train $b$ it is important to either use a very small learning rate or
+experience replay from past transitions. Otherwise, a large learning rate
+for $b$ just results in $b$ being equal to the average of recent the
+Bellman gaps, thus erasing the training signal for $V$. One way to select
+transitions to train $b$ is as follows.
+
 \paragraph{Sampling $\tilde s$ from a single trajectory.} Given a
 trajectory $(s_t)$ from any policy, we can keep online a set of unbiased
 samples of the trajectory, as follows. Just maintain a set of $k$ past
