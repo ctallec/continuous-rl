@@ -19,7 +19,7 @@
 
 \newcommand{\deq}{\mathrel{\mathop{:}}=}
 \newcommand{\eqd}{=\mathrel{\mathop{:}}}
-
+\newcommand{\eps}{\varepsilon}
 
 \title{Baseline centering problem}
 \begin{document}
@@ -260,6 +260,12 @@ Notably the distributions of $s$ and $\tilde s$ do not have to match. We may eve
 $V^\pi-V^\pi(s_0)$, and $b$ to $(1-\gamma)V^\pi(s_0)$. This may be the
 simplest practical solution. (If changing $s_0$ from time to time, $V$
 would have to be shifted by the change in $V^\pi(s_0)$.)
+
+This also allows for computing $V^\pi$ while playing a regularized policy
+such as "$\pi$ with proba $1-\eps$ and exploration with proba $\eps$", by
+just training $V$ on transitions $(s,a,s')$ where $\pi$ was selected. The
+quantity $\eps$ does not have to be small and can be eg .9, as long as $1-\eps$ is not
+ridiculous.
 
 \paragraph{Sampling $\tilde s$ from a single trajectory.} Given a
 trajectory $(s_t)$ from any policy, we can keep online a set of unbiased
