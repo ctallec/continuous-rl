@@ -247,4 +247,10 @@ whatever $\mathrm{cst}$ is. Thus, for this optimal value of $b$, we have
 V(s)=V^\pi(s)-\E_\rho V^\pi
 \end{equation}
 
+\paragraph{Sampling $\tilde s$ from a single trajectory.} Given a
+trajectory $(s_t)$ from any policy, we can keep online a set of unbiased
+samples of the trajectory, as follows. Just maintain a set of $k$ past
+states with the following replacement rule: at time $t$, with probability
+$k/t$, replace one of the previous states with the current state $s_t$.
+
 \end{document}
