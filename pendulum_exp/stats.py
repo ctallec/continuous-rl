@@ -2,6 +2,7 @@
 from typing import Optional, Callable
 import numpy as np
 import torch
+from torch import Tensor
 
 class FloatingAvg:
     """ Computes floating average of a value. """
@@ -36,10 +37,13 @@ def epsilon_noise(arr: np.ndarray, epsilon: float) -> np.ndarray:
     mask = (np.random.uniform(0, 1, (arr.shape[0],)) < epsilon)
     return arr * (1 - mask) + (4 * np.random.randint(0, 2, (arr.shape[0],)) - 2) * mask
 
-def penalize_mean(arr: torch.Tensor):
+def penalize_mean_depr(arr: torch.Tensor):
     """ Introduce a mean penalization. """
     mask = (torch.zeros_like(arr).uniform_() >= .5)
     length = min(torch.sum(mask), torch.sum(1 - mask)).item()
     if length == 0:
         return torch.Tensor([0]).to(arr.device)
     return (arr[mask][:length] * arr[1 - mask][:length]).mean() / 2
+
+def penalize_mean(arr: torch.Tensor, indep_detach_arr: Tensor) -> Tensor:
+    return (arr * indep_detach_arr).mean()

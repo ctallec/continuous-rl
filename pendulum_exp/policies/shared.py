@@ -70,22 +70,24 @@ class SharedAdvantagePolicy(Policy):
             try:
                 for _ in range(self._learn_per_step):
                     obs, action, next_obs, reward, done = self._sampler.sample()
+                    indep_obs, _, _, _, _ = self._sampler.sample()
                     done = arr_to_th(check_array(done).astype('float'), self._device)
                     reward = arr_to_th(reward, self._device)
 
                     v = self._val_function(obs).squeeze()
                     next_v = self.compute_next_value(next_obs, done)
+                    indep_v = self._val_function(indep_obs).squeeze().detach()
                     adv, max_adv = self.compute_advantages(
                         obs, action)
 
                     expected_v = (reward - self._baseline) * self._dt + \
                         self._gamma ** self._dt * next_v
                     dv = (expected_v - v) / self._dt
-                    bell_residual = dv - adv + max_adv
+                    bell_residual = dv - adv + max_adv + (1 - self._gamma) * indep_v.mean()
 
                     adv_update_loss = (bell_residual ** 2).mean()
                     adv_norm_loss = (max_adv ** 2).mean()
-                    mean_loss = self._alpha * penalize_mean(v)
+                    mean_loss = self._alpha * penalize_mean(v, indep_v)
                     bell_loss = adv_update_loss + adv_norm_loss
 
                     self.optimize_value(bell_loss, mean_loss / self._dt)
