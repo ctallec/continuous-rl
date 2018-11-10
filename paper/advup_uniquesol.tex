@@ -247,6 +247,35 @@ whatever $\mathrm{cst}$ is. Thus, for this optimal value of $b$, we have
 V(s)=V^\pi(s)-\E_\rho V^\pi
 \end{equation}
 
+Interestingly, the distributions for $s$ and $\tilde s$ do not even need
+to be the same. Namely, if $s\sim \rho$ and $\tilde s\sim \tilde \rho$,
+then $\partial_\theta V(s) V(\tilde s)$ is not a gradient of either
+$(\E_\rho V)^2$ or $(\E_{\tilde \rho}V)^2$. But we can still add $V(\tilde
+s)$ to the TD step at $s$ and look for a fixed point. The fixed point of
+the above is when, for any $s$, 
+\begin{equation}
+\E_{a,s',\tilde s|s} \left(r(s,a)-b+\gamma
+V(s')-V(s)+(1-\gamma-\alpha)V(\tilde s)\right)=0
+\end{equation}
+and this does not involve the distribution of $s$, so the unique solution is similar to the above, with expectations under
+$\tilde \rho$:
+\begin{equation}
+V(s)=V^\pi(s)-\E_{\tilde \rho} V^\pi-\frac{b-(1-\gamma)\E_{\tilde
+\rho}V^\pi}{\alpha}
+\end{equation}
+(And if $V_\theta$ is overparameterized, if we converge we converge to
+this.) Likewise, the solution for $b$ is as above, and if
+$V=V^\pi+\mathrm{cst}$ then 
+\begin{equation}
+b=(1-\gamma)\E_{\tilde s} V^\pi(\tilde s)=(1-\gamma)\E_{\tilde \rho} V^\pi
+\end{equation}
+
+We may even take a single value $s_0$ for $\tilde s$ as a reference point
+($\tilde \rho$ a Dirac mass at $s_0$): $V$ would converge to
+$V^\pi-V^\pi(s_0)$, and $b$ to $(1-\gamma)V^\pi(s_0)$. This may be the
+simplest practical solution. (If changing $s_0$ from time to time, $V$
+would have to be shifted by the change of $V^\pi(s_0)$.)
+
 \paragraph{Sampling $\tilde s$ from a single trajectory.} Given a
 trajectory $(s_t)$ from any policy, we can keep online a set of unbiased
 samples of the trajectory, as follows. Just maintain a set of $k$ past
