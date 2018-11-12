@@ -61,14 +61,14 @@ class ParameterNoise(Noise):
 
     def perturb_output(
             self,
-            inputs: Arrayable,
-            a_function: ParametricFunction):
+            *inputs: Arrayable,
+            function: ParametricFunction):
         with torch.no_grad():
-            for name, p in a_function.named_parameters():
+            for name, p in function.named_parameters():
                 if 'ln' not in name:
                     p.copy_(p.data + self._p_noise[name])
-            perturbed_output = a_function(inputs)
-            for name, p in a_function.named_parameters():
+            perturbed_output = function(*inputs)
+            for name, p in function.named_parameters():
                 if 'ln' not in name:
                     p.copy_(p.data - self._p_noise[name])
             return th_to_arr(perturbed_output)
@@ -105,10 +105,10 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
 
     def perturb_output(
             self,
-            inputs: Arrayable,
+            *inputs: Arrayable,
             function: ParametricFunction):
         if self._sigma == 0.:
             with torch.no_grad():
-                return th_to_arr(function(inputs))
+                return th_to_arr(function(*inputs))
         with torch.no_grad():
-            return th_to_arr(function(inputs) + self.noise)
+            return th_to_arr(function(*inputs) + self.noise)

@@ -114,8 +114,8 @@ class Noise(ABC):
     @abstractmethod
     def perturb_output(
             self,
-            inputs: Arrayable,
-            a_function: ParametricFunction):
+            *inputs: Arrayable,
+            function: ParametricFunction):
         pass
 
     @abstractmethod
