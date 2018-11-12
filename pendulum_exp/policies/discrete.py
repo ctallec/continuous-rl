@@ -3,7 +3,7 @@ import torch
 from torch import Tensor
 from abstract import ParametricFunction, Arrayable, Noise, StateDict
 from convert import arr_to_th, th_to_arr
-from config import PolicyConfig
+from config import PolicyConfig, AdvantagePolicyConfig
 from policies.shared import SharedAdvantagePolicy
 from mylog import log
 from logging import info
@@ -15,7 +15,8 @@ class AdvantagePolicy(SharedAdvantagePolicy):
                  adv_noise: Noise,
                  policy_config: PolicyConfig,
                  device) -> None:
-        super().__init__(policy_config, val_function, device)
+        super().__init__(policy_config, val_function, device) # type: ignore
+        assert isinstance(policy_config, AdvantagePolicyConfig)
         self._adv_function = adv_function.to(device)
         self._adv_noise = adv_noise
 

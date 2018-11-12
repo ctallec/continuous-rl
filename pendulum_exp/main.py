@@ -141,7 +141,7 @@ if __name__ == '__main__':
     else:
         basicConfig(stream=sys.stdout, level=INFO)
 
-    logto(args.logdir)
+    logto(args.logdir, reload=not args.noreload)
 
     policy_config, noise_config, eval_noise_config, env_config = read_config(args)
     main(

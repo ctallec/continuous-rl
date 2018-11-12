@@ -9,7 +9,7 @@ from policies.continuous import SampledAdvantagePolicy
 from policies.wrappers import StateNormalization
 from models import ContinuousAdvantageMLP, ContinuousPolicyMLP, MLP
 from noise import setup_noise
-from config import NoiseConfig, PolicyConfig, AdvantagePolicyConfig
+from config import NoiseConfig, PolicyConfig
 from config import SampledAdvantagePolicyConfig, ApproximateAdvantagePolicyConfig
 
 def setup_policy(observation_space: Space,
@@ -33,7 +33,6 @@ def setup_policy(observation_space: Space,
             'mean_squares': None
         }
     if isinstance(action_space, Discrete):
-        assert isinstance(policy_config, AdvantagePolicyConfig)
         adv_function = MLP(nb_inputs=nb_state_feats, nb_outputs=action_space.n,
                            nb_layers=nb_layers, hidden_size=hidden_size).to(device)
         noise = setup_noise(noise_config, network=adv_function,

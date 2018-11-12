@@ -1,5 +1,6 @@
 """Log facilities"""
 from os import makedirs
+from os import remove, removedirs
 from os.path import join, exists, isfile
 from typing import Dict
 import pickle
@@ -33,10 +34,16 @@ class Logger:
             makedirs(video_dir)
         np.savez(join(video_dir, f"{tag}_{timestamp}.npz"), frames)
 
-    def set_dir(self, logdir):
+    def set_dir(self, logdir: str, reload: bool=True):
         self._dir = logdir
-        if isfile(join(self._dir, 'logs.pkl')):
-            self.load()
+        log_file = join(self._dir, 'logs.pkl')
+        if isfile(log_file):
+            if reload:
+                self.load()
+            else:
+                remove(log_file)
+                removedirs(join(self._dir, "videos"))
+
         info("logfile: {}".format(join(self._dir, 'logs.pkl')))
 
     def load(self):
@@ -48,9 +55,9 @@ class Logger:
         assert self._dir is not None
         pickle.dump(self._logs, open(join(self._dir, 'logs.pkl'), 'wb'))
 
-def logto(logdir: str):
+def logto(logdir: str, reload: bool=True):
     assert Logger.CURRENT is not None
-    Logger.CURRENT.set_dir(logdir)
+    Logger.CURRENT.set_dir(logdir, reload)
 
 def log(key: str, value: float, timestamp: int):
     assert Logger.CURRENT is not None
