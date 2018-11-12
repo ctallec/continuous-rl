@@ -1,5 +1,4 @@
 """Define policies."""
-from itertools import chain
 import torch
 from torch import Tensor
 from abstract import ParametricFunction, Arrayable, Noise, StateDict
@@ -22,7 +21,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
         # optimization/storing
         self._optimizers = (
-            torch.optim.SGD(chain(self._adv_function.parameters(), [self._baseline]),
+            torch.optim.SGD(self._adv_function.parameters(),
                             lr=policy_config.lr * policy_config.dt),
             torch.optim.SGD(self._val_function.parameters(),
                             lr=policy_config.lr * policy_config.dt ** 2))
@@ -50,10 +49,10 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         return adv, max_adv
 
     def optimize_value(self, *losses: Tensor):
-        assert len(losses) == 2
+        assert len(losses) == 1
         self._optimizers[0].zero_grad()
         self._optimizers[1].zero_grad()
-        (losses[0] + losses[1]).backward()
+        losses[0].backward()
         self._optimizers[0].step()
         self._schedulers[0].step()
         self._optimizers[1].step()

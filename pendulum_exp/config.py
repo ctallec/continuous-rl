@@ -18,7 +18,6 @@ class ActionNoiseConfig(NamedTuple):
 
 class AdvantagePolicyConfig(NamedTuple):
     batch_size: int
-    alpha: float
     gamma: float
     dt: float
     lr: float
@@ -29,7 +28,6 @@ class AdvantagePolicyConfig(NamedTuple):
 
 class SampledAdvantagePolicyConfig(NamedTuple):
     batch_size: int
-    alpha: float
     gamma: float
     dt: float
     lr: float
@@ -41,7 +39,6 @@ class SampledAdvantagePolicyConfig(NamedTuple):
 
 class ApproximateAdvantagePolicyConfig(NamedTuple):
     batch_size: int
-    alpha: float
     gamma: float
     dt: float
     lr: float
@@ -81,7 +78,7 @@ def read_config(
         return 1 / np.power(1 + args.dt * t, 0)
 
     policy_config_dict = dict(
-        batch_size=args.batch_size, alpha=args.alpha, gamma=args.gamma, dt=args.dt,
+        batch_size=args.batch_size, gamma=args.gamma, dt=args.dt,
         lr=args.lr, lr_decay=lr_decay,
         memory_size=args.memory_size, learn_per_step=args.learn_per_step,
         steps_btw_train=args.steps_btw_train)

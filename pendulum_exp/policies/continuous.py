@@ -1,5 +1,4 @@
 """Define continuous policy."""
-from itertools import chain
 import torch
 from torch import Tensor
 import numpy as np
@@ -27,8 +26,7 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
 
         # optimization/storing
         self._optimizers = (
-            torch.optim.SGD(chain(self._adv_function.parameters(),
-                                  [self._baseline]), lr=policy_config.lr * self._dt),
+            torch.optim.SGD(self._adv_function.parameters(), lr=policy_config.lr * self._dt),
             torch.optim.SGD(self._val_function.parameters(),
                             lr=policy_config.lr * self._dt ** 2))
         self._schedulers = (
@@ -71,7 +69,7 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
     def optimize_value(self, *losses: Tensor):
         self._optimizers[0].zero_grad()
         self._optimizers[1].zero_grad()
-        (losses[0] + losses[1]).backward()
+        losses[0].backward()
         self._optimizers[0].step()
         self._schedulers[0].step()
         self._optimizers[1].step()
@@ -138,7 +136,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
         # TODO: I think we could optimize by gathering policy and advantage parameters
         self._optimizers = (
-            torch.optim.SGD(chain(self._adv_function.parameters(), [self._baseline]),
+            torch.optim.SGD(self._adv_function.parameters(),
                             lr=policy_config.lr * self._dt),
             torch.optim.SGD(self._val_function.parameters(),
                             lr=policy_config.lr * self._dt ** 2),
@@ -169,10 +167,9 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         return adv, max_adv
 
     def optimize_value(self, *losses: Tensor):
-        assert len(losses) == 2
         self._optimizers[0].zero_grad()
         self._optimizers[1].zero_grad()
-        (losses[0] + losses[1]).backward(retain_graph=True)
+        losses[0].backward(retain_graph=True)
         self._optimizers[0].step()
         self._schedulers[0].step()
         self._optimizers[1].step()
