@@ -304,11 +304,13 @@ V^\pi(s)=\frac{\E_{\rho^\pi}r}{1-\gamma}+U^\pi(s)+O(1-\gamma)
 with $\rho^\pi$ the invariant distribution from $\pi$, and $U$ the
 relative value function of $\pi$. Thus, the fixed point for $V$ is
 \begin{equation}
-V(s)=U^\pi(s)-\gamma \E_{\tilde \rho}U^\pi +\E_{\rho^\pi}r+O(1-\gamma)
+V(s)=U^\pi(s)+\frac{1-\gamma-\alpha}{\alpha} \,\E_{\tilde \rho}U^\pi
++\frac1{\alpha} \E_{\rho^\pi}r+O(1-\gamma)
 \end{equation}
-which converges when $\gamma\to 1$??? 
+which converges to $V(s)=U^\pi(s)-\E_{\tilde \rho}U^\pi+\frac1{\alpha}
+\E_{\rho^\pi}r$ when $\gamma\to 1$.
 
-The TD step in that case is simply
+The TD step in that case, with $\alpha=1$, is simply
 \begin{equation}
 \E_s \partial_\theta V(s) \left(
 r(s,a)+\gamma(V(s')-V(\tilde s))-V(s)\right)
@@ -318,9 +320,9 @@ simplest trick ever to remove constants... Let's call this \emph{relative
 TD}. (TODO check if name is preoccupied.)
 
 (In particular, with $\gamma=1$ one
-has $\E_{\tilde \rho}V=\E_{\rho^\pi}r$. For instance, if $\tilde \rho$ is
+has $\E_{\tilde \rho}V=\frac{1}{\alpha}\E_{\rho^\pi}r$. For instance, if $\tilde \rho$ is
 just a single reference
-state $\tilde s$ then 
+state $\tilde s$ and $\alpha=1$ then 
 $V(\tilde s)=\E_{\rho^\pi}r$.)
 
 Would have to check what happens for training $A$, I think we have to
