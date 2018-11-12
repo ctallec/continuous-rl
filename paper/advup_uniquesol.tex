@@ -19,7 +19,7 @@
 
 \newcommand{\deq}{\mathrel{\mathop{:}}=}
 \newcommand{\eqd}{=\mathrel{\mathop{:}}}
-
+\newcommand{\eps}{\varepsilon}
 
 \title{Baseline centering problem}
 \begin{document}
@@ -261,6 +261,23 @@ $V^\pi-V^\pi(s_0)$, and $b$ to $(1-\gamma)V^\pi(s_0)$. This may be the
 simplest practical solution. (If changing $s_0$ from time to time, $V$
 would have to be shifted by the change in $V^\pi(s_0)$.)
 
+This also allows for computing $V^\pi$ while playing a regularized policy
+such as "$\pi$ with proba $1-\eps$ and exploration with proba $\eps$", by
+just training $V$ on transitions $(s,a,s')$ where $\pi$ was selected. The
+quantity $\eps$ does not have to be small and can be eg .9, as long as $1-\eps$ is not
+ridiculous.
+
+To train $b$ it is important to either use a very small learning rate, or
+experience replay from past transitions, or have several independent
+trajectories. Otherwise, a large learning rate
+for $b$ just results in $b$ being equal to the average of the recent
+Bellman gaps, thus erasing the training signal for $V$. One way to select
+transitions to train $b$ is as follows. ($b$ does not have to follow the
+same distribution for $s$, but it has to use the same policy for $a$
+given $s$... so reusing
+past transitions is
+delicate if policy changes.)
+
 \paragraph{Sampling $\tilde s$ from a single trajectory.} Given a
 trajectory $(s_t)$ from any policy, we can keep online a set of unbiased
 samples of the trajectory, as follows. Just maintain a set of $k$ past
@@ -269,5 +286,47 @@ $k/t$, replace one of the previous states with the current state $s_t$.
 
 This means storing past states and recomputing the value function
 at every time, not just storing past value functions.
+
+\paragraph{Removing $b$?} Let us just fix $b=0$ in the above. The unique
+solution for $V$ (with $\gamma<1$) is
+\begin{equation}
+V(s)=V^\pi(s)+\left(\frac{1-\gamma}{\alpha}-1\right)\E_{\tilde \rho} V^\pi
+\end{equation}
+and with $\alpha=1$ this is simply
+\begin{equation}
+V(s)=V^\pi(s)-\gamma \E_{\tilde \rho} V^\pi
+\end{equation}
+
+Let us check the behavior of this when $\gamma\to 1$. We know that
+\begin{equation}
+V^\pi(s)=\frac{\E_{\rho^\pi}r}{1-\gamma}+U^\pi(s)+O(1-\gamma)
+\end{equation}
+with $\rho^\pi$ the invariant distribution from $\pi$, and $U$ the
+relative value function of $\pi$. Thus, the fixed point for $V$ is
+\begin{equation}
+V(s)=U^\pi(s)+\frac{1-\gamma-\alpha}{\alpha} \,\E_{\tilde \rho}U^\pi
++\frac1{\alpha} \E_{\rho^\pi}r+O(1-\gamma)
+\end{equation}
+which converges to $V(s)=U^\pi(s)-\E_{\tilde \rho}U^\pi+\frac1{\alpha}
+\E_{\rho^\pi}r$ when $\gamma\to 1$.
+
+The TD step in that case, with $\alpha=1$, is simply
+\begin{equation}
+\E_s \partial_\theta V(s) \left(
+r(s,a)+\gamma(V(s')-V(\tilde s))-V(s)\right)
+\end{equation}
+ie we just bring $V(s)$ closer to $r+V(s')-V(\tilde s)$. This is the
+simplest trick ever to remove constants... Let's call this \emph{relative
+TD}. (TODO check if name is preoccupied.)
+
+(In particular, with $\gamma=1$ one
+has $\E_{\tilde \rho}V=\frac{1}{\alpha}\E_{\rho^\pi}r$. For instance, if $\tilde \rho$ is
+just a single reference
+state $\tilde s$ and $\alpha=1$ then 
+$V(\tilde s)=\E_{\rho^\pi}r$.)
+
+Would have to check what happens for training $A$, I think we have to
+take $\gamma(V(s')-V(\tilde s))-[V(s)-V(\tilde s)]$ if we want to remove
+constants on $A$.
 
 \end{document}
