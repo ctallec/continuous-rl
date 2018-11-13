@@ -65,7 +65,6 @@ class SharedAdvantagePolicy(Policy):
                 for _ in range(self._learn_per_step):
                     obs, action, next_obs, reward, done = self._sampler.sample()
                     indep_obs, _, _, _, _ = self._sampler.sample()
-                    done = arr_to_th(check_array(done).astype('float'), self._device)
                     reward = arr_to_th(reward, self._device)
 
                     v = self._val_function(obs).squeeze()

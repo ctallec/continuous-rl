@@ -1,6 +1,7 @@
 """Log facilities"""
 from os import makedirs
-from os import remove, removedirs
+from os import remove
+from shutil import rmtree
 from os.path import join, exists, isfile
 from typing import Dict
 import pickle
@@ -14,7 +15,7 @@ class Logger:
     def __init__(self):
         assert Logger.CURRENT is None
         self._logs: Dict[str, Dict[int, float]] = dict()
-        self._buffering = 300
+        self._buffering = 500
         self._count = 0
         self._dir = None
 
@@ -42,7 +43,7 @@ class Logger:
                 self.load()
             else:
                 remove(log_file)
-                removedirs(join(self._dir, "videos"))
+                rmtree(join(self._dir, "videos"), ignore_errors=True)
 
         info("logfile: {}".format(join(self._dir, 'logs.pkl')))
 

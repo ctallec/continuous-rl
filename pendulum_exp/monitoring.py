@@ -50,12 +50,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     log_filename = os.path.join(args.logdir, 'logs.pkl')
-    assert os.path.isfile(log_filename)
-    with open(log_filename, 'rb') as f:
-        logs = pickle.load(f)
+    if os.path.isfile(log_filename):
+        with open(log_filename, 'rb') as f:
+            logs = pickle.load(f)
 
-    if args.plots:
-        plots(logs, os.path.join(args.logdir, 'plots.eps'))
+        if args.plots:
+            plots(logs, os.path.join(args.logdir, 'plots.eps'))
 
     if args.video:
         if args.xvfb:
