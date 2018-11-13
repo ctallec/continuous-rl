@@ -22,6 +22,10 @@ class Policy(ABC):
         pass
 
     @abstractmethod
+    def observe_evaluation(self, eval_return: float):
+        pass
+
+    @abstractmethod
     def learn(self):
         pass
 

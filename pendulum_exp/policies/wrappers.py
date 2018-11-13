@@ -73,3 +73,6 @@ class StateNormalization(Policy):
         assert hasattr(self._policy, 'advantage')
         obs = self._normalize(obs)
         return self._policy.advantage(obs) # type: ignore
+
+    def observe_evaluation(self, eval_return: float):
+        self._policy.observe_evaluation(eval_return)

@@ -43,7 +43,7 @@ class Logger:
                 self.load()
             else:
                 remove(log_file)
-                rmtree(join(self._dir, "videos"))
+                rmtree(join(self._dir, "videos"), ignore_errors=True)
 
         info("logfile: {}".format(join(self._dir, 'logs.pkl')))
 

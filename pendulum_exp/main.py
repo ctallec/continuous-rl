@@ -122,12 +122,14 @@ def main(
             env_config.time_limit,
             eval_return=e % log_gap == log_gap - 1
         )
-        if new_R is not None and new_R > R:
-            info(f"Saving new policy with return {new_R}")
-            state_dict = policy.state_dict()
-            state_dict["return"] = new_R
-            torch.save(state_dict, policy_file)
-            R = new_R
+        if new_R is not None:
+            policy.observe_evaluation(new_R)
+            if new_R > R:
+                info(f"Saving new policy with return {new_R}")
+                state_dict = policy.state_dict()
+                state_dict["return"] = new_R
+                torch.save(state_dict, policy_file)
+                R = new_R
     env.close()
     eval_env.close()
 
