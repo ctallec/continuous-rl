@@ -43,7 +43,10 @@ def train(model: Model,
         V = model(state).squeeze()
         V_next = model(next_state).squeeze()
         V_mixed_next = V_next.detach()
-        V_indep = model(torch.cat([state[1:], state[:1]], dim=0)).squeeze().detach()
+        V_indep = model(torch.cat([state[1:], state[:1]], dim=0)).repeat(1, state.size(0))
+        idx = torch.arange(state.size(0)).long()
+        V_indep[idx, idx] = 0
+        V_indep = V_indep.mean(dim=0)
 
         loss = f.mse_loss(V - true_gamma * V_mixed_next + center * dt * V_indep, reward) # + 0 * hessian_loss
 
