@@ -7,5 +7,5 @@ def setup_memory(policy_config: PolicyConfig):
 
     if policy_config.beta is not None:
         return PrioritizedMemorySampler(
-            beta=policy_config.beta, **args)
+            alpha=policy_config.alpha, beta=policy_config.beta, **args)
     return MemorySampler(**args)

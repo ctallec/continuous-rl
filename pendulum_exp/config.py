@@ -25,6 +25,7 @@ class AdvantagePolicyConfig(NamedTuple):
     memory_size: int
     learn_per_step: int
     steps_btw_train: int
+    alpha: Optional[float]
     beta: Optional[float]
 
 class SampledAdvantagePolicyConfig(NamedTuple):
@@ -37,6 +38,7 @@ class SampledAdvantagePolicyConfig(NamedTuple):
     learn_per_step: int
     steps_btw_train: int
     nb_samples: int
+    alpha: Optional[float]
     beta: Optional[float]
 
 class ApproximateAdvantagePolicyConfig(NamedTuple):
@@ -49,6 +51,7 @@ class ApproximateAdvantagePolicyConfig(NamedTuple):
     memory_size: int
     learn_per_step: int
     steps_btw_train: int
+    alpha: Optional[float]
     beta: Optional[float]
 
 
@@ -84,7 +87,7 @@ def read_config(
         batch_size=args.batch_size, gamma=args.gamma, dt=args.dt,
         lr=args.lr, lr_decay=lr_decay,
         memory_size=args.memory_size, learn_per_step=args.learn_per_step,
-        steps_btw_train=args.steps_btw_train, beta=args.beta)
+        steps_btw_train=args.steps_btw_train, beta=args.beta, alpha=args.alpha)
     if args.policy_lr is not None:
         policy_config_dict['policy_lr'] = args.policy_lr
         policy_config: PolicyConfig = ApproximateAdvantagePolicyConfig(

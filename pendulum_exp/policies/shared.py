@@ -64,6 +64,7 @@ class SharedAdvantagePolicy(Policy):
                     obs, action, next_obs, reward, done, weights = self._sampler.sample()
                     indep_obs, _, _, _, _, _ = self._sampler.sample(to_observe=False)
                     reward = arr_to_th(reward, self._device)
+                    weights = arr_to_th(check_array(weights), self._device)
 
                     v = self._val_function(obs).squeeze()
                     next_v = self.compute_next_value(next_obs, done)
@@ -77,8 +78,8 @@ class SharedAdvantagePolicy(Policy):
                     bell_residual = dv - adv + max_adv
                     self._sampler.observe(np.abs(th_to_arr(bell_residual)))
 
-                    adv_update_loss = (bell_residual ** 2).mean()
-                    adv_norm_loss = (max_adv ** 2).mean()
+                    adv_update_loss = ((bell_residual ** 2) * weights).mean()
+                    adv_norm_loss = ((max_adv ** 2) * weights).mean()
                     bell_loss = adv_update_loss + adv_norm_loss
 
                     self.optimize_value(bell_loss)

@@ -68,12 +68,14 @@ class MemorySampler:
         pass
 
 class PrioritizedMemorySampler:
-    def __init__(self, size: int, batch_size: int, beta: float=0.) -> None:
+    def __init__(self, size: int, batch_size: int,
+                 beta: float, alpha: float) -> None:
         self._memory = MemorySampler(size, batch_size)
         self._sum_tree = SumTree(size)
         self._max_priority = .1
         self._batch_size = batch_size
-        self._beta = 0.
+        self._beta = beta
+        self._alpha = alpha
 
         # placeholders to update priorities
         self._idxs = None
@@ -97,7 +99,7 @@ class PrioritizedMemorySampler:
         self._memory.push(
             obs, action, next_obs, reward, done)
         for _ in check_array(obs):
-            self._sum_tree.add(self._max_priority)
+            self._sum_tree.add(self._max_priority ** self._alpha)
 
     def sample(self, to_observe: bool=True) -> Tuple[Arrayable, ...]:
         if to_observe:
@@ -117,6 +119,6 @@ class PrioritizedMemorySampler:
         assert self._idxs is not None, "No sample before observe ..."
         self._max_priority = max(self._max_priority, priorities.max())
         for idx, prio in zip(self._idxs, priorities):
-            self._sum_tree.modify(idx, prio)
+            self._sum_tree.modify(idx, prio ** self._alpha)
 
         self._idxs = None
