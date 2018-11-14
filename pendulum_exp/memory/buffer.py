@@ -71,7 +71,7 @@ class PrioritizedMemorySampler:
     def __init__(self, size: int, batch_size: int, beta: float=0.) -> None:
         self._memory = MemorySampler(size, batch_size)
         self._sum_tree = SumTree(size)
-        self._max_priority = 0.
+        self._max_priority = .1
         self._batch_size = batch_size
         self._beta = 0.
 
@@ -103,8 +103,8 @@ class PrioritizedMemorySampler:
         if to_observe:
             assert self._idxs is None, "No observe after sample ..."
         idxs, priorities = zip(*[self._sum_tree.sample() for _ in range(self._batch_size)])
-        priorities = check_array(priorities)
-        obs, action, next_obs, reward, done = self._memory.sample(idxs)
+        idxs, priorities = check_array(idxs), check_array(priorities)
+        obs, action, next_obs, reward, done, _ = self._memory.sample(idxs)
         weights = (self._sum_tree.total / self._memory.size / priorities) ** self._beta
         weights = weights / weights.max()
 
