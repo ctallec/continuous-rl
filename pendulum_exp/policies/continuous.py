@@ -32,9 +32,9 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
 
         self._schedulers = (
             torch.optim.lr_scheduler.ReduceLROnPlateau(
-                self._optimizers[0], 'max', factor=.5, verbose=True),
+                self._optimizers[0], **self._schedule_params),
             torch.optim.lr_scheduler.ReduceLROnPlateau(
-                self._optimizers[1], 'max', factor=.5, verbose=True))
+                self._optimizers[1], **self._schedule_params))
 
         # logging
         self._cum_loss = 0
@@ -150,11 +150,11 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
         self._schedulers = (
             torch.optim.lr_scheduler.ReduceLROnPlateau(
-                self._optimizers[0], 'max', factor=.5, verbose=True),
+                self._optimizers[0], **self._schedule_params),
             torch.optim.lr_scheduler.ReduceLROnPlateau(
-                self._optimizers[1], 'max', factor=.5, verbose=True),
+                self._optimizers[1], **self._schedule_params),
             torch.optim.lr_scheduler.ReduceLROnPlateau(
-                self._optimizers[2], 'max', factor=.5, verbose=True)
+                self._optimizers[2], **self._schedule_params)
         )
 
         # logging

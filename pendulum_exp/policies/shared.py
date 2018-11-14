@@ -25,6 +25,10 @@ class SharedAdvantagePolicy(Policy):
         self._device = device
         self._val_function = val_function
 
+        # scheduling parameters
+        self._schedule_params = dict(
+            mode='max', factor=.5, patience=25)
+
     def reset(self):
         # internals
         self._obs = np.array([])
