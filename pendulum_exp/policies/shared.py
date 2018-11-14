@@ -4,7 +4,7 @@ from abstract import Policy, Arrayable, ParametricFunction
 from config import PolicyConfig
 from memory import MemorySampler
 from torch import Tensor
-from convert import arr_to_th, check_array
+from convert import arr_to_th, check_array, th_to_arr
 
 class SharedAdvantagePolicy(Policy):
     def __init__(self, policy_config: PolicyConfig,
@@ -63,8 +63,8 @@ class SharedAdvantagePolicy(Policy):
         if self._count % self._steps_btw_train == self._steps_btw_train - 1:
             try:
                 for _ in range(self._learn_per_step):
-                    obs, action, next_obs, reward, done = self._sampler.sample()
-                    indep_obs, _, _, _, _ = self._sampler.sample()
+                    obs, action, next_obs, reward, done, weights = self._sampler.sample()
+                    indep_obs, _, _, _, _ = self._sampler.sample(to_observe=False)
                     reward = arr_to_th(reward, self._device)
 
                     v = self._val_function(obs).squeeze()
@@ -77,6 +77,7 @@ class SharedAdvantagePolicy(Policy):
                         self._gamma ** self._dt * next_v
                     dv = (expected_v - v) / self._dt - indep_v.mean()
                     bell_residual = dv - adv + max_adv
+                    self._sampler.observe(th_to_arr(bell_residual))
 
                     adv_update_loss = (bell_residual ** 2).mean()
                     adv_norm_loss = (max_adv ** 2).mean()

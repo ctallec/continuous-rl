@@ -28,6 +28,7 @@ def setup_args():
     parser.add_argument('--time_limit', type=float, default=None)
     parser.add_argument('--redirect_stdout', action='store_true')
     parser.add_argument('--nb_policy_samples', type=int, default=None)
+    parser.add_argument('--beta', type=float, default=None)
     parser.add_argument('--noreload', action='store_true')
     parser = argload.ArgumentLoader(parser, to_reload=[
         'dt', 'steps_btw_train', 'env_id', 'noise_type', 'batch_size',
