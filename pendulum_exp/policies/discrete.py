@@ -1,10 +1,9 @@
 """Define policies."""
-from itertools import chain
 import torch
 from torch import Tensor
 from abstract import ParametricFunction, Arrayable, Noise, StateDict
 from convert import arr_to_th, th_to_arr
-from config import PolicyConfig
+from config import PolicyConfig, AdvantagePolicyConfig
 from policies.shared import SharedAdvantagePolicy
 from mylog import log
 from logging import info
@@ -16,21 +15,23 @@ class AdvantagePolicy(SharedAdvantagePolicy):
                  adv_noise: Noise,
                  policy_config: PolicyConfig,
                  device) -> None:
-        super().__init__(policy_config, val_function, device)
+        super().__init__(policy_config, val_function, device) # type: ignore
+        assert isinstance(policy_config, AdvantagePolicyConfig)
         self._adv_function = adv_function.to(device)
         self._adv_noise = adv_noise
 
         # optimization/storing
         self._optimizers = (
-            torch.optim.SGD(chain(self._adv_function.parameters(), [self._baseline]),
+            torch.optim.SGD(self._adv_function.parameters(),
                             lr=policy_config.lr * policy_config.dt),
             torch.optim.SGD(self._val_function.parameters(),
                             lr=policy_config.lr * policy_config.dt ** 2))
         self._schedulers = (
-            torch.optim.lr_scheduler.LambdaLR(self._optimizers[0],
-                                              policy_config.lr_decay),
-            torch.optim.lr_scheduler.LambdaLR(self._optimizers[1],
-                                              policy_config.lr_decay))
+            torch.optim.lr_scheduler.ReduceLROnPlateau(
+                self._optimizers[0], 'max', factor=.5, verbose=True),
+            torch.optim.lr_scheduler.ReduceLROnPlateau(
+                self._optimizers[1], 'max', factor=.5, verbose=True))
+
         # logging
         self._cum_loss = 0
         self._log = 100
@@ -50,14 +51,12 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         return adv, max_adv
 
     def optimize_value(self, *losses: Tensor):
-        assert len(losses) == 2
+        assert len(losses) == 1
         self._optimizers[0].zero_grad()
         self._optimizers[1].zero_grad()
-        (losses[0] + losses[1]).backward()
+        losses[0].backward()
         self._optimizers[0].step()
-        self._schedulers[0].step()
         self._optimizers[1].step()
-        self._schedulers[1].step()
 
         # logging
         self._cum_loss += losses[0].item()
@@ -65,6 +64,10 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
     def optimize_policy(self, max_adv: Tensor):
         pass
+
+    def observe_evaluation(self, eval_return: float):
+        self._schedulers[0].step(eval_return)
+        self._schedulers[1].step(eval_return)
 
     def log(self):
         log("Avg_adv_loss", self._cum_loss / self._learn_count, self._learn_count)
@@ -92,8 +95,8 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         self._optimizers[1].load_state_dict(state_dict['value_optimizer'])
         self._adv_function.load_state_dict(state_dict['adv_function'])
         self._val_function.load_state_dict(state_dict['val_function'])
-        self._schedulers[0].last_epoch = state_dict['iteration']
-        self._schedulers[1].last_epoch = state_dict['iteration']
+        self._schedulers[0].load_state_dict(state_dict['advantage_scheduler'])
+        self._schedulers[1].load_state_dict(state_dict['value_scheduler'])
 
     def state_dict(self):
         return {
@@ -101,4 +104,6 @@ class AdvantagePolicy(SharedAdvantagePolicy):
             "value_optimizer": self._optimizers[1].state_dict(),
             "adv_function": self._adv_function.state_dict(),
             "val_function": self._val_function.state_dict(),
+            "advantage_scheduler": self._schedulers[0].state_dict(),
+            "value_scheduler": self._schedulers[1].state_dict(),
             "iteration": self._schedulers[0].last_epoch}

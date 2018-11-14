@@ -3,10 +3,8 @@ import numpy as np
 from abstract import Policy, Arrayable, ParametricFunction
 from config import PolicyConfig
 from memory import MemorySampler
-import torch
 from torch import Tensor
 from convert import arr_to_th, check_array
-from stats import penalize_mean
 
 class SharedAdvantagePolicy(Policy):
     def __init__(self, policy_config: PolicyConfig,
@@ -17,7 +15,6 @@ class SharedAdvantagePolicy(Policy):
         # parameters
         self._gamma = policy_config.gamma
         self._dt = policy_config.dt
-        self._alpha = policy_config.alpha
         self._learn_per_step = policy_config.learn_per_step
         self._steps_btw_train = policy_config.steps_btw_train
         self._sampler = MemorySampler(
@@ -27,9 +24,6 @@ class SharedAdvantagePolicy(Policy):
         self._learn_count = 0
         self._device = device
         self._val_function = val_function
-
-        # baseline (used in all advantage policies)
-        self._baseline = torch.nn.Parameter(torch.Tensor([0.]).to(device))
 
     def reset(self):
         # internals
@@ -71,7 +65,6 @@ class SharedAdvantagePolicy(Policy):
                 for _ in range(self._learn_per_step):
                     obs, action, next_obs, reward, done = self._sampler.sample()
                     indep_obs, _, _, _, _ = self._sampler.sample()
-                    done = arr_to_th(check_array(done).astype('float'), self._device)
                     reward = arr_to_th(reward, self._device)
 
                     v = self._val_function(obs).squeeze()
@@ -80,17 +73,16 @@ class SharedAdvantagePolicy(Policy):
                     adv, max_adv = self.compute_advantages(
                         obs, action)
 
-                    expected_v = (reward - self._baseline) * self._dt + \
+                    expected_v = reward * self._dt + \
                         self._gamma ** self._dt * next_v
-                    dv = (expected_v - v) / self._dt
-                    bell_residual = dv - adv + max_adv + (1 - self._gamma) * indep_v.mean()
+                    dv = (expected_v - v) / self._dt - indep_v.mean()
+                    bell_residual = dv - adv + max_adv
 
                     adv_update_loss = (bell_residual ** 2).mean()
                     adv_norm_loss = (max_adv ** 2).mean()
-                    mean_loss = self._alpha * penalize_mean(v, indep_v)
                     bell_loss = adv_update_loss + adv_norm_loss
 
-                    self.optimize_value(bell_loss, mean_loss / self._dt)
+                    self.optimize_value(bell_loss)
                     self.optimize_policy(max_adv)
 
                 self.log()
@@ -116,4 +108,4 @@ class SharedAdvantagePolicy(Policy):
             assert (1 - done).byte().all(), "Gamma set to 1. with a potentially"\
                 "episodic problem..."
             return next_v
-        return (1 - done) * next_v - done * self._baseline / (1 - self._gamma)
+        return (1 - done) * next_v
