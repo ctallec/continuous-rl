@@ -78,7 +78,7 @@ class SharedAdvantagePolicy(Policy):
 
                     expected_v = reward * self._dt + \
                         self._gamma ** self._dt * next_v
-                    dv = (expected_v - v) / self._dt - indep_v.mean()
+                    dv = (expected_v - v) / self._dt - self._gamma * indep_v.mean()
                     bell_residual = dv - adv + max_adv
                     self._sampler.observe(np.abs(th_to_arr(bell_residual)))
 
