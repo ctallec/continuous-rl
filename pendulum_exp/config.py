@@ -18,7 +18,6 @@ class ActionNoiseConfig(NamedTuple):
 
 class AdvantagePolicyConfig(NamedTuple):
     batch_size: int
-    alpha: float
     gamma: float
     dt: float
     lr: float
@@ -26,10 +25,11 @@ class AdvantagePolicyConfig(NamedTuple):
     memory_size: int
     learn_per_step: int
     steps_btw_train: int
+    alpha: Optional[float]
+    beta: Optional[float]
 
 class SampledAdvantagePolicyConfig(NamedTuple):
     batch_size: int
-    alpha: float
     gamma: float
     dt: float
     lr: float
@@ -38,6 +38,21 @@ class SampledAdvantagePolicyConfig(NamedTuple):
     learn_per_step: int
     steps_btw_train: int
     nb_samples: int
+    alpha: Optional[float]
+    beta: Optional[float]
+
+class ApproximateAdvantagePolicyConfig(NamedTuple):
+    batch_size: int
+    gamma: float
+    dt: float
+    lr: float
+    policy_lr: float
+    lr_decay: DecayFunction
+    memory_size: int
+    learn_per_step: int
+    steps_btw_train: int
+    alpha: Optional[float]
+    beta: Optional[float]
 
 
 class EnvConfig(NamedTuple):
@@ -47,7 +62,11 @@ class EnvConfig(NamedTuple):
 
 
 NoiseConfig = Union[ParameterNoiseConfig, ActionNoiseConfig]
-PolicyConfig = Union[SampledAdvantagePolicyConfig, AdvantagePolicyConfig]
+PolicyConfig = Union[
+    AdvantagePolicyConfig,
+    SampledAdvantagePolicyConfig,
+    ApproximateAdvantagePolicyConfig
+]
 
 def read_config(
         args,
@@ -65,12 +84,18 @@ def read_config(
         return 1 / np.power(1 + args.dt * t, 0)
 
     policy_config_dict = dict(
-        batch_size=args.batch_size, alpha=args.alpha, gamma=args.gamma, dt=args.dt,
-        lr=args.lr, lr_decay=lr_decay, memory_size=args.memory_size,
-        learn_per_step=args.learn_per_step, steps_btw_train=args.steps_btw_train)
-    if args.policy_type == 'sampled':
+        batch_size=args.batch_size, gamma=args.gamma, dt=args.dt,
+        lr=args.lr, lr_decay=lr_decay,
+        memory_size=args.memory_size, learn_per_step=args.learn_per_step,
+        steps_btw_train=args.steps_btw_train, beta=args.beta, alpha=args.alpha)
+    if args.policy_lr is not None:
+        policy_config_dict['policy_lr'] = args.policy_lr
+        policy_config: PolicyConfig = ApproximateAdvantagePolicyConfig(
+            **policy_config_dict)
+    elif args.nb_policy_samples is not None:
         policy_config_dict['nb_samples'] = args.nb_policy_samples
-        policy_config: PolicyConfig = SampledAdvantagePolicyConfig(**policy_config_dict)
+        policy_config = SampledAdvantagePolicyConfig(
+            **policy_config_dict)
     else:
         policy_config = AdvantagePolicyConfig(**policy_config_dict)
     if args.noise_type == 'parameter':

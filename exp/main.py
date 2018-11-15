@@ -26,6 +26,8 @@ def train(model: Model,
           beta: float,
           dt: float,
           thresh: float,
+          baseline: float,
+          center: bool,
           device) -> List[float]:
     """ Train. """
     losses = []
@@ -33,7 +35,7 @@ def train(model: Model,
         index = begin_index + i
         # index = np.random.randint(0, data.shape[1] - 1)
         np_next_state = data[:, index + 1]
-        reward = to_tensor(reward_function(np_next_state, beta, dt, thresh), device)
+        reward = to_tensor(reward_function(np_next_state, beta, dt, thresh, baseline), device)
         state = to_tensor(data[:, index], device)
         next_state = to_tensor(np_next_state, device)
         # you need the copy, otherwise you modify data
@@ -41,8 +43,12 @@ def train(model: Model,
         V = model(state).squeeze()
         V_next = model(next_state).squeeze()
         V_mixed_next = V_next.detach()
+        V_indep = model(torch.cat([state[1:], state[:1]], dim=0)).repeat(1, state.size(0))
+        idx = torch.arange(state.size(0)).long()
+        V_indep[idx, idx] = 0
+        V_indep = V_indep.mean(dim=0)
 
-        loss = f.mse_loss(V - true_gamma * V_mixed_next, reward) # + 0 * hessian_loss
+        loss = f.mse_loss(V - true_gamma * V_mixed_next + center * dt * V_indep, reward) # + 0 * hessian_loss
 
         optimizer.zero_grad()
         loss.backward()
@@ -60,7 +66,8 @@ def zero_nan(x: torch.Tensor) -> torch.Tensor:
 
 def evaluate(model: Model, state_limits: Tuple[float, float], step: int, pixel_width: int,
              beta: float, dt: float, train_data: np.ndarray, test_data: np.ndarray,
-             thresh: float, exact_solution, gamma: float, device, logdir: str, fp: TextIO):
+             thresh: float, baseline: float, exact_solution, gamma: float,
+             device, logdir: str, fp: TextIO):
     """ Eval. """
     oned_states = np.linspace(*state_limits, num=pixel_width)
     x, y = np.meshgrid(oned_states, oned_states)
@@ -80,7 +87,7 @@ def evaluate(model: Model, state_limits: Tuple[float, float], step: int, pixel_w
     fp.write(f"{step * dt} {l2_test_loss} {dirichlet_test_loss}\n")
     print(f"Evaluation -- l2_loss: {l2_test_loss} -- dirichlet: {dirichlet_test_loss}")
 
-    rs = reward_function(states, beta, dt, thresh)
+    rs = reward_function(states, beta, dt, thresh, baseline)
     with torch.no_grad():
         Vs = model(to_tensor(states, device)).cpu().numpy().squeeze()
     plt.clf()
@@ -115,10 +122,13 @@ def run(batch_size: int,
         w: float,
         nb_hiddens: int,
         nb_inputs: int,
+        lr: float,
         gamma: float,
         ou_params: OrnsteinUlhenbeckParameters, beta: float,
         steps_per_epoch: int,
         thresh: float,
+        baseline: float,
+        center: bool,
         exact_solution,
         logdir: str):
     """ Run. """
@@ -138,7 +148,7 @@ def run(batch_size: int,
 
     model = Model(nb_hiddens, nb_inputs).to(device)
     optimizer = torch.optim.SGD(model.parameters(),
-                                lr=.7)
+                                lr=lr)
 
     def _lr_reduce_function(real_t):
         return 1 / np.power(real_t + 1, 3/5)
@@ -151,22 +161,27 @@ def run(batch_size: int,
     for e in range(nb_epochs):
         if e % 100 == 0:
             evaluate(model, (-5, 5), step, 100, beta, dt, data,
-                     test_data, thresh, exact_solution, gamma, device,
+                     test_data, thresh, baseline, exact_solution, gamma, device,
                      logdir, fp)
         losses = train(model, optimizer, scheduler, data, steps_per_epoch, step,
-                       1 - (1 - gamma) * dt, beta, dt, thresh, device)
+                       1 - (1 - gamma) * dt, beta, dt, thresh, baseline, center, device)
         step += steps_per_epoch
         print(f"At step {step * dt}, average loss: {np.mean(losses)}, std loss: {np.std(losses)}")
 
-def reward_function(state: np.ndarray, beta: float, dt: float, thres: float) -> np.ndarray:
+def reward_function(state: np.ndarray, beta: float, dt: float, thres: float, baseline: float) -> np.ndarray:
     """ Reward function. """
     threshold = np.sum(state[..., :] ** 2, axis=-1) < thres
-    return (1 / (1 + np.exp(-beta*state[..., 0])) - 1 / 2) * dt * threshold
+    return (1 / (1 + np.exp(-beta*state[..., 0])) - 1 / 2) * dt * threshold + baseline
+
 
 if __name__ == '__main__':
     plt.ion()
     parser = argparse.ArgumentParser()
     parser.add_argument('--dt', default=1e-2, type=float)
+    parser.add_argument('--lr', default=.1, type=float)
+    parser.add_argument('--gamma', default=1., type=float)
+    parser.add_argument('--baseline', default=0, type=float)
+    parser.add_argument('--center', action='store_true')
     parser.add_argument('--logdir', required=True)
     args = parser.parse_args()
 
@@ -176,16 +191,19 @@ if __name__ == '__main__':
     T = int(30000 / dt)
     sigma = .3
     theta = .01
+    lr = args.lr
     beta = 30
     nb_hiddens = 32
     nb_inputs = 2
-    gamma = 1
+    gamma = args.gamma
     thresh = 2
     steps_per_epoch = 100
+    baseline = args.baseline
+    center = args.center
 
     _, _, exact_solution = solve_exact(sigma, theta, omega, beta, gamma, thresh, (-5, 5))
 
-    run(batch_size, T, omega, nb_hiddens, nb_inputs,
+    run(batch_size, T, omega, nb_hiddens, nb_inputs, lr,
         gamma, OrnsteinUlhenbeckParameters(dt, sigma, theta),
-        beta, steps_per_epoch, thresh, exact_solution,
+        beta, steps_per_epoch, thresh, baseline, center, exact_solution,
         args.logdir)

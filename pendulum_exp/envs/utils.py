@@ -172,41 +172,43 @@ def make_env(env_config: EnvConfig): # noqa: C901
         env = gym.make('Pendulum-v0').unwrapped
         env.dt = dt
         env = WrapPendulum(env)
-    if env_id == 'cartpole':
+    elif env_id == 'cartpole':
         env = gym.make('CartPole-v1').unwrapped
         env.tau = dt
-    if env_id == 'continuous_pendulum':
+    elif env_id == 'continuous_pendulum':
         env = gym.make('Pendulum-v0').unwrapped
         env.dt = dt
         env = WrapContinuousPendulum(env)
-    if env_id == 'continuous_pusher':
+    elif env_id == 'continuous_pusher':
         env = ContinuousPusherEnv()
         env.dt = dt
-    if env_id == 'lunar_lander':
+    elif env_id == 'lunar_lander':
         from gym.envs.box2d import lunar_lander
         lunar_lander.FPS = 1. / dt
         env = gym.make('LunarLander-v2').unwrapped
-    if env_id == 'bipedal_walker':
+    elif env_id == 'bipedal_walker':
         from gym.envs.box2d import bipedal_walker
         bipedal_walker.FPS = 1. / dt
         env = gym.make('BipedalWalker-v2').unwrapped
-    if env_id == 'bipedal_hardcore':
+    elif env_id == 'bipedal_hardcore':
         env = WalkerHardcore(dt)
-    if env_id == 'half_cheetah':
+    elif env_id == 'half_cheetah':
         # from gym.envs.mujoco import HalfCheetahEnv
         env = gym.make('HalfCheetah-v2').unwrapped
         dt = env.dt
         info('The timestep dt is {}'.format(dt))
         # env.model.opt.timestep = dt / env.frame_skip
-    if env_id == 'ant':
+    elif env_id == 'ant':
         # from gym.envs.mujoco import HalfCheetahEnv
         env = gym.make('Ant-v2').unwrapped
         dt = env.dt
         info('The timestep dt is {}'.format(dt))
         # env.model.opt.timestep = dt / env.frame_skip
-    if env_id == 'pusher':
+    elif env_id == 'pusher':
         env = DiscretePusherEnv()
         env.dt = dt
+    else:
+        raise NotImplementedError()
     if time_limit is not None:
         env = TimeLimit(env, max_episode_steps=time_limit / dt)
     return env

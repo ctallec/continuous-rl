@@ -1,25 +1,31 @@
 """ Define shared elements between continuous and discrete. """
 import numpy as np
-from abstract import Policy, Arrayable
+from abstract import Policy, Arrayable, ParametricFunction
 from config import PolicyConfig
-from memory import MemorySampler
+from memory.utils import setup_memory
+from torch import Tensor
+from convert import arr_to_th, check_array, th_to_arr
 
 class SharedAdvantagePolicy(Policy):
-    def __init__(self, policy_config: PolicyConfig) -> None:
+    def __init__(self, policy_config: PolicyConfig,
+                 val_function: ParametricFunction, device) -> None:
         self._train = True
         self.reset()
 
         # parameters
         self._gamma = policy_config.gamma
         self._dt = policy_config.dt
-        self._alpha = policy_config.alpha
         self._learn_per_step = policy_config.learn_per_step
         self._steps_btw_train = policy_config.steps_btw_train
-        self._sampler = MemorySampler(
-            size=policy_config.memory_size,
-            batch_size=policy_config.batch_size)
+        self._sampler = setup_memory(policy_config)
         self._count = 0
         self._learn_count = 0
+        self._device = device
+        self._val_function = val_function
+
+        # scheduling parameters
+        self._schedule_params = dict(
+            mode='max', factor=.5, patience=25)
 
     def reset(self):
         # internals
@@ -54,3 +60,56 @@ class SharedAdvantagePolicy(Policy):
             self._sampler.push(
                 self._obs, self._action, self._next_obs, self._reward, self._done)
             self.learn()
+
+    def learn(self):
+        if self._count % self._steps_btw_train == self._steps_btw_train - 1:
+            try:
+                for _ in range(self._learn_per_step):
+                    obs, action, next_obs, reward, done, weights = self._sampler.sample()
+                    indep_obs, _, _, _, _, _ = self._sampler.sample(to_observe=False)
+                    reward = arr_to_th(reward, self._device)
+                    weights = arr_to_th(check_array(weights), self._device)
+
+                    v = self._val_function(obs).squeeze()
+                    next_v = self.compute_next_value(next_obs, done)
+                    indep_v = self._val_function(indep_obs).squeeze().detach()
+                    adv, max_adv = self.compute_advantages(
+                        obs, action)
+
+                    expected_v = reward * self._dt + \
+                        self._gamma ** self._dt * next_v
+                    dv = (expected_v - v) / self._dt - self._gamma * indep_v.mean()
+                    bell_residual = dv - adv + max_adv
+                    self._sampler.observe(np.abs(th_to_arr(bell_residual)))
+
+                    adv_update_loss = ((bell_residual ** 2) * weights).mean()
+                    adv_norm_loss = ((max_adv ** 2) * weights).mean()
+                    bell_loss = adv_update_loss + adv_norm_loss
+
+                    self.optimize_value(bell_loss)
+                    self.optimize_policy(max_adv)
+
+                self.log()
+            except IndexError:
+                # If not enough data in the buffer, do nothing
+                pass
+
+    def optimize_value(self, *losses: Tensor):
+        raise NotImplementedError()
+
+    def optimize_policy(self, max_adv: Tensor):
+        raise NotImplementedError()
+
+    def compute_advantages(self, obs: Arrayable, action: Arrayable) -> Tensor:
+        """Computes adv, max_adv."""
+        raise NotImplementedError()
+
+    def compute_next_value(self, next_obs: Arrayable, done: Arrayable) -> Tensor:
+        """Also detach next value."""
+        done = arr_to_th(check_array(done).astype('float'), self._device)
+        next_v = self._val_function(next_obs).squeeze().detach()
+        if self._gamma == 1:
+            assert (1 - done).byte().all(), "Gamma set to 1. with a potentially"\
+                "episodic problem..."
+            return next_v
+        return (1 - done) * next_v
