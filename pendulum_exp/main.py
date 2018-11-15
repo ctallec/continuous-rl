@@ -41,7 +41,7 @@ def evaluate(
         time_limit: Optional[float]=None):
     """ Evaluate. """
     log_gap = int(.1 / dt)
-    video_log = 10
+    video_log = 1
     policy.eval()
 
     R = None

@@ -40,8 +40,8 @@ class Logger:
         info("logfile: {}".format(join(self._dir, 'logs.pkl')))
 
     def load(self):
-        assert self._file is not None
-        with open(self.filename, 'rb') as f:
+        assert self._dir is not None and isfile(join(self._dir, 'logs.pkl'))
+        with open(join(self._dir, 'logs.pkl'), 'rb') as f:
             self._logs = pickle.load(f)
 
 

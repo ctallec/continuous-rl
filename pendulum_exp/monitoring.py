@@ -26,6 +26,9 @@ def plots(logs, namefile):
 
         ax.plot(x, y)
         ax.set_xlabel("timestamps")
+        ax.set_xlim(0., max(x))
+        l = len(x)
+        ax.set_ylim(min(y[l//10:]), max(y[l//10:]))
 
     plt.tight_layout()
     print(f'Plot: {namefile}')
