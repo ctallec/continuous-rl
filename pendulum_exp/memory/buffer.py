@@ -13,12 +13,16 @@ class MemorySampler:
         self._batch_size = batch_size
         self._full = False
         self._cur = 0
+
         # delay buffer initialization
         self._obs = np.empty(0)
         self._action = np.empty(0)
         self._next_obs = np.empty(0)
         self._reward = np.empty(0)
         self._done = np.empty(0)
+
+        # store a reference point for relative td
+        self._ref_obs = np.empty(0)
 
     @property
     def size(self):
@@ -47,6 +51,9 @@ class MemorySampler:
             self._reward = np.zeros((self._true_size, *reward.shape[1:]))
             self._done = np.zeros((self._true_size, *done.shape[1:]))
 
+            # initialize reference point
+            self._ref_obs = obs.copy()
+
         self._obs[self._cur:self._cur + nb_envs] = obs
         self._action[self._cur:self._cur + nb_envs] = action
         self._next_obs[self._cur:self._cur + nb_envs] = next_obs
@@ -66,6 +73,12 @@ class MemorySampler:
 
     def observe(self, priorities: Arrayable):
         pass
+
+    @property
+    def reference_obs(self):
+        if self._true_size == -1:
+            raise IndexError()
+        return self._ref_obs
 
 class PrioritizedMemorySampler:
     def __init__(self, size: int, batch_size: int,
@@ -122,3 +135,7 @@ class PrioritizedMemorySampler:
             self._sum_tree.modify(idx, prio ** self._alpha)
 
         self._idxs = None
+
+    @property
+    def reference_obs(self):
+        return self._memory.reference_obs
