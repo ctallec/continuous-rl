@@ -5,7 +5,7 @@ import argload
 def setup_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dt', type=float, default=.05)
-    parser.add_argument('--steps_btw_train', type=int, default=10)
+    parser.add_argument('--steps_btw_train', type=int, default=3)
     parser.add_argument('--env_id', type=str, default='pendulum')
     parser.add_argument('--noise_type', type=str, default='parameter')
     parser.add_argument('--batch_size', type=int, default=64)
