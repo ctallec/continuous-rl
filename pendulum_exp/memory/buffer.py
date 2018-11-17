@@ -44,7 +44,7 @@ class MemorySampler:
 
         nb_envs = obs.shape[0]
         if self._true_size == -1:
-            self._true_size = nb_envs * self._size
+            self._true_size = (self._size // nb_envs + 1) * nb_envs
             self._obs = np.zeros((self._true_size, *obs.shape[1:]))
             self._action = np.zeros((self._true_size, *action.shape[1:]))
             self._next_obs = np.zeros((self._true_size, *next_obs.shape[1:]))

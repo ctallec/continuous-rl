@@ -19,7 +19,7 @@ def setup_args():
     parser.add_argument('--theta', type=float, default=7.5)
     parser.add_argument('--nb_train_env', type=int, default=32)
     parser.add_argument('--nb_eval_env', type=int, default=16)
-    parser.add_argument('--memory_size', type=int, default=10000)
+    parser.add_argument('--memory_size', type=int, default=1000000)
     parser.add_argument('--learn_per_step', type=int, default=50)
     parser.add_argument('--cyclic_exploration', action='store_true')
     parser.add_argument('--normalize_state', action='store_true')
