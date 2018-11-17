@@ -105,14 +105,16 @@ def main(
     # load checkpoints if directory is not empty
     policy_file = join(logdir, 'best_policy.pt')
     R = - np.inf
+    cur_e = 0
     if exists(policy_file) and not noreload:
         state_dict = torch.load(policy_file)
         R = state_dict["return"]
-        info(f"Loading policy with return {R}...")
+        cur_e = state_dict["epoch"]
+        info(f"Loading policy with return {R} at epoch {cur_e}...")
         policy.load_state_dict(torch.load(policy_file))
     log_gap = int(.1 / env_config.dt)
 
-    for e in range(nb_epochs):
+    for e in range(cur_e, nb_epochs):
         info(f"Epoch {e}...")
         obs = train(nb_steps, env, policy, obs)
         new_R = evaluate(
@@ -128,6 +130,7 @@ def main(
                 info(f"Saving new policy with return {new_R}")
                 state_dict = policy.state_dict()
                 state_dict["return"] = new_R
+                state_dict["epoch"] = e
                 torch.save(state_dict, policy_file)
                 R = new_R
     env.close()
