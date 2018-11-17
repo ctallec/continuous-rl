@@ -23,9 +23,11 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         # optimization/storing
         self._optimizers = (
             torch.optim.SGD(self._adv_function.parameters(),
-                            lr=policy_config.lr * policy_config.dt),
+                            lr=policy_config.lr * policy_config.dt,
+                            weight_decay=policy_config.weight_decay),
             torch.optim.SGD(self._val_function.parameters(),
-                            lr=policy_config.lr * policy_config.dt ** 2))
+                            lr=policy_config.lr * policy_config.dt ** 2,
+                            weight_decay=policy_config.weight_decay))
         self._schedulers = (
             torch.optim.lr_scheduler.ReduceLROnPlateau(
                 self._optimizers[0], **self._schedule_params),

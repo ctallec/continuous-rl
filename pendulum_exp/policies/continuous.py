@@ -26,9 +26,12 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
 
         # optimization/storing
         self._optimizers = (
-            torch.optim.SGD(self._adv_function.parameters(), lr=policy_config.lr * self._dt),
+            torch.optim.SGD(self._adv_function.parameters(),
+                            lr=policy_config.lr * self._dt,
+                            weight_decay=policy_config.weight_decay),
             torch.optim.SGD(self._val_function.parameters(),
-                            lr=policy_config.lr * self._dt ** 2))
+                            lr=policy_config.lr * self._dt ** 2,
+                            weight_decay=policy_config.weight_decay))
 
         self._schedulers = (
             torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -142,11 +145,14 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         # TODO: I think we could optimize by gathering policy and advantage parameters
         self._optimizers = (
             torch.optim.SGD(self._adv_function.parameters(),
-                            lr=policy_config.lr * self._dt),
+                            lr=policy_config.lr * self._dt,
+                            weight_decay=policy_config.weight_decay),
             torch.optim.SGD(self._val_function.parameters(),
-                            lr=policy_config.lr * self._dt ** 2),
+                            lr=policy_config.lr * self._dt ** 2,
+                            weight_decay=policy_config.weight_decay),
             torch.optim.SGD(self._policy_function.parameters(),
-                            lr=policy_config.policy_lr * self._dt))
+                            lr=policy_config.policy_lr * self._dt,
+                            weight_decay=policy_config.weight_decay))
 
         self._schedulers = (
             torch.optim.lr_scheduler.ReduceLROnPlateau(
