@@ -28,6 +28,7 @@ class AdvantagePolicyConfig(NamedTuple):
     alpha: Optional[float]
     beta: Optional[float]
     weight_decay: float
+    optimizer: str
 
 class ApproximateAdvantagePolicyConfig(NamedTuple):
     batch_size: int
@@ -42,6 +43,7 @@ class ApproximateAdvantagePolicyConfig(NamedTuple):
     beta: Optional[float]
     weight_decay: float
     policy_lr: float
+    optimizer: str
 
 class SampledAdvantagePolicyConfig(NamedTuple):
     batch_size: int
@@ -56,6 +58,7 @@ class SampledAdvantagePolicyConfig(NamedTuple):
     alpha: Optional[float]
     beta: Optional[float]
     weight_decay: float
+    optimizer: str
 
 class DQNConfig(NamedTuple):
     batch_size: int
@@ -70,6 +73,7 @@ class DQNConfig(NamedTuple):
     beta: Optional[float]
     weight_decay: float
     nb_samples: int
+    optimizer: str
 
 class EnvConfig(NamedTuple):
     id: str
@@ -100,7 +104,7 @@ def read_config(
         lr=args.lr, lr_decay=lr_decay,
         memory_size=args.memory_size, learn_per_step=args.learn_per_step,
         steps_btw_train=args.steps_btw_train, beta=args.beta, alpha=args.alpha,
-        weight_decay=args.weight_decay
+        weight_decay=args.weight_decay, optimizer=args.optimizer
     )
     if args.policy_lr is not None:
         policy_config_dict['policy_lr'] = args.policy_lr
