@@ -30,6 +30,8 @@ class DiscreteDQNPolicy(Policy):
         self._cum_loss = 0
         self._log = 100
 
+        self._learn_per_step = policy_config
+
     def act(self, obs: Arrayable):
         with torch.no_grad():
             pre_action = self._adv_noise.perturb_output(
