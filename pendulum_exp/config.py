@@ -18,6 +18,7 @@ class ActionNoiseConfig(NamedTuple):
 
 class AdvantagePolicyConfig(NamedTuple):
     batch_size: int
+    alpha: float
     gamma: float
     dt: float
     lr: float
@@ -31,6 +32,7 @@ class AdvantagePolicyConfig(NamedTuple):
 
 class SampledAdvantagePolicyConfig(NamedTuple):
     batch_size: int
+    alpha: float
     gamma: float
     dt: float
     lr: float
@@ -43,12 +45,12 @@ class SampledAdvantagePolicyConfig(NamedTuple):
     beta: Optional[float]
     weight_decay: float
 
-class ApproximateAdvantagePolicyConfig(NamedTuple):
+class DQNConfig(NamedTuple):
     batch_size: int
+    alpha: float
     gamma: float
     dt: float
     lr: float
-    policy_lr: float
     lr_decay: DecayFunction
     memory_size: int
     learn_per_step: int
@@ -56,7 +58,7 @@ class ApproximateAdvantagePolicyConfig(NamedTuple):
     alpha: Optional[float]
     beta: Optional[float]
     weight_decay: float
-
+    nb_samples: int
 
 class EnvConfig(NamedTuple):
     id: str
@@ -65,11 +67,7 @@ class EnvConfig(NamedTuple):
 
 
 NoiseConfig = Union[ParameterNoiseConfig, ActionNoiseConfig]
-PolicyConfig = Union[
-    AdvantagePolicyConfig,
-    SampledAdvantagePolicyConfig,
-    ApproximateAdvantagePolicyConfig
-]
+PolicyConfig = Union[SampledAdvantagePolicyConfig, AdvantagePolicyConfig]
 
 def read_config(
         args,
@@ -99,8 +97,7 @@ def read_config(
             **policy_config_dict)
     elif args.nb_policy_samples is not None:
         policy_config_dict['nb_samples'] = args.nb_policy_samples
-        policy_config = SampledAdvantagePolicyConfig(
-            **policy_config_dict)
+        policy_config: PolicyConfig = SampledAdvantagePolicyConfig(**policy_config_dict)
     else:
         policy_config = AdvantagePolicyConfig(**policy_config_dict)
     if args.noise_type == 'parameter':
