@@ -44,6 +44,7 @@ def evaluate(
         video: bool=False):
     """ Evaluate. """
     log_gap = int(.1 / dt)
+    video_log = 1
     policy.eval()
 
     R = None

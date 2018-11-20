@@ -198,6 +198,12 @@ def make_env(env_config: EnvConfig): # noqa: C901
         dt = env.dt
         info('The timestep dt is {}'.format(dt))
         # env.model.opt.timestep = dt / env.frame_skip
+    elif env_id == 'ant':
+        # from gym.envs.mujoco import HalfCheetahEnv
+        env = gym.make('Ant-v2').unwrapped
+        dt = env.dt
+        info('The timestep dt is {}'.format(dt))
+        # env.model.opt.timestep = dt / env.frame_skip
     elif env_id == 'pusher':
         env = DiscretePusherEnv()
         env.dt = dt

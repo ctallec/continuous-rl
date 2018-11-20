@@ -1,7 +1,5 @@
 """Log facilities"""
 from os import makedirs
-from os import remove
-from shutil import rmtree
 from os.path import join, exists, isfile
 from typing import Dict
 import pickle
@@ -15,7 +13,7 @@ class Logger:
     def __init__(self):
         assert Logger.CURRENT is None
         self._logs: Dict[str, Dict[int, float]] = dict()
-        self._buffering = 500
+        self._buffering = 300
         self._count = 0
         self._dir = None
 
@@ -35,30 +33,25 @@ class Logger:
             makedirs(video_dir)
         np.savez(join(video_dir, f"{tag}_{timestamp}.npz"), frames)
 
-    def set_dir(self, logdir: str, reload: bool=True):
+    def set_dir(self, logdir):
         self._dir = logdir
-        log_file = join(self._dir, 'logs.pkl')
-        if isfile(log_file):
-            if reload:
-                self.load()
-            else:
-                remove(log_file)
-                rmtree(join(self._dir, "videos"), ignore_errors=True)
-
+        if isfile(join(self._dir, 'logs.pkl')):
+            self.load()
         info("logfile: {}".format(join(self._dir, 'logs.pkl')))
 
     def load(self):
-        assert self._dir is not None
+        assert self._dir is not None and isfile(join(self._dir, 'logs.pkl'))
         with open(join(self._dir, 'logs.pkl'), 'rb') as f:
             self._logs = pickle.load(f)
+
 
     def dump(self):
         assert self._dir is not None
         pickle.dump(self._logs, open(join(self._dir, 'logs.pkl'), 'wb'))
 
-def logto(logdir: str, reload: bool=True):
+def logto(logdir: str):
     assert Logger.CURRENT is not None
-    Logger.CURRENT.set_dir(logdir, reload)
+    Logger.CURRENT.set_dir(logdir)
 
 def log(key: str, value: float, timestamp: int):
     assert Logger.CURRENT is not None
