@@ -18,7 +18,6 @@ class ActionNoiseConfig(NamedTuple):
 
 class AdvantagePolicyConfig(NamedTuple):
     batch_size: int
-    alpha: float
     gamma: float
     dt: float
     lr: float
@@ -29,10 +28,25 @@ class AdvantagePolicyConfig(NamedTuple):
     alpha: Optional[float]
     beta: Optional[float]
     weight_decay: float
+    optimizer: str
+
+class ApproximateAdvantagePolicyConfig(NamedTuple):
+    batch_size: int
+    gamma: float
+    dt: float
+    lr: float
+    lr_decay: DecayFunction
+    memory_size: int
+    learn_per_step: int
+    steps_btw_train: int
+    alpha: Optional[float]
+    beta: Optional[float]
+    weight_decay: float
+    policy_lr: float
+    optimizer: str
 
 class SampledAdvantagePolicyConfig(NamedTuple):
     batch_size: int
-    alpha: float
     gamma: float
     dt: float
     lr: float
@@ -44,10 +58,10 @@ class SampledAdvantagePolicyConfig(NamedTuple):
     alpha: Optional[float]
     beta: Optional[float]
     weight_decay: float
+    optimizer: str
 
 class DQNConfig(NamedTuple):
     batch_size: int
-    alpha: float
     gamma: float
     dt: float
     lr: float
@@ -59,6 +73,7 @@ class DQNConfig(NamedTuple):
     beta: Optional[float]
     weight_decay: float
     nb_samples: int
+    optimizer: str
 
 class EnvConfig(NamedTuple):
     id: str
@@ -67,7 +82,7 @@ class EnvConfig(NamedTuple):
 
 
 NoiseConfig = Union[ParameterNoiseConfig, ActionNoiseConfig]
-PolicyConfig = Union[SampledAdvantagePolicyConfig, AdvantagePolicyConfig]
+PolicyConfig = Union[SampledAdvantagePolicyConfig, AdvantagePolicyConfig, ApproximateAdvantagePolicyConfig]
 
 def read_config(
         args,
@@ -89,7 +104,7 @@ def read_config(
         lr=args.lr, lr_decay=lr_decay,
         memory_size=args.memory_size, learn_per_step=args.learn_per_step,
         steps_btw_train=args.steps_btw_train, beta=args.beta, alpha=args.alpha,
-        weight_decay=args.weight_decay
+        weight_decay=args.weight_decay, optimizer=args.optimizer
     )
     if args.policy_lr is not None:
         policy_config_dict['policy_lr'] = args.policy_lr
@@ -97,7 +112,7 @@ def read_config(
             **policy_config_dict)
     elif args.nb_policy_samples is not None:
         policy_config_dict['nb_samples'] = args.nb_policy_samples
-        policy_config: PolicyConfig = SampledAdvantagePolicyConfig(**policy_config_dict)
+        policy_config = SampledAdvantagePolicyConfig(**policy_config_dict)
     else:
         policy_config = AdvantagePolicyConfig(**policy_config_dict)
     if args.noise_type == 'parameter':

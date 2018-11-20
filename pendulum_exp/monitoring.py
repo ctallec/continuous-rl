@@ -43,6 +43,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--logdir', type=str,
                         help='Log directory')
+    parser.add_argument('--sigma_eval', type=float, default=0.,
+                        help='Sigma used for evaluation.')
     parser.add_argument('--plots', action='store_true', default=False,
                         help='plot metrics in logdir/plots.eps')
     parser.add_argument('--video', action='store_true',
@@ -65,7 +67,8 @@ if __name__ == '__main__':
             cmd = ['xvfb-run', '-s', '"-screen 0 1400x900x24"']
         else:
             cmd = []
-        cmd += ['python', 'eval.py', '--logdir', args.logdir]
+        cmd += ['python', 'eval.py', '--logdir', args.logdir, '--sigma_eval',
+                str(args.sigma_eval), '--overwrite']
         call(' '.join(cmd), shell=True)
 
     summary(logs)

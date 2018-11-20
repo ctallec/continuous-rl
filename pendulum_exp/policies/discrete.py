@@ -7,6 +7,7 @@ from config import PolicyConfig, AdvantagePolicyConfig
 from policies.shared import SharedAdvantagePolicy
 from mylog import log
 from logging import info
+from optimizer import setup_optimizer
 
 class AdvantagePolicy(SharedAdvantagePolicy):
     def __init__(self,
@@ -22,12 +23,17 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
         # optimization/storing
         self._optimizers = (
-            torch.optim.SGD(self._adv_function.parameters(),
-                            lr=policy_config.lr * policy_config.dt,
+            setup_optimizer(self._adv_function.parameters(),
+                            opt_name=policy_config.optimizer,
+                            lr=policy_config.lr, dt=self._dt,
+                            inverse_gradient_magnitude=1,
                             weight_decay=policy_config.weight_decay),
-            torch.optim.SGD(self._val_function.parameters(),
-                            lr=policy_config.lr * policy_config.dt ** 2,
+            setup_optimizer(self._val_function.parameters(),
+                            opt_name=policy_config.optimizer,
+                            lr=policy_config.lr, dt=self._dt,
+                            inverse_gradient_magnitude=self._dt,
                             weight_decay=policy_config.weight_decay))
+
         self._schedulers = (
             torch.optim.lr_scheduler.ReduceLROnPlateau(
                 self._optimizers[0], **self._schedule_params),

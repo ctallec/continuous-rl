@@ -8,6 +8,7 @@ from config import SampledAdvantagePolicyConfig, ApproximateAdvantagePolicyConfi
 from policies.shared import SharedAdvantagePolicy
 from logging import info
 from mylog import log
+from optimizer import setup_optimizer
 
 class SampledAdvantagePolicy(SharedAdvantagePolicy):
     def __init__(self,
@@ -26,11 +27,15 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
 
         # optimization/storing
         self._optimizers = (
-            torch.optim.SGD(self._adv_function.parameters(),
-                            lr=policy_config.lr * self._dt,
+            setup_optimizer(self._adv_function.parameters(),
+                            opt_name=policy_config.optimizer,
+                            lr=policy_config.lr, dt=self._dt,
+                            inverse_gradient_magnitude=1,
                             weight_decay=policy_config.weight_decay),
-            torch.optim.SGD(self._val_function.parameters(),
-                            lr=policy_config.lr * self._dt ** 2,
+            setup_optimizer(self._val_function.parameters(),
+                            opt_name=policy_config.optimizer,
+                            lr=policy_config.lr, dt=self._dt,
+                            inverse_gradient_magnitude=self._dt,
                             weight_decay=policy_config.weight_decay))
 
         self._schedulers = (
@@ -144,14 +149,20 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
         # TODO: I think we could optimize by gathering policy and advantage parameters
         self._optimizers = (
-            torch.optim.SGD(self._adv_function.parameters(),
-                            lr=policy_config.lr * self._dt,
+            setup_optimizer(self._adv_function.parameters(),
+                            opt_name=policy_config.optimizer,
+                            lr=policy_config.lr, dt=self._dt,
+                            inverse_gradient_magnitude=1,
                             weight_decay=policy_config.weight_decay),
-            torch.optim.SGD(self._val_function.parameters(),
-                            lr=policy_config.lr * self._dt ** 2,
+            setup_optimizer(self._val_function.parameters(),
+                            opt_name=policy_config.optimizer,
+                            lr=policy_config.lr, dt=self._dt,
+                            inverse_gradient_magnitude=self._dt,
                             weight_decay=policy_config.weight_decay),
-            torch.optim.SGD(self._policy_function.parameters(),
-                            lr=policy_config.policy_lr * self._dt,
+            setup_optimizer(self._policy_function.parameters(),
+                            opt_name=policy_config.optimizer,
+                            lr=policy_config.policy_lr, dt=self._dt,
+                            inverse_gradient_magnitude=1,
                             weight_decay=policy_config.weight_decay))
 
         self._schedulers = (
