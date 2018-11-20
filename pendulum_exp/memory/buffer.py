@@ -44,7 +44,7 @@ class MemorySampler:
 
         nb_envs = obs.shape[0]
         if self._true_size == -1:
-            self._true_size = (self._size // nb_envs + 1) * nb_envs
+            self._true_size = (self._size // nb_envs) * nb_envs
             self._obs = np.zeros((self._true_size, *obs.shape[1:]))
             self._action = np.zeros((self._true_size, *action.shape[1:]))
             self._next_obs = np.zeros((self._true_size, *next_obs.shape[1:]))
@@ -83,8 +83,8 @@ class MemorySampler:
 class PrioritizedMemorySampler:
     def __init__(self, size: int, batch_size: int,
                  beta: float, alpha: float) -> None:
-        self._memory = MemorySampler(size, batch_size)
-        self._sum_tree = SumTree(size)
+        self._sum_tree: SumTree = SumTree(size)
+        self._memory = MemorySampler(self._sum_tree.size, batch_size)
         self._max_priority = .1
         self._batch_size = batch_size
         self._beta = beta
@@ -111,6 +111,7 @@ class PrioritizedMemorySampler:
             done: Arrayable) -> None:
         self._memory.push(
             obs, action, next_obs, reward, done)
+        assert self._sum_tree.size  == self._memory.size
         for _ in check_array(obs):
             self._sum_tree.add(self._max_priority ** self._alpha)
 

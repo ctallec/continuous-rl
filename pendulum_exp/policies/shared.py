@@ -91,8 +91,9 @@ class SharedAdvantagePolicy(Policy):
                     self.optimize_policy(max_adv)
 
                 self.log()
-            except IndexError:
+            except IndexError as e:
                 # If not enough data in the buffer, do nothing
+                raise e
                 pass
 
     def optimize_value(self, *losses: Tensor):
