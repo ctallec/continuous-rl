@@ -16,6 +16,10 @@ class SumTree:
         self._write: int = self._max_size - 1
         self._storage: np.ndarray = np.zeros(2 * self._max_size - 1)
 
+    @property
+    def size(self):
+        return self._max_size
+
     def modify(self, idx: int, priority: float) -> None:
         assert idx < self._max_size
         change = self._storage[self._write + idx] - priority
