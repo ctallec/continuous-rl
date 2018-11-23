@@ -1,7 +1,7 @@
 """ Environment utilities """
 from abc import ABC, abstractmethod
 import gym
-from gym.wrappers import TimeLimit
+from envs.wrappers import TimeLimit
 import numpy as np
 from envs.pusher import DiscretePusherEnv, ContinuousPusherEnv
 from config import EnvConfig

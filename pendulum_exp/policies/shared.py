@@ -74,7 +74,8 @@ class SharedAdvantagePolicy(Policy):
                         self._sampler.sample()
 
                     # don't update when a time limit is reached
-                    weights = weights * (1 - time_limit)
+                    if time_limit is not None:
+                        weights = weights * (1 - time_limit)
                     reference_obs = self._sampler.reference_obs
                     reward = arr_to_th(reward, self._device)
                     weights = arr_to_th(check_array(weights), self._device)
