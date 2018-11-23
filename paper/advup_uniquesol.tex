@@ -291,6 +291,7 @@ at every time, not just storing past value functions.
 solution for $V$ (with $\gamma<1$) is
 \begin{equation}
 V(s)=V^\pi(s)+\left(\frac{1-\gamma}{\alpha}-1\right)\E_{\tilde \rho} V^\pi
+\label{eq:relative-td}
 \end{equation}
 and with $\alpha=1$ this is simply
 \begin{equation}
@@ -328,5 +329,16 @@ $V(\tilde s)=\E_{\rho^\pi}r$.)
 Would have to check what happens for training $A$, I think we have to
 take $\gamma(V(s')-V(\tilde s))-[V(s)-V(\tilde s)]$ if we want to remove
 constants on $A$.
+
+\paragraph{Relative $V$ terminal value in semi-episodic environments} When
+faced with a semi-episodic environment, i.e. an environment where terminal
+states exist, but some policies never reach them, the value of the relative
+$V$ function corresponding to a policy $\pi$ that do not reach terminal states,
+on a terminal state $t$ is given by
+\begin{equation}
+	V(t) = - \frac{\gamma}{1 - \gamma} \E_{\tilde{\rho}} V.
+\end{equation}
+The result is obtained from \eqref{eq:relative-td}, since $\E_{\tilde{\rho}} V = (1 - \gamma)
+\E_{\tilde{\rho}} V^\pi$, and $V^\pi(t) = 0$.
 
 \end{document}
