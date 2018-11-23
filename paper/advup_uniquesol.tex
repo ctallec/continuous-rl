@@ -341,4 +341,14 @@ on a terminal state $t$ is given by
 The result is obtained from \eqref{eq:relative-td}, since $\E_{\tilde{\rho}} V = (1 - \gamma)
 \E_{\tilde{\rho}} V^\pi$, and $V^\pi(t) = 0$.
 
+This is directly compatible with applying relative TD at the terminal
+state $t$, with next state $t$ and reward $0$: indeed the relative Bellman equation at $t$ reads
+\begin{equation}
+V(t)=0+\gamma V(t)-\gamma \E_{\tilde \rho} V
+\end{equation}
+so in the parametric case the gradient step at $t$ is
+\begin{equation}
+\partial_\theta V(t) ( (\gamma-1)V(t)-\gamma \E_{\tilde \rho} V)
+\end{equation}
+
 \end{document}
