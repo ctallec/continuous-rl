@@ -34,8 +34,7 @@ class TimeLimit(Wrapper):
         super(TimeLimit, self).__init__(env)
         self._max_episode_steps = max_episode_steps
 
-        self._elapsed_steps = 0
-        self._episode_started_at = None
+        self._elapsed_steps = None
 
     def _past_limit(self):
         """Return true if we are past our limit"""
@@ -46,15 +45,16 @@ class TimeLimit(Wrapper):
         return False
 
     def step(self, action):
-        assert self._episode_started_at is not None, "Cannot call env.step() before calling reset()"
+        assert self._elapsed_steps is not None, "Cannot call env.step() before calling reset()"
         observation, reward, done, info = self.env.step(action)
         self._elapsed_steps += 1
+        if info is None:
+            info = {}
+        info["time_limit"] = False
 
         if self._past_limit():
             if self.metadata.get('semantics.autoreset'):
                 self.reset() # automatically reset the env
-            if info is None:
-                info = {}
             info["time_limit"] = True
             done = True
 
