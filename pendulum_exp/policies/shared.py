@@ -5,6 +5,7 @@ from config import PolicyConfig
 from memory.utils import setup_memory
 from torch import Tensor
 from convert import arr_to_th, check_array, th_to_arr
+from typing import Optional
 
 class SharedAdvantagePolicy(Policy):
     def __init__(self, policy_config: PolicyConfig,
@@ -34,6 +35,7 @@ class SharedAdvantagePolicy(Policy):
         self._reward = np.array([])
         self._next_obs = np.array([])
         self._done = np.array([])
+        self._time_limit = np.array([])
 
     def act(self, obs: Arrayable):
         raise NotImplementedError
@@ -51,29 +53,36 @@ class SharedAdvantagePolicy(Policy):
     def observe(self,
                 next_obs: Arrayable,
                 reward: Arrayable,
-                done: Arrayable):
+                done: Arrayable,
+                time_limit: Optional[Arrayable]=None):
         if self._train:
             self._count += 1
             self._next_obs = next_obs
             self._reward = reward
             self._done = done
+            self._time_limit = time_limit
             self._sampler.push(
-                self._obs, self._action, self._next_obs, self._reward, self._done)
+                self._obs, self._action, self._next_obs,
+                self._reward, self._done, self._time_limit)
             self.learn()
 
     def learn(self):
         if self._count % self._steps_btw_train == self._steps_btw_train - 1:
             try:
                 for _ in range(self._learn_per_step):
-                    obs, action, next_obs, reward, done, weights = self._sampler.sample()
+                    obs, action, next_obs, reward, done, weights, time_limit = \
+                        self._sampler.sample()
+
+                    # don't update when a time limit is reached
+                    weights = weights * (1 - time_limit)
                     reference_obs = self._sampler.reference_obs
                     reward = arr_to_th(reward, self._device)
                     weights = arr_to_th(check_array(weights), self._device)
 
                     v = self._val_function(obs).squeeze()
-                    next_v = self.compute_next_value(next_obs, done)
                     reference_v = self._val_function(reference_obs).squeeze().detach()
                     mean_v = reference_v.mean()
+                    next_v = self.compute_next_value(next_obs, done, mean_v)
                     adv, max_adv = self.compute_advantages(
                         obs, action)
 
@@ -105,7 +114,7 @@ class SharedAdvantagePolicy(Policy):
         """Computes adv, max_adv."""
         raise NotImplementedError()
 
-    def compute_next_value(self, next_obs: Arrayable, done: Arrayable) -> Tensor:
+    def compute_next_value(self, next_obs: Arrayable, done: Arrayable, mean_v: Tensor) -> Tensor:
         """Also detach next value."""
         done = arr_to_th(check_array(done).astype('float'), self._device)
         next_v = self._val_function(next_obs).squeeze().detach()
@@ -113,4 +122,4 @@ class SharedAdvantagePolicy(Policy):
             assert (1 - done).byte().all(), "Gamma set to 1. with a potentially"\
                 "episodic problem..."
             return next_v
-        return (1 - done) * next_v
+        return (1 - done) * next_v - done * self._gamma / (1 - self._gamma) * mean_v

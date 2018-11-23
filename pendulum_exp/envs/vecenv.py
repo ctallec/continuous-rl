@@ -69,7 +69,8 @@ class SubprocVecEnv(VecEnv):
         results = [remote.recv() for remote in self.remotes]
         self.waiting = False
         obs, rews, dones, infos = zip(*results)
-        return np.stack(obs), np.stack(rews), np.stack(dones), infos
+        return np.stack(obs), np.stack(rews), np.stack(dones), \
+            {k: np.stack(i[k]) for k, i in infos.item()}
 
     def reset(self):
         for remote in self.remotes:
