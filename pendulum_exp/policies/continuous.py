@@ -1,4 +1,5 @@
 """Define continuous policy."""
+from typing import Optional
 import torch
 from torch import Tensor
 import numpy as np
@@ -46,6 +47,7 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
 
         # logging
         self._cum_loss = 0
+        self._float_loss: Optional[float] = None
 
     def act(self, obs: Arrayable):
         with torch.no_grad():
@@ -84,6 +86,11 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
 
         # logging
         self._cum_loss += losses[0].item()
+        if self._float_loss is None:
+            self._float_loss = losses[0].item()
+        else:
+            self._float_loss = self._float_loss * self._gamma ** self._dt +\
+                (1 - self._gamma ** self._dt) * losses[0].item()
         self._learn_count += 1
 
     def optimize_policy(self, max_adv: Tensor):
@@ -92,8 +99,11 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
     def log(self):
         log("Avg_adv_loss", self._cum_loss / self._learn_count,
             self._learn_count)
+        log("Float_adv_loss", self._float_loss, self._learn_count)
         info(f"At iteration {self._learn_count}, "
-             f"avg_loss: {self._cum_loss/self._learn_count}")
+             f'Float_adv_loss: {self._float_loss}, '
+             f'Avg_adv_loss: {self._cum_loss/self._learn_count}, '
+             f'Avg_policy_loss: {self._cum_policy_loss / self._learn_count}')
 
     def train(self):
         self._train = True
@@ -176,6 +186,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
         # logging
         self._cum_loss = 0
+        self._float_loss = None
         self._cum_policy_loss = 0
 
     def act(self, obs: Arrayable):
@@ -199,6 +210,11 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
         # logging
         self._cum_loss += losses[0].item()
+        if self._float_loss is None:
+            self._float_loss = losses[0].item()
+        else:
+            self._float_loss = self._float_loss * self._gamma ** self._dt +\
+                (1 - self._gamma ** self._dt) * losses[0].item()
         self._learn_count += 1
 
     def optimize_policy(self, max_adv: Tensor):
@@ -212,8 +228,10 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
     def log(self):
         info(f'At iteration {self._learn_count}, '
+             f'Float_adv_loss: {self._float_loss}, '
              f'Avg_adv_loss: {self._cum_loss/self._learn_count}, '
              f'Avg_policy_loss: {self._cum_policy_loss / self._learn_count}')
+        log("Float_adv_loss", self._float_loss, self._learn_count)
         log("Avg_adv_loss", self._cum_loss / self._learn_count,
             self._learn_count)
         log("Avg_policy_loss", self._cum_policy_loss / self._learn_count,

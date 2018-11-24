@@ -6,7 +6,6 @@ from subprocess import call
 import matplotlib.pyplot as plt
 
 
-
 def plots(logs, namefile):
     fig, axes = plt.subplots(len(logs), figsize=(10., 15.))
 
@@ -19,7 +18,7 @@ def plots(logs, namefile):
         ax.plot(x, y)
         ax.set_xlabel("timestamps")
         ax.set_xlim(0., max(x))
-        l = len(x)
+        l = len(x) # flake8: noqa
         ax.set_ylim(min(y[l//10:]), max(y[l//10:]))
 
     plt.tight_layout()
@@ -29,7 +28,7 @@ def plots(logs, namefile):
 
 def summary(logs):
     print('Summary')
-    metrics = [("Avg_adv_loss", min), ("Return", max)]
+    metrics = [("Avg_adv_loss", min), ("Float_adv_loss", min), ("Return", max)]
     for met, f in metrics:
         metval = logs[met]
         curr_ts, curr_val = max(metval.items(), key=lambda x: x[0])
