@@ -20,6 +20,7 @@ class MemorySampler:
         self._next_obs = np.empty(0)
         self._reward = np.empty(0)
         self._done = np.empty(0)
+        self._time_limit = None
 
         # store a reference point for relative td
         self._ref_obs = np.empty(0)
@@ -34,13 +35,17 @@ class MemorySampler:
             action: Arrayable,
             next_obs: Arrayable,
             reward: Arrayable,
-            done: Arrayable) -> None:
+            done: Arrayable,
+            time_limit: Optional[Arrayable]
+    ) -> None:
         # if empty, initialize  buffer
         obs = check_array(obs)
         action = check_array(action)
         next_obs = check_array(next_obs)
         reward = check_array(reward)
         done = check_array(done)
+        if time_limit is not None:
+            time_limit = check_array(time_limit)
 
         nb_envs = obs.shape[0]
         if self._true_size == -1:
@@ -50,6 +55,8 @@ class MemorySampler:
             self._next_obs = np.zeros((self._true_size, *next_obs.shape[1:]))
             self._reward = np.zeros((self._true_size, *reward.shape[1:]))
             self._done = np.zeros((self._true_size, *done.shape[1:]))
+            if time_limit is not None:
+                self._time_limit = np.zeros((self._true_size, *time_limit.shape[1:]))
 
             # initialize reference point
             self._ref_obs = obs.copy()
@@ -59,6 +66,8 @@ class MemorySampler:
         self._next_obs[self._cur:self._cur + nb_envs] = next_obs
         self._reward[self._cur:self._cur + nb_envs] = reward
         self._done[self._cur:self._cur + nb_envs] = done
+        if self._time_limit is not None:
+            self._time_limit[self._cur:self._cur + nb_envs] = time_limit
         if self._cur + nb_envs == self._true_size:
             self._full = True
         self._cur = (self._cur + nb_envs) % (self._true_size)
@@ -67,9 +76,14 @@ class MemorySampler:
         size = self._true_size if self._full else self._cur
         if idxs is None:
             idxs = np.random.randint(0, size, self._batch_size)
+        if self._time_limit is not None:
+            time_limit = self._time_limit[idxs]
+        else:
+            time_limit = None
         return (
             self._obs[idxs], self._action[idxs], self._next_obs[idxs],
-            self._reward[idxs], self._done[idxs], 1.)
+            self._reward[idxs], self._done[idxs], 1.,
+            time_limit)
 
     def observe(self, priorities: Arrayable):
         pass
@@ -108,10 +122,12 @@ class PrioritizedMemorySampler:
             action: Arrayable,
             next_obs: Arrayable,
             reward: Arrayable,
-            done: Arrayable) -> None:
+            done: Arrayable,
+            time_limit: Optional[Arrayable]
+    ) -> None:
         self._memory.push(
-            obs, action, next_obs, reward, done)
-        assert self._sum_tree.size  == self._memory.size
+            obs, action, next_obs, reward, done, time_limit)
+        assert self._sum_tree.size == self._memory.size
         for _ in check_array(obs):
             self._sum_tree.add(self._max_priority ** self._alpha)
 
@@ -120,14 +136,14 @@ class PrioritizedMemorySampler:
             assert self._idxs is None, "No observe after sample ..."
         idxs, priorities = zip(*[self._sum_tree.sample() for _ in range(self._batch_size)])
         idxs, priorities = check_array(idxs), check_array(priorities)
-        obs, action, next_obs, reward, done, _ = self._memory.sample(idxs)
+        obs, action, next_obs, reward, done, _, time_limit = self._memory.sample(idxs)
         weights = (self._sum_tree.total / self._memory.size / priorities) ** self._beta
         weights = weights / weights.max()
 
         if to_observe:
             self._idxs = idxs
 
-        return obs, action, next_obs, reward, done, weights
+        return obs, action, next_obs, reward, done, weights, time_limit
 
     def observe(self, priorities: Arrayable):
         assert self._idxs is not None, "No sample before observe ..."

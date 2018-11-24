@@ -1,5 +1,5 @@
 """Policy wrappers"""
-from typing import Dict
+from typing import Dict, Optional
 from abstract import Policy, StateDict, Arrayable
 from convert import check_array
 import numpy as np
@@ -34,10 +34,11 @@ class StateNormalization(Policy):
     def observe(self,
                 next_obs: Arrayable,
                 reward: Arrayable,
-                done: Arrayable):
+                done: Arrayable,
+                time_limit: Optional[Arrayable]):
         next_obs = self._normalize(next_obs)
         return self._policy.observe(
-            next_obs, reward, done)
+            next_obs, reward, done, time_limit)
 
     def learn(self):
         return self._policy.learn()
