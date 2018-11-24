@@ -41,7 +41,9 @@ A fixed point of TD solves
 \transp{\Phi}\rho(\Id-P)V=\transp{\Phi}\rho R
 \end{equation}
 and if the system is overparameterized ($\Phi$ invertible) and
-well-sampled ($\rho>0$) this implies $(\Id-P)V=R$.
+well-sampled ($\rho>0$) this implies $(\Id-P)V=R$. All terms in this
+equation are \emph{samplable}: we can sample from $\rho R$ and from
+$\rho(\Id-P)$.
 
 A local minimizer of the $L^2(\rho)$ error between $V$ and
 $(\Id-P)^{-1}R$ solves
@@ -72,5 +74,72 @@ P)}=2\mu(\Id-P)$ and this is equivalent to
 \transp{\Phi}\mu ((\Id-P)V-R)=0
 \end{equation}
 namely, the same as a fixed point of TD.
+
+\bigskip
+
+TD is the only one of those fixed point equations that is
+\emph{samplable} given that we can sample $\rho$, $\rho P$ and $\rho R$.
+\footnote{Actually the minimizer of the $L^2(\rho^2)$ error between $R$
+and $(\Id-P)V$ is also samplable:
+\begin{equation}
+\transp{\Phi}\transp{(\Id-P)}\rho^2(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho^2
+R
+\end{equation}
+however, the $\rho^2$ is a bit weird...
+}
+Thus, from now on we are going to focus on solving
+\begin{equation}
+\transp{\Phi}\rho (\Id-P)V=\transp{\Phi}\rho R
+\end{equation}
+using various SGD-like solvers.
+
+We now switch to the linear case and will de-linearize later. This
+becomes
+\begin{equation}
+\transp{\Phi}\rho (\Id-P)\Phi \theta=\transp{\Phi}\rho R
+\end{equation}
+to be solved in $\theta$.
+
+\paragraph{Solving $A\theta=b$ where $A$ and $b$ are samplable.} An
+obvious way to solve $A\theta=b$ via a stochastic gradient method is
+\begin{equation}
+\theta\gets \theta - \eta (A\theta-b)
+\end{equation}
+using samples for $A$ and $b$.
+This is TD. If $A$ is symmetric positive definite, this is also the
+gradient descent of the loss function
+$\transp{(A\theta-b)}A^{-1}(A\theta-b)$. However, we want to apply this
+to matrices $A$ that are not necessarily of this type.
+
+This works only if $A$ is \emph{stable}.
+
+
+\begin{defi}
+A matrix $A$ is \emph{stable} if one of the following equivalent
+conditions are satisfied:
+\begin{itemize}
+\item All the eigenvalues of $A$ have positive real part.
+\item The matrix $(\Id-\eps A)$ has spectral radius $<1$ for small enough
+$\eps$.
+\item The differential equation $\theta'=-A\theta$ converges to $0$ for
+any initial value.
+\item There exists a symmetric, positive definite matrix $L$ (Lyapunov
+function) such that $\transp{\theta}L\theta$ is decreasing along the
+solutions of the differential equation $\theta'=-A\theta$.
+\item There exists a symmetric, positive definite matrix $L$ such that
+\begin{equation}
+\transp{\theta} L A \theta>0
+\end{equation}
+for all $\theta\neq 0$. (This is the same $L$ as in the previous
+condition.)
+\end{itemize}
+\end{defi}
+
+In particular, a symmetric, definite positive matrix is stable. Since the
+solution of $\theta_t'=-A\theta_t$ is $\theta_t=e^{-tA}\theta_0$, a
+Lyapunov function that works is $\transp{\theta}L\theta=\int_{t \geq 0}
+\norm{\theta_t}^2$, namely
+$L=\int_{t\geq 0} \transp{(e^{-t A})}
+e^{-tA}$.
 
 \end{document}
