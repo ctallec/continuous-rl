@@ -143,8 +143,10 @@ this preserves eigenvalues.
 
 Since the
 solution of $\theta_t'=-A\theta_t$ is $\theta_t=e^{-tA}\theta_0$, a
-Lyapunov function that works is $\transp{\theta}L\theta=\int_{t \geq 0}
-\norm{\theta_t}^2$, namely
+Lyapunov function that works is $\transp{\theta_0}L\theta_0\deq \int_{t \geq 0}
+\norm{\theta_t}^2$. Indeed this is decreasing, because
+$\transp{\theta_t}L\theta_t$ is just the same integral starting at $t$
+instead of $0$. Explicitly this is
 $L=\int_{t\geq 0} \transp{(e^{-t A})}
 e^{-tA}$.
 
@@ -199,7 +201,9 @@ obviously stable. This helps with $A$ being non-symmetric.
 \item $B=A^{-1}$: obviously stable ($BA=\Id$), jumps to the solution in one step if
 $\eta=1$. Requires computing the inverse of $A$, namely, solving the
 problem by first solving the problem. But if $A$ is stable and samplable,
-this can be done via TANGO. More on that later.
+this can be done via TANGO. More on that later. This should speed up
+things in situations where $A$ is stable in the first place (eg.,
+on-policy).
 
 \item $B=(\transp{\Phi}\rho\Phi)^{-1}$. This amounts to orthonormalizing
 the basis before applying TD. In general, this is not stable off-policy: take the
@@ -248,7 +252,8 @@ $\Phi$, projected in $L^2(\rho)$.
 
 \item The choice $B=A^{-1}$ can also be written as
 $B=\transp{A}(A\transp{A})^{-1}$. The advantage is that we now have to
-invert a stable matrix, so, better behaved with TANGO.
+invert a stable matrix, so, better behaved with TANGO. However, variance
+will be terrible: this requires four independent samples from $A$.
 \end{itemize}
 
 \end{document}
