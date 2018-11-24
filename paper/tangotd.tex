@@ -1,0 +1,76 @@
+\documentclass[11pt,a4paper]{article}
+\input{header.en.tex}
+
+
+
+\begin{document}
+
+We consider the Bellman equation for a policy $\pi$ in a finite MDP with
+expected reward $R$ and transition probability matrix $P$ ($P$ includes $\pi$ and
+the environment response). The Bellman equation is
+\begin{equation}
+(\Id-P)V=R
+\end{equation}
+
+We assume we can sample transitions $(s,a,r,s')$ according to some
+distribution $\rho$ on $s$. In the on-policy case, $\rho$ will be the
+stationary distribution. Typically $a$ has to be taken from $\pi$ (or a
+distribution close to $\pi$ after resampling/by using only those $a$
+sampled from $\pi$; this covers $\eps$-greedy) so that we do get
+transitions from
+$P$. (Alternatively one could work with pairs $(s,a)$ TODO.) Thus, we
+have access to unbiased samples of $\rho P$ and $\rho R$:
+\begin{equation}
+\rho P=\E[\1_{s}\transp{\1_{s'}}\,],\qquad \rho R=\E[r(s,a,s')\1_{s}]
+\end{equation}
+
+If we parameterize $V$ by some parameter $\theta$, we can apply
+parametric TD. The expected TD step is
+\begin{equation}
+\theta\gets \theta -\eta \,\transp{\Phi}\rho (V-PV-R)
+\end{equation}
+where 
+\begin{equation}
+\Phi\deq \frac{\partial V}{\partial \theta}
+\end{equation}
+is the Jacobian matrix of $V$ with respect to its parameter. The linear
+case $V=\Phi \theta$ corresponds to constant $\Phi$.
+
+A fixed point of TD solves
+\begin{equation}
+\transp{\Phi}\rho(\Id-P)V=\transp{\Phi}\rho R
+\end{equation}
+and if the system is overparameterized ($\Phi$ invertible) and
+well-sampled ($\rho>0$) this implies $(\Id-P)V=R$.
+
+A local minimizer of the $L^2(\rho)$ error between $V$ and
+$(\Id-P)^{-1}R$ solves
+\begin{equation}
+\transp{\Phi} \rho V=\transp{\Phi}\rho (\Id-P)^{-1} R
+\end{equation}
+which is not quite the same as the above. A local minimizer of the
+$L^2(\rho)$ error between $(\Id-P)V$ and $R$ is
+\begin{equation}
+\transp{\Phi}\transp{(\Id-P)}\rho(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho R
+\end{equation}
+and in the linear case $V=\Phi\theta$, this is the standard solution to
+the linear regression problem $(\Id-P)\Phi\theta\approx R$ in
+$L^2(\rho)$.
+
+The Dirichlet norm associated with $\rho$ is $\E_{ss'}
+(f(s)-f(s'))^2$. Its matrix is $\rho+\rho'-\rho P-\transp{(\rho P)}$ where
+$\rho'$ is the distribution of $s'$.
+A local minimizer of the Dirichlet error between $V$ and
+$(\Id-P)^{-1}R$ solves
+\begin{equation}
+\transp{\Phi} (\rho+\rho'-\rho P-\transp{(\rho P)})(V-(\Id-P)^{-1}R)=0
+\end{equation}
+If $\rho$ is the stationary distribution $\mu$ and $P$ is reversible, one
+has $\transp{(\mu P)}=\mu P$ so $\rho+\rho'-\rho P-\transp{(\rho
+P)}=2\mu(\Id-P)$ and this is equivalent to
+\begin{equation}
+\transp{\Phi}\mu ((\Id-P)V-R)=0
+\end{equation}
+namely, the same as a fixed point of TD.
+
+\end{document}
