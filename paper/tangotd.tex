@@ -184,7 +184,31 @@ A few choices are:
 \begin{itemize}
 \item $B=A^{-1}$: obviously stable, jumps to the solution in one step if
 $\eta=1$. Requires computing the inverse of $A$, namely, solving the
-problem.
+problem. But if $A$ is stable and samplable, this can be done via TANGO.
+
+\item $B=(\transp{\Phi}\rho\Phi)^{-1}$. Then we have to prove that
+$(\transp{\Phi}\Phi)^{-1}\transp{\Phi}\rho(\Id-P)\Phi$ is stable. Taking
+$L=\transp{\Phi}(\mu/\rho)\Phi$, and computing
+\begin{align}
+\transp{\theta}LBA\theta&=
+\transp{\theta}L(\transp{\Phi}\rho\Phi)^{-1}\transp{\Phi}\rho(\Id-P)\Phi\theta
+\end{align}
+and note that $(\transp{\Phi}\rho\Phi)^{-1}\transp{\Phi}\rho$ is the
+solution of linear regression with design matrix $\Phi$ in $L^2(\rho)$.
+This implies that
+\begin{equation}
+\Phi(\transp{\Phi}\rho\Phi)^{-1}\transp{\Phi}\rho=\Pi_\Phi
+\end{equation}
+where $\Pi$ is the orthogonal projector on the image of $\Phi$ in
+$L^2(\rho)$. Now taking
+\begin{equation}
+L=\transp{\Phi}(\mu/\rho)\Phi
+\end{equation}
+we have
+\begin{equation}
+\transp{\theta}LBA\theta=\transp{\theta} \transp{\Phi}(\mu/\rho)\Pi_\Phi
+(\Id-P)\Phi\theta
+\end{equation}
 \end{itemize}
 
 \end{document}
