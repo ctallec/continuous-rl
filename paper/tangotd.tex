@@ -34,7 +34,8 @@ where
 \Phi\deq \frac{\partial V}{\partial \theta}
 \end{equation}
 is the Jacobian matrix of $V$ with respect to its parameter. The linear
-case $V=\Phi \theta$ corresponds to constant $\Phi$.
+case $V=\Phi \theta$ corresponds to constant $\Phi$. The tabular case is
+$\Phi=\Id$.
 
 A fixed point of TD solves
 \begin{equation}
@@ -135,11 +136,55 @@ condition.)
 \end{itemize}
 \end{defi}
 
-In particular, a symmetric, definite positive matrix is stable. Since the
+In particular, a symmetric, definite positive matrix is stable (last
+criterion with $L=\Id$).
+Stability is invariant by matrix similarity $A\gets B^{-1}A B$, since
+this preserves eigenvalues.
+
+Since the
 solution of $\theta_t'=-A\theta_t$ is $\theta_t=e^{-tA}\theta_0$, a
 Lyapunov function that works is $\transp{\theta}L\theta=\int_{t \geq 0}
 \norm{\theta_t}^2$, namely
 $L=\int_{t\geq 0} \transp{(e^{-t A})}
 e^{-tA}$.
+
+\paragraph{Making the TD iteration stable.} In linear TD the matrix $A$ is
+\begin{equation}
+A=\transp{\Phi}\rho (\Id-P)\Phi
+\end{equation}
+and we know it is stable in several cases: (TODO here I just remove
+constants)
+\begin{enumerate}
+\item On-policy: $\rho=\mu$, the invariant distribution. Then we know that $\rho(\Id-P)$ is positive
+(Dirichlet form). This implies that $\transp{\Phi}\rho (\Id-P)\Phi$ is
+positive too. So we recover the convergence result on-policy for linear
+TD.
+\item In the tabular case: $\Phi=\Id$. Indeed we have $A=\rho (\Id-P)$,
+which is not positive in general, but since $\mu (\Id-P)$ is, we can take
+$L=\mu/\rho$ so that $LA$ is positive.
+\end{enumerate}
+
+One can also \emph{precondition} the gradient descent. This can make it
+stable and/or make convergence faster. The step becomes
+\begin{equation}
+\theta\gets \theta-\eta B(A\theta-b)
+\end{equation}
+for some matrix $B$.
+
+Of course the values of $B$ that are most interesting are obtained as the
+inverse of something; for instance $B=A^{-1}$ solves the problem
+instantly... Two-timescale methods or TANGO-like algorithms can apply an
+inverse of something to $A\theta-b$, via an auxiliary gradient descent.
+TANGO works for stable matrices, if they are samplable \footnote{In
+TANGO, the consecutive steps absolutely have to be \emph{independent}. So even in
+the on-policy case, we will need a replay buffer from $\mu$ for the auxiliary
+gradient descent.}
+
+A few choices are:
+\begin{itemize}
+\item $B=A^{-1}$: obviously stable, jumps to the solution in one step if
+$\eta=1$. Requires computing the inverse of $A$, namely, solving the
+problem.
+\end{itemize}
 
 \end{document}
