@@ -1,5 +1,5 @@
 """Define abstractions."""
-from typing import Union, Callable, Dict, Any
+from typing import Union, Callable, Dict, Any, Optional
 from abc import ABC, abstractmethod
 import numpy as np
 import torch
@@ -18,7 +18,8 @@ class Policy(ABC):
     def observe(self,
                 next_obs: Arrayable,
                 reward: Arrayable,
-                done: Arrayable):
+                done: Arrayable,
+                time_limit: Optional[Arrayable]):
         pass
 
     @abstractmethod
