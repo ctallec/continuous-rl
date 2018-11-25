@@ -204,7 +204,10 @@ A few choices are:
 $\transp{(A\theta-b)}(A\theta-b)$ (Sutton 2009).
 This corresponds to $B=\transp{A}$. Then
 $BA=\transp{A}A$ is
-obviously stable. This helps with $A$ being non-symmetric.
+obviously stable. This helps with $A$ being non-symmetric. TODO: check if
+GTD uses the same sample for $\tilde{A}$ and $A$. If so, it will be
+faster but converge to a different stable point (still OK if
+overparameterized).
 
 \item $B=A^{-1}$: obviously stable ($BA=\Id$), jumps to the solution in one step if
 $\eta=1$. Requires computing the inverse of $A$, namely, solving the
@@ -256,7 +259,10 @@ B=\transp{A} (\transp{\Phi}\rho\Phi)^{-1}=\transp{(\transp{\Phi}\rho(\Id-P)\Phi)
 \end{equation}
 from which it is clear that $BA$ is symmetric and stable. This is obtained as a
 gradient descent of the projected norm of the Bellman gap on the image of
-$\Phi$, projected in $L^2(\rho)$.
+$\Phi$, projected in $L^2(\rho)$. TODO: TDC and GTD2 differ by using that
+$A$ has $(\Id-P)$ on  the right, and expanding the $\Id$ term and the $P$
+term separately, which results in simplifications and make TDC much
+closer to TD and less reliant on the inversion.
 
 \item The choice $B=A^{-1}$ can also be written as
 $B=\transp{A}(A\transp{A})^{-1}$. The advantage is that we now have to
@@ -301,5 +307,8 @@ consecutive samples (eg, online) for the matrix to be inverted. I think
 TANGO would need uncorrelated samples for the matrix to be inverted (eg,
 a replay buffer) and two samples for $A$ and $\transp{A}$, but not sure
 about the latter.
+
+TODO: I'm more interested in an algo that's second-order wrt the Markov
+process (I don't necessarily want to orthonormalize features).
 
 \end{document}
