@@ -165,7 +165,7 @@ We know $A$ is stable in several cases: (TODO here I just ignore constant
 functions)
 \begin{enumerate}
 \item On-policy: $\rho=\mu$, the invariant distribution. Then we know that $\rho(\Id-P)$ is positive
-(Dirichlet form). This implies that $\transp{\Phi}\rho (\Id-P)\Phi$ is
+(Dirichlet form). This implies that $A=\transp{\Phi}\rho (\Id-P)\Phi$ is
 positive too. So we recover the convergence result on-policy for linear
 TD.
 \item In the tabular case: $\Phi=\Id$. Indeed we have $A=\rho (\Id-P)$,
@@ -212,8 +212,8 @@ orthonormalizing $\Phi$ is not going to help as $\transp{\Phi}\rho\Phi$
 is just a number.
 
 Still, this is stable
-on-policy or assuming overparameterization. (Indeed in the latter case we
-are back to the tabular case.) TODO
+on-policy (take $L=B^{-1}$, given that $A$ is stable on-policy) or assuming overparameterization. (Indeed in the latter case we
+are back to the tabular case.)
 % Then we have to prove th
 % $(\transp{\Phi}\Phi)^{-1}\transp{\Phi}\rho(\Id-P)\Phi$ is stable. Taking
 % $L=\transp{\Phi}(\mu/\rho)\Phi$, and computing
@@ -254,6 +254,13 @@ $\Phi$, projected in $L^2(\rho)$.
 $B=\transp{A}(A\transp{A})^{-1}$. The advantage is that we now have to
 invert a stable matrix, so, better behaved with TANGO. However, variance
 will be terrible: this requires four independent samples from $A$.
+
+\item A gradient descent of
+$\transp{(A\theta-b)}(A+\transp{A})^{-1}(A\theta-b)$, corresponding to
+$B=\transp{A}(A+\transp{A})^{-1}$. This is probably the closest to
+unmodified TD in behavior: for instance when $A$ is symmetric ($\rho=\mu$
+and $P$ reversible) this coincides with TD.
+
 \end{itemize}
 
 \end{document}
