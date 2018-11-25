@@ -205,9 +205,14 @@ $\transp{(A\theta-b)}(A\theta-b)$ (Sutton 2009).
 This corresponds to $B=\transp{A}$. Then
 $BA=\transp{A}A$ is
 obviously stable. This helps with $A$ being non-symmetric. TODO: check if
-GTD uses the same sample for $\tilde{A}$ and $A$. If so, it will be
-faster but converge to a different stable point (still OK if
-overparameterized).
+GTD uses the same sample for $\tilde{A}$ and $A$. If so, it will
+converge to a different stable point. TODO: Can be applied TANGO-style
+(by formally inverting $\Id$ in TANGO), advantage=fewer variance due to
+two-sampling. (TANGO uses two-sampling but on a sum of past terms, so
+that a past term gets TANGOified whenever we happen to reach a state that
+activates the same features in the future, which is probably fine). Can
+also be TANGOified with $\gamma\to 0$ (two-timescale) which now requires
+only single sampling (no replay buffers).
 
 \item $B=A^{-1}$: obviously stable ($BA=\Id$), jumps to the solution in one step if
 $\eta=1$. Requires computing the inverse of $A$, namely, solving the
