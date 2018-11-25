@@ -7,10 +7,12 @@ from policies.discrete import AdvantagePolicy
 from policies.continuous import AdvantagePolicy as ContinuousAdvantagePolicy
 from policies.continuous import SampledAdvantagePolicy
 from policies.wrappers import StateNormalization
+from policies.benchmarkspolicies.dqn import DQNPolicy
 from models import ContinuousAdvantageMLP, ContinuousPolicyMLP, MLP
 from noise import setup_noise
 from config import NoiseConfig, PolicyConfig
 from config import SampledAdvantagePolicyConfig, ApproximateAdvantagePolicyConfig
+from config import DQNConfig, AdvantagePolicyConfig
 
 def setup_policy(observation_space: Space,
                  action_space: Space,
@@ -39,18 +41,25 @@ def setup_policy(observation_space: Space,
                             action_shape=(nb_train_env, action_space.n)).to(device)
         eval_noise = setup_noise(eval_noise_config, network=adv_function,
                                  action_shape=(nb_eval_env, action_space.n)).to(device)
-        adv_function = MLP(nb_inputs=nb_state_feats, nb_outputs=action_space.n,
+
+        policy_args = dict(
+            policy_config=policy_config,
+            device=device)
+
+        if isinstance(policy_config, AdvantagePolicyConfig):
+            adv_function = MLP(nb_inputs=nb_state_feats, nb_outputs=action_space.n,
                            nb_layers=nb_layers, hidden_size=hidden_size).to(device)
-        noise = setup_noise(noise_config, network=adv_function,
-                            action_shape=(nb_train_env, action_space.n)).to(device)
-        eval_noise = setup_noise(eval_noise_config, network=adv_function,
-                                 action_shape=(nb_eval_env, action_space.n)).to(device)
-        policy: Policy = AdvantagePolicy(
-            adv_function=adv_function, val_function=val_function, adv_noise=noise,
-            policy_config=policy_config, device=device)
-        eval_policy: Policy = AdvantagePolicy(
-            adv_function=adv_function, val_function=val_function, adv_noise=eval_noise,
-            policy_config=policy_config, device=device)
+            policy: Policy = AdvantagePolicy(
+                adv_function=adv_function, val_function=val_function, adv_noise=noise,
+                **policy_args)
+            eval_policy: Policy = AdvantagePolicy(
+                adv_function=adv_function, val_function=val_function, adv_noise=eval_noise,
+                **policy_args)
+        elif isinstance(policy_config, DQNConfig):
+            qnet_function = MLP(nb_inputs=nb_state_feats, nb_outputs=action_space.n,
+                                nb_layers=nb_layers, hidden_size=hidden_size).to(device)
+            policy = DQNPolicy(qnet_function=qnet_function, qnet_noise=noise, **policy_args)
+            eval_policy = DQNPolicy(qnet_function=qnet_function, qnet_noise=eval_noise, **policy_args)
 
     elif isinstance(action_space, Box):
         nb_actions = action_space.shape[-1]

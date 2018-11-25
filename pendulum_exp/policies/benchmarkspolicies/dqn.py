@@ -2,35 +2,54 @@ from itertools import chain
 import torch
 from abstract import ParametricFunction, Arrayable, Noise, StateDict, Policy
 
+import copy
 from convert import arr_to_th, th_to_arr
-from stats import penalize_mean
-from config import PolicyConfig
-from policies.shared import SharedAdvantagePolicy
+# from stats import penalize_mean
+from config import DQNConfig
+# from policies.shared import SharedAdvantagePolicy
 from mylog import log
 from logging import info
+from optimizer import setup_optimizer
+from memory.utils import setup_memory
 
-
-class DiscreteDQNPolicy(Policy):
+class DQNPolicy(Policy):
     def __init__(self,
                  qnet_function: ParametricFunction,
-                 target_function: ParametricFunction,
                  qnet_noise: Noise,
-                 policy_config: PolicyConfig,
+                 policy_config: DQNConfig,
                  device) -> None:
-        super().__init__(policy_config)
+        # super().__init__(policy_config)
         self._qnet_function = qnet_function.to(device)
-        self._target_function = target_function.to(device)
+
+        self._target_function = copy.deepcopy(self._qnet_function)
+
         self._qnet_noise = qnet_noise
 
+        # config
+        self._gamma = policy_config.gamma
+        self._dt = policy_config.dt
+        self._learn_per_step = policy_config.learn_per_step
+        self._steps_btw_train = policy_config.steps_btw_train
+        self._steps_btw_catchup = policy_config.steps_btw_catchup
+        self._sampler = setup_memory(policy_config)
         # optimization/storing
         self._device = device
-        self._optimizer = torch.optim.SGD(self._qnet_function.parameters(), lr=policy_config.lr * policy_config.dt)
-        self._scheduler = torch.optim.lr_scheduler.LambdaLR(self._optimizer, policy_config.lr_decay)
+        self._optimizer = setup_optimizer(
+            self._qnet_function.parameters(),
+            opt_name=policy_config.optimizer,
+            lr=policy_config.lr, dt=self._dt,
+            inverse_gradient_magnitude=1,
+            weight_decay=policy_config.weight_decay)
+
+        # scheduling parameters
+        self._schedule_params = dict(
+            mode='max', factor=.5, patience=25)
+        self._schedulers = torch.optim.lr_scheduler.ReduceLROnPlateau(self._optimizer, **self._schedule_params)
+        # self._scheduler = torch.optim.lr_scheduler.LambdaLR(self._optimizer, policy_config.lr_decay)
         # logging
         self._cum_loss = 0
         self._log = 100
 
-        self._learn_per_step = policy_config
 
     def act(self, obs: Arrayable):
         with torch.no_grad():
@@ -41,6 +60,8 @@ class DiscreteDQNPolicy(Policy):
 
     def learn(self):
         if self._count % self._steps_btw_train == self._steps_btw_train - 1:
+            # TODO: enlever try except
+            print("Your are not dreaming, you are in DQN.")
             try:
                 for _ in range(self._learn_per_step):
                     obs, action, next_obs, reward, done = self._sampler.sample()
@@ -74,8 +95,8 @@ class DiscreteDQNPolicy(Policy):
                 # If not enough data in the buffer, do nothing
                 pass
 
-        if self.count % self.steps_btw_catchup == self.steps_btw_catchup -1:
-            pass
+        if self.count % self._steps_btw_catchup == self._steps_btw_catchup -1:
+            self._target_function.load_state_dict(self.qnet_function.state_dict())
 
 
     def train(self):
