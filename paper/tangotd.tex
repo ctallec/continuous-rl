@@ -28,10 +28,10 @@ as
 \begin{equation}
 \rho(\Id-P)V=\rho R
 \end{equation}
-(equivalent if $\rho$ is positive), both sides are samplable, and we can try to solve the above by
+(equivalent if $\rho$ is positive), both sides are \emph{samplable}, and we can try to solve the above by
 stochastic gradient-like methods.
 
-For instance, ff we parameterize $V$ by some parameter $\theta$, we can apply
+For instance, if we parameterize $V$ by some parameter $\theta$, we can apply
 parametric TD. The expected TD step is
 \begin{equation}
 \theta\gets \theta -\eta \,\transp{\Phi}\rho (V-PV-R)
@@ -93,7 +93,8 @@ and $(\Id-P)V$ is also samplable:
 \transp{\Phi}\transp{(\Id-P)}\rho^2(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho^2
 R
 \end{equation}
-however, the $\rho^2$ is a bit weird...
+however, the $\rho^2$ is a bit weird... but some of the algos we consider
+below actually amount to this.
 }
 Thus, from now on we are going to focus on solving
 \begin{equation}
