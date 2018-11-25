@@ -208,7 +208,8 @@ obviously stable. This helps with $A$ being non-symmetric. TODO: check if
 GTD uses the same sample for $\tilde{A}$ and $A$. If so, it will
 converge to a different stable point. TODO: Can be applied TANGO-style
 (by formally inverting $\Id$ in TANGO), advantage=fewer variance due to
-two-sampling. (TANGO uses two-sampling but on a sum of past terms, so
+two-sampling (Is this equivalent to eligibility traces without the
+variance??). (TANGO uses two-sampling but on a sum of past terms, so
 that a past term gets TANGOified whenever we happen to reach a state that
 activates the same features in the future, which is probably fine). Can
 also be TANGOified with $\gamma\to 0$ (two-timescale) which now requires
@@ -315,5 +316,10 @@ about the latter.
 
 TODO: I'm more interested in an algo that's second-order wrt the Markov
 process (I don't necessarily want to orthonormalize features).
+
+TODO: in the original TANGO paper: prove that the main learning rate
+doesn't have to be too small even for non-quadratic problems, namely,
+even if the Hessian changes, we're still applying a positive operator to
+earlier gradients so we still have a valid gradient direction.
 
 \end{document}
