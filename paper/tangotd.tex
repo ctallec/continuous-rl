@@ -95,7 +95,12 @@ R
 \end{equation}
 however, the $\rho^2$ is a bit weird... moreover having
 $\transp{\Delta}\Delta$ means we are just facing the double sampling
-problem.
+problem. Even the right-hand-side involves double sampling.
+
+The minimizer of a weird norm $L^2(\rho \Phi\transp{\Phi}\rho)$ is better
+samplable, because now it's enough to sample states \emph{with the same
+features}, not just the exact same state. Use unclear. Should use a hash
+of states instead.
 }
 Thus, from now on we are going to focus on solving
 \begin{equation}
