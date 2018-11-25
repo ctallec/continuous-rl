@@ -76,7 +76,7 @@ $(\Id-P)^{-1}R$ solves
 \transp{\Phi} (\rho+\rho'-\rho P-\transp{(\rho P)})(V-(\Id-P)^{-1}R)=0
 \end{equation}
 If $\rho$ is the stationary distribution $\mu$ and $P$ is reversible, one
-has $\transp{(\mu P)}=\mu P$ so $\rho+\rho'-\rho P-\transp{(\rho
+has $\transp{(\mu P)}=\mu P$ and $\rho'=\mu$ so $\rho+\rho'-\rho P-\transp{(\rho
 P)}=2\mu(\Id-P)$ and this is equivalent to
 \begin{equation}
 \transp{\Phi}\mu ((\Id-P)V-R)=0
@@ -93,8 +93,9 @@ and $(\Id-P)V$ is also samplable:
 \transp{\Phi}\transp{(\Id-P)}\rho^2(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho^2
 R
 \end{equation}
-however, the $\rho^2$ is a bit weird... but some of the algos we consider
-below actually amount to this.
+however, the $\rho^2$ is a bit weird... moreover having
+$\transp{\Delta}\Delta$ means we are just facing the double sampling
+problem.
 }
 Thus, from now on we are going to focus on solving
 \begin{equation}
@@ -306,7 +307,7 @@ provided $\transp{\Delta}\Delta=\Id$, eg in a Fourier frequency-adjusted
 basis), with respect to the Markov chain (second-order provided
 $\transp{\Phi}\Phi=\Id$).
 
-One-and-a-half-timescale needs more independence than two-timescale. I
+Almost-one-timescale (such as TANGO) needs more independence than two-timescale. I
 \emph{think} that two-timescale can deal with taking the same sample for
 $A$ and $\transp{A}$ in $\transp{A}(...)^{-1}A$, and taking correlated
 consecutive samples (eg, online) for the matrix to be inverted. I think
