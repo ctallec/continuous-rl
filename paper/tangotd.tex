@@ -23,8 +23,15 @@ have access to unbiased samples of $\rho P$ and $\rho R$:
 \begin{equation}
 \rho P=\E[\1_{s}\transp{\1_{s'}}\,],\qquad \rho R=\E[r(s,a,s')\1_{s}]
 \end{equation}
+and thus also to samples of $\rho(\Id-P)$. Thus, rewriting the equation
+as
+\begin{equation}
+\rho(\Id-P)V=\rho R
+\end{equation}
+(equivalent if $\rho$ is positive), both sides are samplable, and we can try to solve the above by
+stochastic gradient-like methods.
 
-If we parameterize $V$ by some parameter $\theta$, we can apply
+For instance, ff we parameterize $V$ by some parameter $\theta$, we can apply
 parametric TD. The expected TD step is
 \begin{equation}
 \theta\gets \theta -\eta \,\transp{\Phi}\rho (V-PV-R)
@@ -58,7 +65,7 @@ $L^2(\rho)$ error between $(\Id-P)V$ and $R$ is
 \end{equation}
 and in the linear case $V=\Phi\theta$, this is the standard solution to
 the linear regression problem $(\Id-P)\Phi\theta\approx R$ in
-$L^2(\rho)$.
+$L^2(\rho)$. However, the matrix on the left is not samplable.
 
 The Dirichlet norm associated with $\rho$ is $\E_{ss'}
 (f(s)-f(s'))^2$. Its matrix is $\rho+\rho'-\rho P-\transp{(\rho P)}$ where
@@ -271,5 +278,17 @@ The other algorithms involving an inverse basically have the cost of
 second-order algorithms without the full benefits.  They are second-order
 in feature-space (they orthonormalize $\Phi$) but not in Markov process
 space (they don't backpropagate rewards).
+
+TODO sampling: if $A=\E \tilde A$, can do $\transp{(\E \tilde A)}(\E
+\tilde A)$ or
+$\E(\transp{\tilde A}\tilde A)$, which is not equal to $\transp{A}A$ but
+is still definite positive (hence stable). This would avoid some
+quadruple-sampling problems with $B=\transp{A}(A\transp{A})^{-1}$. But
+breaks second-order correctness?
+
+TODO: define second-order with respect to $\Phi$ (second-order
+provided $\transp{\Delta}\Delta=\Id$, eg in a Fourier frequency-adjusted
+basis), with respect to the Markov chain (second-order provided
+$\transp{\Phi}\Phi=\Id$).
 
 \end{document}
