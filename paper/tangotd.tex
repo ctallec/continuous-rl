@@ -266,7 +266,9 @@ will be terrible: this requires four independent samples from $A$.
 $\transp{(A\theta-b)}(A+\transp{A})^{-1}(A\theta-b)$, corresponding to
 $B=\transp{A}(A+\transp{A})^{-1}$. This is probably the closest to
 unmodified TD in behavior: for instance when $A$ is symmetric ($\rho=\mu$
-and $P$ reversible) this coincides with TD.
+and $P$ reversible) this coincides with TD. $A+\transp{A}$ corresponds to
+the Dirichlet form for $\rho$, namely, $\E_{\rho} (f(s)-f(s'))^2$ TODO
+CHECK.
 
 \end{itemize}
 
@@ -290,5 +292,13 @@ TODO: define second-order with respect to $\Phi$ (second-order
 provided $\transp{\Delta}\Delta=\Id$, eg in a Fourier frequency-adjusted
 basis), with respect to the Markov chain (second-order provided
 $\transp{\Phi}\Phi=\Id$).
+
+One-and-a-half-timescale needs more independence than two-timescale. I
+\emph{think} that two-timescale can deal with taking the same sample for
+$A$ and $\transp{A}$ in $\transp{A}(...)^{-1}A$, and taking correlated
+consecutive samples (eg, online) for the matrix to be inverted. I think
+TANGO would need uncorrelated samples for the matrix to be inverted (eg,
+a replay buffer) and two samples for $A$ and $\transp{A}$, but not sure
+about the latter.
 
 \end{document}
