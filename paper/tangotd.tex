@@ -84,7 +84,7 @@ The minimizer of a weird norm $L^2(\rho \Phi\transp{\Phi}\rho)$ is better
 samplable, because now it's enough to sample states \emph{with the same
 features}, not just the exact same state. This is basically what happens
 in the linear case. The features should not be orthogonal. Should use a
-hash of states instead?
+hash of states instead? Or apply ReLU to orthogonal features.
 
 The Dirichlet norm associated with $\rho$ is $\E_{ss'}
 (f(s)-f(s'))^2$. Its matrix is $\rho+\rho'-\rho P-\transp{(\rho P)}$ where
@@ -103,13 +103,13 @@ P)}=2\mu(\Id-P)$ and this is equivalent to
 namely, the same as a fixed point of TD.
 
 Instead of applying the Dirichlet norm to $(V-(\Id-P)^{-1}R)$, one can
-apply the inverse Dirichlet norm to $((\Id-P)V-R)$. When When $P$ is
+apply the inverse Dirichlet norm to $((\Id-P)V-R)$. When $P$ is
 reversible and $\rho=\mu$ this
 is the same. One tries to minimize
 $\transp{((\Id-P)V-R)}\rho\mathcal{D}^{-1}\rho((\Id-P)V-R)$ where
 $\mathcal{D}\deq \rho+\rho'-\rho P-\transp{(\rho P)}$ as above, and use
-TANGO to invert $\mathcal{D}$. However this suffers from a double
-sampling problem.
+TANGO to invert $\mathcal{D}$. However this suffers again from a double
+sampling problem, in several places.
 
 \bigskip
 
