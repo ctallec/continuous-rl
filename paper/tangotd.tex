@@ -89,7 +89,7 @@ hash of states instead? Or apply ReLU to orthogonal features.
 
 The Dirichlet norm associated with $\rho$ is $\E_{ss'}
 (f(s)-f(s'))^2$. Its matrix is $\rho+\rho'-\rho P-\transp{(\rho P)}$ where
-$\rho'$ is the distribution of $s'$.
+$\rho'$ is the distribution of $s'$ (and is samplable).
 A local minimizer of the Dirichlet error between $V$ and
 $(\Id-P)^{-1}R$ solves
 \begin{equation}
@@ -131,7 +131,8 @@ chains. The double sampling can be simulated with high variance in finite
 state spaces (just take samples from $P$ and $\transp{P}$ until they
 match) but does not make sense in continuous state spaces. Use a model of
 transitions only for the correction? TODO: use the same trick on the
-right?
+right? No, because the $R$ term doesn't go away and I'd rather have a
+correction that vanishes when $\Delta V-R$ is small.
 
 \bigskip
 
