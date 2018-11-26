@@ -48,7 +48,7 @@ class SharedAdvantagePolicy(Policy):
 
     def step(self, obs: Arrayable):
         for net in self.networks():
-            net.eval() # make sur batch norm is in eval mode
+            net.eval() # make sure batch norm is in eval mode
 
         if self._train:
             self._obs = obs

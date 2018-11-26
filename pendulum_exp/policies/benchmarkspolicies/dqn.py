@@ -1,4 +1,3 @@
-from itertools import chain
 import torch
 import numpy as np
 from abstract import ParametricFunction, Arrayable, Noise, StateDict, Policy
@@ -12,6 +11,8 @@ from mylog import log
 from logging import info
 from optimizer import setup_optimizer
 from memory.utils import setup_memory
+from typing import Optional
+
 
 class DQNPolicy(Policy):
     def __init__(self,
@@ -61,6 +62,8 @@ class DQNPolicy(Policy):
         self._reward = np.array([])
         self._next_obs = np.array([])
         self._done = np.array([])
+        self._time_limit = np.array([])
+
 
     def step(self, obs: Arrayable):
         if self._train:
@@ -75,14 +78,17 @@ class DQNPolicy(Policy):
     def observe(self,
                 next_obs: Arrayable,
                 reward: Arrayable,
-                done: Arrayable):
+                done: Arrayable,
+                time_limit:Optional[Arrayable]=None):
         if self._train:
             self._count += 1
             self._next_obs = next_obs
             self._reward = reward
             self._done = done
+            self._time_limit = time_limit
+
             self._sampler.push(
-                self._obs, self._action, self._next_obs, self._reward, self._done)
+                self._obs, self._action, self._next_obs, self._reward, self._done, self._time_limit)
             self.learn()
 
 
@@ -98,7 +104,7 @@ class DQNPolicy(Policy):
             # TODO: enlever try except
             try:
                 for _ in range(self._learn_per_step):
-                    obs, action, next_obs, reward, done, weights = self._sampler.sample()
+                    obs, action, next_obs, reward, done, weights, time_limit = self._sampler.sample()
                     reward = arr_to_th(reward, self._device)
                     weights = arr_to_th(check_array(weights), self._device)
                     # for now, discrete actions
@@ -166,3 +172,9 @@ class DQNPolicy(Policy):
             "target_function": self._target_function.state_dict(),
             "schedulers": self._schedulers.state_dict(),
             "iteration": self._schedulers.last_epoch}
+
+    def networks(self):
+        return self._qnet_function
+
+    def log_stats(self):
+        print("TODO:log_stats")
