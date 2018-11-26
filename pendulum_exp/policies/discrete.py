@@ -42,7 +42,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
         # logging
         self._cum_loss = 0
-        self._log = 100
+        self._log_step = 0
 
     def act(self, obs: Arrayable):
         with torch.no_grad():
@@ -58,6 +58,10 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         adv = adv_a.gather(1, indices.view(-1, 1)).squeeze()
         return adv, max_adv
 
+    def reset_log(self):
+        self._cum_loss = 0
+        self._log_step = 0
+
     def optimize_value(self, *losses: Tensor):
         assert len(losses) == 1
         self._optimizers[0].zero_grad()
@@ -68,6 +72,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
         # logging
         self._cum_loss += losses[0].item()
+        self._log_step += 1
         self._learn_count += 1
 
     def optimize_policy(self, max_adv: Tensor):
@@ -78,9 +83,9 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         self._schedulers[1].step(eval_return)
 
     def log(self):
-        log("Avg_adv_loss", self._cum_loss / self._learn_count, self._learn_count)
+        log("loss/advantage", self._cum_loss / self._log_step, self._learn_count)
         info(f"At iteration {self._learn_count}, "
-             f"avg_loss: {self._cum_loss/self._learn_count}")
+             f"adv_loss: {self._cum_loss/self._log_step}")
 
     def train(self):
         self._train = True
@@ -115,3 +120,11 @@ class AdvantagePolicy(SharedAdvantagePolicy):
             "advantage_scheduler": self._schedulers[0].state_dict(),
             "value_scheduler": self._schedulers[1].state_dict(),
             "iteration": self._schedulers[0].last_epoch}
+
+    def networks(self):
+        return self._adv_function, self._val_function
+
+    def _get_stats(self):
+        V = self._val_function(self._stats_obs).squeeze()
+        actions = self._adv_function(self._stats_obs).argmax(dim=-1)
+        return V, actions

@@ -1,5 +1,5 @@
 """Define abstractions."""
-from typing import Union, Callable, Dict, Any
+from typing import Union, Callable, Dict, Any, Optional, Tuple
 from abc import ABC, abstractmethod
 import numpy as np
 import torch
@@ -8,46 +8,7 @@ Arrayable = Union[list, float, np.ndarray]
 Tensorable = Union[Arrayable, torch.Tensor]
 DecayFunction = Callable[[int], float]
 StateDict = Dict[str, Any]
-
-class Policy(ABC):
-    @abstractmethod
-    def step(self, obs: Arrayable):
-        pass
-
-    @abstractmethod
-    def observe(self,
-                next_obs: Arrayable,
-                reward: Arrayable,
-                done: Arrayable):
-        pass
-
-    @abstractmethod
-    def observe_evaluation(self, eval_return: float):
-        pass
-
-    @abstractmethod
-    def learn(self):
-        pass
-
-    @abstractmethod
-    def reset(self):
-        pass
-
-    @abstractmethod
-    def train(self):
-        pass
-
-    @abstractmethod
-    def eval(self):
-        pass
-
-    @abstractmethod
-    def load_state_dict(self, state_dict: StateDict):
-        pass
-
-    @abstractmethod
-    def state_dict(self) -> StateDict:
-        pass
+Shape = Tuple[Tuple[int, ...], ...]
 
 class ParametricFunction(ABC):
     """Wrap around a torch module."""
@@ -82,6 +43,64 @@ class ParametricFunction(ABC):
     @abstractmethod
     def state_dict(self) -> StateDict:
         pass
+
+    @abstractmethod
+    def input_shape(self) -> Shape:
+        pass
+
+    @abstractmethod
+    def output_shape(self) -> Shape:
+        pass
+
+class Policy(ABC):
+    @abstractmethod
+    def step(self, obs: Arrayable):
+        pass
+
+    @abstractmethod
+    def observe(self,
+                next_obs: Arrayable,
+                reward: Arrayable,
+                done: Arrayable,
+                time_limit: Optional[Arrayable]):
+        pass
+
+    @abstractmethod
+    def observe_evaluation(self, eval_return: float):
+        pass
+
+    @abstractmethod
+    def learn(self):
+        pass
+
+    @abstractmethod
+    def reset(self):
+        pass
+
+    @abstractmethod
+    def train(self):
+        pass
+
+    @abstractmethod
+    def eval(self):
+        pass
+
+    @abstractmethod
+    def load_state_dict(self, state_dict: StateDict):
+        pass
+
+    @abstractmethod
+    def state_dict(self) -> StateDict:
+        pass
+
+    @abstractmethod
+    def networks(self) -> Tuple[ParametricFunction, ...]:
+        pass
+
+    @abstractmethod
+    def log_stats(self):
+        pass
+
 
 class Env(ABC):
     @abstractmethod

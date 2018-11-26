@@ -1,25 +1,36 @@
 """Log facilities"""
+from abc import ABC, abstractmethod
 from os import makedirs
 from os import remove
 from shutil import rmtree
-from os.path import join, exists, isfile
+from os.path import join, exists, isfile, dirname
 from typing import Dict
 import pickle
 import numpy as np
 
 from logging import info
 
-class Logger:
-    CURRENT = None # current logger
+class KVTWritter(ABC):
+    @abstractmethod
+    def writekvts(self, key: str, value: float, timestamp: int):
+        pass
 
+    @abstractmethod
+    def set_dir(self, logdir: str, reload: bool=False):
+        pass
+
+    @abstractmethod
+    def load(self):
+        pass
+
+class PickleKVTWriter(KVTWritter):
     def __init__(self):
-        assert Logger.CURRENT is None
         self._logs: Dict[str, Dict[int, float]] = dict()
         self._buffering = 500
         self._count = 0
         self._dir = None
 
-    def log(self, key: str, value: float, timestamp: int):
+    def writekvts(self, key: str, value: float, timestamp: int):
         if key not in self._logs:
             self._logs[key] = {timestamp: value}
         else:
@@ -28,12 +39,6 @@ class Logger:
         if self._count == self._buffering:
             self._count = 0
             self.dump()
-
-    def log_video(self, tag: str, timestamp: int, frames):
-        video_dir = join(self._dir, "videos")
-        if not exists(video_dir):
-            makedirs(video_dir)
-        np.savez(join(video_dir, f"{tag}_{timestamp}.npz"), frames)
 
     def set_dir(self, logdir: str, reload: bool=True):
         self._dir = logdir
@@ -55,6 +60,57 @@ class Logger:
     def dump(self):
         assert self._dir is not None
         pickle.dump(self._logs, open(join(self._dir, 'logs.pkl'), 'wb'))
+
+class TensorboardKVTWriter(KVTWritter):
+    def __init__(self):
+        self._writer = None
+        self._dir = None
+
+    def set_dir(self, logdir: str, reload: bool=True):
+        self._dir = join(logdir, 'train')
+        try:
+            makedirs(self._dir)
+        except OSError:
+            if not reload:
+                rmtree(self._dir, ignore_errors=True)
+                makedirs(self._dir)
+        self.load()
+
+    def load(self):
+        from tensorboardX import SummaryWriter
+        self._writer = SummaryWriter(self._dir)
+        args_file = join(dirname(self._dir), 'args')
+        args = vars(pickle.load(open(args_file, 'rb')))
+        args_str = "|Arg\t|Value\t|\n"
+        args_str += "|---\t|---\t|\n"
+        args_str += "\n".join([f"|**{k}**\t|{str(v)}\t|" for (k, v) in args.items()])
+        print(args_str)
+        self._writer.add_text('args', args_str)
+
+    def writekvts(self, key: str, value: float, timestamp: int):
+        self._writer.add_scalar(key, value, timestamp)
+
+class Logger:
+    CURRENT = None # current logger
+
+    def __init__(self):
+        assert Logger.CURRENT is None
+        self._writers = [TensorboardKVTWriter(), PickleKVTWriter()]
+        self._dir = None
+
+    def log(self, key: str, value: float, timestamp: int):
+        for writer in self._writers:
+            writer.writekvts(key, value, timestamp)
+
+    def log_video(self, tag: str, timestamp: int, frames):
+        video_dir = join(self._dir, "videos")
+        if not exists(video_dir):
+            makedirs(video_dir)
+        np.savez(join(video_dir, f"{tag}_{timestamp}.npz"), frames)
+
+    def set_dir(self, logdir: str, reload: bool=True):
+        for writer in self._writers:
+            writer.set_dir(logdir, reload)
 
 def logto(logdir: str, reload: bool=True):
     assert Logger.CURRENT is not None

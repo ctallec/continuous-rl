@@ -3,8 +3,11 @@ import numpy as np
 from abstract import Policy, Arrayable, ParametricFunction
 from config import PolicyConfig
 from memory.utils import setup_memory
+import torch
 from torch import Tensor
 from convert import arr_to_th, check_array, th_to_arr
+from typing import Optional
+from mylog import log
 
 class SharedAdvantagePolicy(Policy):
     def __init__(self, policy_config: PolicyConfig,
@@ -27,6 +30,10 @@ class SharedAdvantagePolicy(Policy):
         self._schedule_params = dict(
             mode='max', factor=.5, patience=25)
 
+        # logging
+        self._log_step = 0
+        self._stats_obs = None
+
     def reset(self):
         # internals
         self._obs = np.array([])
@@ -34,11 +41,15 @@ class SharedAdvantagePolicy(Policy):
         self._reward = np.array([])
         self._next_obs = np.array([])
         self._done = np.array([])
+        self._time_limit = np.array([])
 
     def act(self, obs: Arrayable):
         raise NotImplementedError
 
     def step(self, obs: Arrayable):
+        for net in self.networks():
+            net.eval() # make sur batch norm is in eval mode
+
         if self._train:
             self._obs = obs
 
@@ -51,29 +62,41 @@ class SharedAdvantagePolicy(Policy):
     def observe(self,
                 next_obs: Arrayable,
                 reward: Arrayable,
-                done: Arrayable):
+                done: Arrayable,
+                time_limit: Optional[Arrayable]=None):
         if self._train:
             self._count += 1
             self._next_obs = next_obs
             self._reward = reward
             self._done = done
+            self._time_limit = time_limit
             self._sampler.push(
-                self._obs, self._action, self._next_obs, self._reward, self._done)
+                self._obs, self._action, self._next_obs,
+                self._reward, self._done, self._time_limit)
             self.learn()
 
     def learn(self):
+        for net in self.networks():
+            net.train() # batch norm in train mode
+
         if self._count % self._steps_btw_train == self._steps_btw_train - 1:
             try:
+                self.reset_log()
                 for _ in range(self._learn_per_step):
-                    obs, action, next_obs, reward, done, weights = self._sampler.sample()
+                    obs, action, next_obs, reward, done, weights, time_limit = \
+                        self._sampler.sample()
+
+                    # don't update when a time limit is reached
+                    if time_limit is not None:
+                        weights = weights * (1 - time_limit)
                     reference_obs = self._sampler.reference_obs
                     reward = arr_to_th(reward, self._device)
                     weights = arr_to_th(check_array(weights), self._device)
 
                     v = self._val_function(obs).squeeze()
-                    next_v = self.compute_next_value(next_obs, done)
                     reference_v = self._val_function(reference_obs).squeeze().detach()
                     mean_v = reference_v.mean()
+                    next_v = self.compute_next_value(next_obs, done, mean_v)
                     adv, max_adv = self.compute_advantages(
                         obs, action)
 
@@ -91,6 +114,7 @@ class SharedAdvantagePolicy(Policy):
                     self.optimize_policy(max_adv)
 
                 self.log()
+                self.log_stats()
             except IndexError as e:
                 # If not enough data in the buffer, do nothing
                 raise e
@@ -106,7 +130,7 @@ class SharedAdvantagePolicy(Policy):
         """Computes adv, max_adv."""
         raise NotImplementedError()
 
-    def compute_next_value(self, next_obs: Arrayable, done: Arrayable) -> Tensor:
+    def compute_next_value(self, next_obs: Arrayable, done: Arrayable, mean_v: Tensor) -> Tensor:
         """Also detach next value."""
         done = arr_to_th(check_array(done).astype('float'), self._device)
         next_v = self._val_function(next_obs).squeeze().detach()
@@ -114,4 +138,18 @@ class SharedAdvantagePolicy(Policy):
             assert (1 - done).byte().all(), "Gamma set to 1. with a potentially"\
                 "episodic problem..."
             return next_v
-        return (1 - done) * next_v
+        return (1 - done) * next_v - done * self._gamma / (1 - self._gamma) * mean_v
+
+    def log_stats(self):
+        if self._stats_obs is None:
+            self._stats_obs, _, _, _, _, _, _ = self._sampler.sample()
+
+        with torch.no_grad():
+            V, actions = self._get_stats()
+            noisy_actions = self.act(self._stats_obs)
+            log("stats/mean_v", V.mean().item(), self._learn_count)
+            log("stats/std_v", V.std().item(), self._learn_count)
+            log("stats/mean_actions", actions.mean().item(), self._learn_count)
+            log("stats/std_actions", actions.std().item(), self._learn_count)
+            log("stats/mean_noisy_actions", noisy_actions.mean().item(), self._learn_count)
+            log("stats/std_noisy_actions", noisy_actions.std().item(), self._learn_count)

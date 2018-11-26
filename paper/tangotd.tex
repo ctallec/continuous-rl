@@ -1,0 +1,367 @@
+\documentclass[11pt,a4paper]{article}
+\input{header.en.tex}
+
+\newcommand{\Dir}{\mathcal{D}}
+
+
+\begin{document}
+
+We consider the Bellman equation for a policy $\pi$ in a finite MDP with
+expected reward $R$ and transition probability matrix $P$ ($P$ includes $\pi$ and
+the environment response). The Bellman equation is
+\begin{equation}
+(\Id-P)V=R
+\end{equation}
+
+We assume we can sample transitions $(s,a,r,s')$ according to some
+distribution $\rho$ on $s$. In the on-policy case, $\rho$ will be the
+stationary distribution. Typically $a$ has to be taken from $\pi$ (or a
+distribution close to $\pi$ after resampling/by using only those $a$
+sampled from $\pi$; this covers $\eps$-greedy) so that we do get
+transitions from
+$P$. (Alternatively one could work with pairs $(s,a)$ TODO.) Thus, we
+have access to unbiased samples of $\rho P$ and $\rho R$:
+\begin{equation}
+\rho P=\E[\1_{s}\transp{\1_{s'}}\,],\qquad \rho R=\E[r(s,a,s')\1_{s}]
+\end{equation}
+and thus also to samples of $\rho(\Id-P)$. Thus, rewriting the equation
+as
+\begin{equation}
+\rho(\Id-P)V=\rho R
+\end{equation}
+(equivalent if $\rho$ is positive), both sides are \emph{samplable}, and we can try to solve the above by
+stochastic gradient-like methods.
+
+For instance, if we parameterize $V$ by some parameter $\theta$, we can apply
+parametric TD. The expected TD step is
+\begin{equation}
+\theta\gets \theta -\eta \,\transp{\Phi}\rho (V-PV-R)
+\end{equation}
+where 
+\begin{equation}
+\Phi\deq \frac{\partial V}{\partial \theta}
+\end{equation}
+is the Jacobian matrix of $V$ with respect to its parameter. The linear
+case $V=\Phi \theta$ corresponds to constant $\Phi$. The tabular case is
+$\Phi=\Id$.
+
+A fixed point of TD solves
+\begin{equation}
+\transp{\Phi}\rho(\Id-P)V=\transp{\Phi}\rho R
+\end{equation}
+and if the system is overparameterized ($\Phi$ invertible) and
+well-sampled ($\rho>0$) this implies $(\Id-P)V=R$. All terms in this
+equation are \emph{samplable}: we can sample from $\rho R$ and from
+$\rho(\Id-P)$.
+
+\paragraph{Minimizers of errors.}
+A local minimizer of the $L^2(\rho)$ error between $V$ and
+$(\Id-P)^{-1}R$ solves
+\begin{equation}
+\transp{\Phi} \rho V=\transp{\Phi}\rho (\Id-P)^{-1} R
+\end{equation}
+which is not quite the same as the above. A local minimizer of the
+$L^2(\rho)$ error between $(\Id-P)V$ and $R$ is
+\begin{equation}
+\transp{\Phi}\transp{(\Id-P)}\rho(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho R
+\end{equation}
+and in the linear case $V=\Phi\theta$, this is the standard solution to
+the linear regression problem $(\Id-P)\Phi\theta\approx R$ in
+$L^2(\rho)$. However, the matrix on the left is not samplable.
+
+The minimizer of the $L^2(\rho^2)$ error between $R$
+and $(\Id-P)V$ is samplable:
+\begin{equation}
+\transp{\Phi}\transp{(\Id-P)}\rho^2(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho^2
+R
+\end{equation}
+however, the $\rho^2$ is a bit weird... moreover having
+$\transp{\Delta}\Delta$ means we are just facing the double sampling
+problem (we can sample $\transp{(\rho\Delta)}\rho\Delta$, but in practice the sample will always be $0$
+unless we are lucky and select two transitions $s\to s'$ that have the
+same $s$). Even the right-hand-side involves double sampling.
+
+The minimizer of a weird norm $L^2(\rho \Phi\transp{\Phi}\rho)$ is better
+samplable, because now it's enough to sample states \emph{with the same
+features}, not just the exact same state. This is basically what happens
+in the linear case. The features should not be orthogonal. Should use a
+hash of states instead? Or apply ReLU to orthogonal features.
+
+The Dirichlet norm associated with $\rho$ is $\E_{ss'}
+(f(s)-f(s'))^2$. Its matrix is $\rho+\rho'-\rho P-\transp{(\rho P)}$ where
+$\rho'$ is the distribution of $s'$ (and is samplable).
+A local minimizer of the Dirichlet error between $V$ and
+$(\Id-P)^{-1}R$ solves
+\begin{equation}
+\transp{\Phi} (\rho+\rho'-\rho P-\transp{(\rho P)})(V-(\Id-P)^{-1}R)=0
+\end{equation}
+If $\rho$ is the stationary distribution $\mu$ and $P$ is reversible, one
+has $\transp{(\mu P)}=\mu P$ and $\rho'=\mu$ so $\rho+\rho'-\rho P-\transp{(\rho
+P)}=2\mu(\Id-P)$ and this is equivalent to
+\begin{equation}
+\transp{\Phi}\mu ((\Id-P)V-R)=0
+\end{equation}
+namely, the same as a fixed point of TD.
+
+Instead of applying the Dirichlet norm to $(V-(\Id-P)^{-1}R)$, one can
+apply the inverse Dirichlet norm to $((\Id-P)V-R)$. When $P$ is
+reversible and $\rho=\mu$ this
+is the same. One tries to minimize
+$\transp{((\Id-P)V-R)}\rho\Dir^{-1}\rho((\Id-P)V-R)$ where
+$\Dir\deq \rho+\rho'-\rho P-\transp{(\rho P)}$ as above, and use
+TANGO to invert $\Dir$. However this suffers again from a double
+sampling problem, in several places. Still, this can be rewritten as a
+correction to TD where only the correction suffers from double
+sampling/large variance. Namely, the gradient of the above with respect
+to $\theta$ is $\transp{\Phi}\transp{(\rho\Delta)} \Dir^{-1}\rho(\Delta V-R)$. Since
+$\rho\Delta$ is half of $\Dir$, this gradient is 
+\begin{gather}
+\transp{\Phi}\transp{(\rho\Delta)} \Dir^{-1}\rho(\Delta V-R)=
+\\
+\frac12\transp{\Phi}(\transp{(\rho \Delta)}+\rho'-\rho P)\Dir^{-1}\rho(\Delta
+V-R)+\frac12 \transp{\Phi}(\transp{(\rho \Delta)}+\rho P-\rho')\Dir^{-1}\rho(\Delta
+V-R)
+\\=\frac12\transp{\Phi}\rho(\Delta
+V-R)+\frac12 \transp{\Phi}(\transp{(\rho \Delta)}+\rho P-\rho')\Dir^{-1}\rho(\Delta
+V-R)
+\end{gather}
+the first part of which is TD. Thus one can write a correction to TD such
+that only the correction suffers from double-sampling. The correction vanishes for reversible
+chains. The double sampling can be simulated with high variance in finite
+state spaces (just take samples from $P$ and $\transp{P}$ until they
+match) but does not make sense in continuous state spaces. Use a model of
+transitions only for the correction? TODO: use the same trick on the
+right? No, because the $R$ term doesn't go away and I'd rather have a
+correction that vanishes when $\Delta V-R$ is small.
+
+\bigskip
+
+TD is the only one of those fixed point equations that is
+\emph{samplable} given that we can sample $\rho$, $\rho P$ and $\rho R$.
+Thus, from now on we are going to focus on solving
+\begin{equation}
+\transp{\Phi}\rho (\Id-P)V=\transp{\Phi}\rho R
+\end{equation}
+using various SGD-like solvers.
+
+We now switch to the linear case and will de-linearize later. This
+becomes
+\begin{equation}
+\transp{\Phi}\rho (\Id-P)\Phi \theta=\transp{\Phi}\rho R
+\end{equation}
+to be solved in $\theta$.
+
+\paragraph{Solving $A\theta=b$ where $A$ and $b$ are samplable.} An
+obvious way to solve $A\theta=b$ via a stochastic gradient method is
+\begin{equation}
+\theta\gets \theta - \eta (A\theta-b)
+\end{equation}
+using samples for $A$ and $b$.
+This is TD. If $A$ is symmetric positive definite, this is also the
+gradient descent of the loss function
+$\transp{(A\theta-b)}A^{-1}(A\theta-b)$. However, we want to apply this
+to matrices $A$ that are not necessarily of this type.
+
+This works only if $A$ is \emph{stable}.
+
+
+\begin{defi}
+A matrix $A$ is \emph{stable} if one of the following equivalent
+conditions are satisfied:
+\begin{itemize}
+\item All the eigenvalues of $A$ have positive real part.
+\item The matrix $(\Id-\eps A)$ has spectral radius $<1$ for small enough
+$\eps$.
+\item The differential equation $\theta'=-A\theta$ converges to $0$ for
+any initial value.
+\item There exists a symmetric, positive definite matrix $L$ (Lyapunov
+function) such that $\transp{\theta}L\theta$ is decreasing along the
+solutions of the differential equation $\theta'=-A\theta$.
+\item There exists a symmetric, positive definite matrix $L$ such that
+\begin{equation}
+\transp{\theta} L A \theta>0
+\end{equation}
+for all $\theta\neq 0$. (This is the same $L$ as in the previous
+condition.)
+\end{itemize}
+\end{defi}
+
+In particular, a symmetric, definite positive matrix is stable (last
+criterion with $L=\Id$).
+Stability is invariant by matrix similarity $A\gets B^{-1}A B$, since
+this preserves eigenvalues.
+
+Since the
+solution of $\theta_t'=-A\theta_t$ is $\theta_t=e^{-tA}\theta_0$, a
+Lyapunov function that works is $\transp{\theta_0}L\theta_0\deq \int_{t \geq 0}
+\norm{\theta_t}^2$. Indeed this is decreasing, because
+$\transp{\theta_t}L\theta_t$ is just the same integral starting at $t$
+instead of $0$. Explicitly this is
+$L=\int_{t\geq 0} \transp{(e^{-t A})}
+e^{-tA}$.
+
+\paragraph{Making the TD iteration stable.} In linear TD the matrix $A$ is
+\begin{equation}
+A\deq \transp{\Phi}\rho (\Id-P)\Phi
+\end{equation}
+and we want to solve
+\begin{equation}
+A\theta=b\,\qquad b\deq \transp{\Phi}\rho R
+\end{equation}
+If $A$ is stable, then iterating $\theta\gets \theta -\eta(A\theta-b)$ will
+converge.
+
+We know $A$ is stable in several cases: (TODO here I just ignore constant
+functions)
+\begin{enumerate}
+\item On-policy: $\rho=\mu$, the invariant distribution. Then we know that $\rho(\Id-P)$ is positive
+(Dirichlet form). This implies that $A=\transp{\Phi}\rho (\Id-P)\Phi$ is
+positive too. So we recover the convergence result on-policy for linear
+TD.
+\item In the tabular case: $\Phi=\Id$. Indeed we have $A=\rho (\Id-P)$,
+which is not positive in general. But $\mu (\Id-P)$ is positive, so we can take
+$L=\mu/\rho$ so that $LA$ is positive.
+\end{enumerate}
+
+One can also \emph{precondition} the gradient descent. This can make it
+stable and/or make convergence faster. The step becomes
+\begin{equation}
+\theta\gets \theta-\eta B(A\theta-b)
+\end{equation}
+for some matrix $B$. Some choices of $B$ correspond to natural choices of
+loss functions on $\theta$, as we will see.
+
+Of course the values of $B$ that are most interesting are obtained as the
+inverse of something; for instance $B=A^{-1}$ solves the problem
+instantly... Two-timescale methods or TANGO-like algorithms can apply an
+inverse of something to $A\theta-b$, via an auxiliary gradient descent.
+TANGO works for stable matrices, if they are samplable \footnote{In
+TANGO, the consecutive steps absolutely have to be \emph{independent}. So even in
+the on-policy case, we will need a replay buffer from $\mu$ for the auxiliary
+gradient descent.}
+
+A few choices are:
+\begin{itemize}
+\item GTD is a gradient descent of
+$\transp{(A\theta-b)}(A\theta-b)$ (Sutton 2009).
+This corresponds to $B=\transp{A}$. Then
+$BA=\transp{A}A$ is
+obviously stable. This helps with $A$ being non-symmetric. TODO: check if
+GTD uses the same sample for $\tilde{A}$ and $A$. If so, it will
+converge to a different stable point. TODO: Can be applied TANGO-style
+(by formally inverting $\Id$ in TANGO), advantage=fewer variance due to
+two-sampling (Is this equivalent to eligibility traces without the
+variance??). (TANGO uses two-sampling but on a sum of past terms, so
+that a past term gets TANGOified whenever we happen to reach a state that
+activates the same features in the future, which is probably fine). Can
+also be TANGOified with $\gamma\to 0$ (two-timescale) which now requires
+only single sampling (no replay buffers).
+
+\item $B=A^{-1}$: obviously stable ($BA=\Id$), jumps to the solution in one step if
+$\eta=1$. Requires computing the inverse of $A$, namely, solving the
+problem by first solving the problem. But if $A$ is stable and samplable,
+this can be done via TANGO. More on that later. This should speed up
+things in situations where $A$ is stable in the first place (eg.,
+on-policy).
+
+\item $B=(\transp{\Phi}\rho\Phi)^{-1}$. This amounts to orthonormalizing
+the basis before applying TD. In general, this is not stable off-policy: take the
+standard two-point counterexample with a single $\Phi=\transp{(1,2)}$,
+orthonormalizing $\Phi$ is not going to help as $\transp{\Phi}\rho\Phi$
+is just a number.
+
+Still, this is stable
+on-policy (take $L=B^{-1}$, given that $A$ is stable on-policy) or assuming overparameterization. (Indeed in the latter case we
+are back to the tabular case.)
+% Then we have to prove th
+% $(\transp{\Phi}\Phi)^{-1}\transp{\Phi}\rho(\Id-P)\Phi$ is stable. Taking
+% $L=\transp{\Phi}(\mu/\rho)\Phi$, and computing
+% \begin{align}
+% \transp{\theta}LBA\theta&=
+% \transp{\theta}L(\transp{\Phi}\rho\Phi)^{-1}\transp{\Phi}\rho(\Id-P)\Phi\theta
+% \end{align}
+% and note that $(\transp{\Phi}\rho\Phi)^{-1}\transp{\Phi}\rho$ is the
+% solution of linear regression with design matrix $\Phi$ in $L^2(\rho)$.
+% This implies that
+% \begin{equation}
+% \Phi(\transp{\Phi}\rho\Phi)^{-1}\transp{\Phi}\rho=\Pi_\Phi
+% \end{equation}
+% where $\Pi$ is the orthogonal projector on the image of $\Phi$ in
+% $L^2(\rho)$. Now taking
+% \begin{equation}
+% L=\transp{\Phi}(\mu/\rho)\Phi
+% \end{equation}
+% we have
+% \begin{equation}
+% \transp{\theta}LBA\theta=\transp{\theta} \transp{\Phi}(\mu/\rho)\Pi_\Phi
+% (\Id-P)\Phi\theta
+% \end{equation}
+% TODO: on-policy or overparameterized
+
+\item The choice from Sutton 2009 "TDC" corresponds to a gradient descent
+of the projected norm of the Bellman gap on the subspace generated by
+$\Phi$, projected in $L^2(\rho)$. This is GTD with $L^2(\rho)$-orthonormalization of
+$\Phi$, namely,
+\begin{equation}
+B=\transp{A} (\transp{\Phi}\rho\Phi)^{-1}=\transp{(\transp{\Phi}\rho(\Id-P)\Phi)}(\transp{\Phi}\rho\Phi)^{-1}
+\end{equation}
+from which it is clear that $BA$ is symmetric and stable. This is obtained as a
+gradient descent of the projected norm of the Bellman gap on the image of
+$\Phi$, projected in $L^2(\rho)$. TODO: TDC and GTD2 differ by using that
+$A$ has $(\Id-P)$ on  the right, and expanding the $\Id$ term and the $P$
+term separately, which results in simplifications and make TDC much
+closer to TD and less reliant on the inversion.
+
+\item The choice $B=A^{-1}$ can also be written as
+$B=\transp{A}(A\transp{A})^{-1}$. The advantage is that we now have to
+invert a stable matrix, so, better behaved with TANGO. However, variance
+will be terrible: this requires four independent samples from $A$.
+
+\item A gradient descent of
+$\transp{(A\theta-b)}(A+\transp{A})^{-1}(A\theta-b)$, corresponding to
+$B=\transp{A}(A+\transp{A})^{-1}$. This is probably the closest to
+unmodified TD in behavior: for instance when $A$ is symmetric ($\rho=\mu$
+and $P$ reversible) this coincides with TD. $A+\transp{A}$ corresponds to
+the Dirichlet form for $\rho$, namely, $\E_{\rho} (f(s)-f(s'))^2$ TODO
+CHECK.
+
+\end{itemize}
+
+Only $B=A^{-1}$ and $B=\transp{A}(A\transp{A})^{-1}$ are truly
+second-order (namely, solve the problem in one step in the non-stochastic
+case).
+
+The other algorithms involving an inverse basically have the cost of
+second-order algorithms without the full benefits.  They are second-order
+in feature-space (they orthonormalize $\Phi$) but not in Markov process
+space (they don't backpropagate rewards).
+
+TODO sampling: if $A=\E \tilde A$, can do $\transp{(\E \tilde A)}(\E
+\tilde A)$ or
+$\E(\transp{\tilde A}\tilde A)$, which is not equal to $\transp{A}A$ but
+is still definite positive (hence stable). This would avoid some
+quadruple-sampling problems with $B=\transp{A}(A\transp{A})^{-1}$. But
+breaks second-order correctness?
+
+TODO: define second-order with respect to $\Phi$ (second-order
+provided $\transp{\Delta}\Delta=\Id$, eg in a Fourier frequency-adjusted
+basis), with respect to the Markov chain (second-order provided
+$\transp{\Phi}\Phi=\Id$).
+
+Almost-one-timescale (such as TANGO) needs more independence than two-timescale. I
+\emph{think} that two-timescale can deal with taking the same sample for
+$A$ and $\transp{A}$ in $\transp{A}(...)^{-1}A$, and taking correlated
+consecutive samples (eg, online) for the matrix to be inverted. I think
+TANGO would need uncorrelated samples for the matrix to be inverted (eg,
+a replay buffer) and two samples for $A$ and $\transp{A}$, but not sure
+about the latter.
+
+TODO: I'm more interested in an algo that's second-order wrt the Markov
+process (I don't necessarily want to orthonormalize features).
+
+TODO: in the original TANGO paper: prove that the main learning rate
+doesn't have to be too small even for non-quadratic problems, namely,
+even if the Hessian changes, we're still applying a positive operator to
+earlier gradients so we still have a valid gradient direction.
+
+\end{document}
