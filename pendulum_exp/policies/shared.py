@@ -28,6 +28,8 @@ class SharedAdvantagePolicy(Policy):
         self._schedule_params = dict(
             mode='max', factor=.5, patience=25)
 
+        self._log_step = 0
+
     def reset(self):
         # internals
         self._obs = np.array([])
@@ -75,6 +77,7 @@ class SharedAdvantagePolicy(Policy):
 
         if self._count % self._steps_btw_train == self._steps_btw_train - 1:
             try:
+                self.reset_log()
                 for _ in range(self._learn_per_step):
                     obs, action, next_obs, reward, done, weights, time_limit = \
                         self._sampler.sample()
