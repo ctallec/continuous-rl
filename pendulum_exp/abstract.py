@@ -97,6 +97,11 @@ class Policy(ABC):
     def networks(self) -> Tuple[ParametricFunction, ...]:
         pass
 
+    @abstractmethod
+    def log_stats(self):
+        pass
+
+
 class Env(ABC):
     @abstractmethod
     def step(self, action: Arrayable):

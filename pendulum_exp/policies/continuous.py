@@ -95,7 +95,7 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
         self._log_step = 0
 
     def log(self):
-        log("adv_loss", self._cum_loss / self._log_step, self._learn_count)
+        log("loss/advantage", self._cum_loss / self._log_step, self._learn_count)
         info(f"At iteration {self._learn_count}, "
              f'adv_loss: {self._cum_loss/self._log_step}')
 
@@ -139,6 +139,21 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
 
     def networks(self):
         return self._adv_function, self._val_function
+
+    def _get_stats(self):
+        obs = check_array(self._stats_obs)
+        batch_size = obs.shape[0]
+        o_dim = obs.ndim
+
+        proposed_actions = np.random.uniform(
+            -1, 1, [self._nb_samples, batch_size, *self._action_shape])
+        advantages = self._adv_function(
+            np.tile(obs, [self._nb_samples] + o_dim * [1]),
+            proposed_actions).squeeze()
+        action_idx = np.argmax(advantages, axis=0)
+        actions = proposed_actions[action_idx, np.arange(obs.shape[0])]
+        V = self._val_function(self._stats_obs).squeeze()
+        return V, actions
 
 class AdvantagePolicy(SharedAdvantagePolicy):
     def __init__(self,
@@ -227,8 +242,8 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         info(f'At iteration {self._learn_count}, '
              f'adv_loss: {self._cum_loss/self._log_step}, '
              f'policy_loss: {self._cum_policy_loss / self._log_step}')
-        log("adv_loss", self._cum_loss / self._log_step, self._learn_count)
-        log("policy_loss", self._cum_policy_loss / self._log_step, self._learn_count)
+        log("loss/advantage", self._cum_loss / self._log_step, self._learn_count)
+        log("loss/policy", self._cum_policy_loss / self._log_step, self._learn_count)
 
     def train(self):
         self._train = True
@@ -279,3 +294,8 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
     def networks(self):
         return self._adv_function, self._val_function, self._policy_function
+
+    def _get_stats(self):
+        V = self._val_function(self._stats_obs).squeeze()
+        actions = self._policy_function(self._stats_obs)
+        return V, actions

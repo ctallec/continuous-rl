@@ -83,7 +83,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         self._schedulers[1].step(eval_return)
 
     def log(self):
-        log("adv_loss", self._cum_loss / self._log_step, self._learn_count)
+        log("loss/advantage", self._cum_loss / self._log_step, self._learn_count)
         info(f"At iteration {self._learn_count}, "
              f"adv_loss: {self._cum_loss/self._log_step}")
 
@@ -123,3 +123,8 @@ class AdvantagePolicy(SharedAdvantagePolicy):
 
     def networks(self):
         return self._adv_function, self._val_function
+
+    def _get_stats(self):
+        V = self._val_function(self._stats_obs).squeeze()
+        actions = self._adv_function(self._stats_obs).argmax(dim=-1)
+        return V, actions

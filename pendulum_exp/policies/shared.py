@@ -3,9 +3,11 @@ import numpy as np
 from abstract import Policy, Arrayable, ParametricFunction
 from config import PolicyConfig
 from memory.utils import setup_memory
+import torch
 from torch import Tensor
 from convert import arr_to_th, check_array, th_to_arr
 from typing import Optional
+from mylog import log
 
 class SharedAdvantagePolicy(Policy):
     def __init__(self, policy_config: PolicyConfig,
@@ -28,7 +30,9 @@ class SharedAdvantagePolicy(Policy):
         self._schedule_params = dict(
             mode='max', factor=.5, patience=25)
 
+        # logging
         self._log_step = 0
+        self._stats_obs = None
 
     def reset(self):
         # internals
@@ -110,6 +114,7 @@ class SharedAdvantagePolicy(Policy):
                     self.optimize_policy(max_adv)
 
                 self.log()
+                self.log_stats()
             except IndexError as e:
                 # If not enough data in the buffer, do nothing
                 raise e
@@ -134,3 +139,17 @@ class SharedAdvantagePolicy(Policy):
                 "episodic problem..."
             return next_v
         return (1 - done) * next_v - done * self._gamma / (1 - self._gamma) * mean_v
+
+    def log_stats(self):
+        if self._stats_obs is None:
+            self._stats_obs, _, _, _, _, _, _ = self._sampler.sample()
+
+        with torch.no_grad():
+            V, actions = self._get_stats()
+            noisy_actions = self.act(self._stats_obs)
+            log("stats/mean_v", V.mean().item(), self._learn_count)
+            log("stats/std_v", V.std().item(), self._learn_count)
+            log("stats/mean_actions", actions.mean().item(), self._learn_count)
+            log("stats/std_actions", actions.std().item(), self._learn_count)
+            log("stats/mean_noisy_actions", noisy_actions.mean().item(), self._learn_count)
+            log("stats/std_noisy_actions", noisy_actions.std().item(), self._learn_count)
