@@ -28,8 +28,11 @@ def plots(logs, namefile):
 
 def summary(logs):
     print('Summary')
-    metrics = [("Avg_adv_loss", min), ("Float_adv_loss", min), ("Return", max)]
+    metrics = [("Avg_adv_loss", min), ("Float_adv_loss", min), ("Return", max),
+        ("loss/advantage", min), ("loss/policy", min), ]
     for met, f in metrics:
+        if met not in logs:
+            continue
         metval = logs[met]
         curr_ts, curr_val = max(metval.items(), key=lambda x: x[0])
         best_ts, best_val = f(metval.items(), key=lambda x: x[1])
@@ -60,6 +63,8 @@ if __name__ == '__main__':
 
         if args.plots:
             plots(logs, os.path.join(args.logdir, 'plots.eps'))
+    else:
+        raise ValueError(f'{log_filename} is not a file')
 
     if args.video:
         if args.xvfb:
