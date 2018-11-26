@@ -36,13 +36,13 @@ def setup_policy(observation_space: Space,
 
     net_dict = dict(nb_layers=nb_layers, hidden_size=hidden_size)
 
-    val_function = maker(MLP)(nb_inputs=nb_state_feats, nb_outputs=1, **net_dict).to(device)
+    val_function = maker(MLP, nb_inputs=nb_state_feats, nb_outputs=1, **net_dict).to(device)
 
     policy_dict = dict(val_function=val_function, policy_config=policy_config, device=device)
 
     if isinstance(action_space, Discrete):
-        adv_function = maker(MLP)(nb_inputs=nb_state_feats, nb_outputs=action_space.n,
-                                  **net_dict).to(device)
+        adv_function = maker(MLP, nb_inputs=nb_state_feats, nb_outputs=action_space.n,
+                             **net_dict).to(device)
         noise = setup_noise(noise_config, network=adv_function,
                             action_shape=(nb_train_env, action_space.n)).to(device)
         eval_noise = setup_noise(eval_noise_config, network=adv_function,
@@ -55,15 +55,15 @@ def setup_policy(observation_space: Space,
 
     elif isinstance(action_space, Box):
         nb_actions = action_space.shape[-1]
-        adv_function = maker(ContinuousAdvantageMLP)(
-            nb_state_feats=nb_state_feats, nb_actions=nb_actions,
-            **net_dict).to(device)
+        adv_function = maker(ContinuousAdvantageMLP,
+                             nb_state_feats=nb_state_feats, nb_actions=nb_actions,
+                             **net_dict).to(device)
         policy_dict["adv_function"] = adv_function
 
         if isinstance(policy_config, ApproximateAdvantagePolicyConfig):
-            policy_function = maker(ContinuousPolicyMLP)(
-                nb_inputs=nb_state_feats, nb_outputs=nb_actions,
-                **net_dict).to(device)
+            policy_function = maker(ContinuousPolicyMLP,
+                                    nb_inputs=nb_state_feats, nb_outputs=nb_actions,
+                                    **net_dict).to(device)
             policy_dict["policy_function"] = policy_function
 
             noise_dict = dict(network=policy_function,
