@@ -1,15 +1,18 @@
 import argparse
 import os
 import pickle
+import re
 from subprocess import call
 
 import matplotlib.pyplot as plt
 
 
-def plots(logs, namefile):
+def plots(logs, namefile, key_regexp=".*(l|L)oss.*|Return"):
     fig, axes = plt.subplots(len(logs), figsize=(10., 15.))
 
     for logkey, ax in zip(logs, axes):
+        if re.match(key_regexp, logkey) is None:
+            continue
         ax.set_title(logkey)
 
         x = list(logs[logkey].keys())
