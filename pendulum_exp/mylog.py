@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from os import makedirs
 from os import remove
 from shutil import rmtree
-from os.path import join, exists, isfile
+from os.path import join, exists, isfile, dirname
 from typing import Dict
 import pickle
 import numpy as np
@@ -78,10 +78,17 @@ class TensorboardKVTWriter(KVTWritter):
 
     def load(self):
         from tensorboardX import SummaryWriter
-        self.writer = SummaryWriter(self._dir)
+        self._writer = SummaryWriter(self._dir)
+        args_file = join(dirname(self._dir), 'args')
+        args = vars(pickle.load(open(args_file, 'rb')))
+        args_str = "|Arg\t|Value\t|\n"
+        args_str += "|---\t|---\t|\n"
+        args_str += "\n".join([f"|**{k}**\t|{str(v)}\t|" for (k, v) in args.items()])
+        print(args_str)
+        self._writer.add_text('args', args_str)
 
     def writekvts(self, key: str, value: float, timestamp: int):
-        self.writer.add_scalar(key, value, timestamp)
+        self._writer.add_scalar(key, value, timestamp)
 
 class Logger:
     CURRENT = None # current logger
