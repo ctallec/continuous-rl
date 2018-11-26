@@ -83,6 +83,15 @@ P)}=2\mu(\Id-P)$ and this is equivalent to
 \end{equation}
 namely, the same as a fixed point of TD.
 
+Instead of applying the Dirichlet norm to $(V-(\Id-P)^{-1}R)$, one can
+apply the inverse Dirichlet norm to $((\Id-P)V-R)$. When When $P$ is
+reversible and $\rho=\mu$ this
+is the same. One tries to minimize
+$\transp{((\Id-P)V-R)}\rho\mathcal{D}^{-1}\rho((\Id-P)V-R)$ where
+$\mathcal{D}\deq \rho+\rho'-\rho P-\transp{(\rho P)}$ as above, and use
+TANGO to invert $\mathcal{D}$. However this suffers from a double
+sampling problem.
+
 \bigskip
 
 TD is the only one of those fixed point equations that is
