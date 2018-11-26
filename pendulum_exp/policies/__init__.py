@@ -6,8 +6,7 @@ from abstract import Policy
 from policies.discrete import AdvantagePolicy
 from policies.continuous import AdvantagePolicy as ContinuousAdvantagePolicy
 from policies.continuous import SampledAdvantagePolicy
-from policies.wrappers import StateNormalization
-from models import ContinuousAdvantageMLP, ContinuousPolicyMLP, MLP
+from models import ContinuousAdvantageMLP, ContinuousPolicyMLP, MLP, NormalizedMLP
 from noise import setup_noise
 from config import NoiseConfig, PolicyConfig
 from config import SampledAdvantagePolicyConfig, ApproximateAdvantagePolicyConfig
@@ -25,71 +24,67 @@ def setup_policy(observation_space: Space,
                  device) -> Tuple[Policy, Policy]:
     # assume observation space has shape (F,) for now
     nb_state_feats = observation_space.shape[0]
-    val_function = MLP(nb_inputs=nb_state_feats, nb_outputs=1,
-                       nb_layers=nb_layers, hidden_size=hidden_size).to(device)
+
+    # normalization
     if normalize_state:
-        normalization_state = { # we need to share normalization between policies
-            'mean': None,
-            'mean_squares': None
-        }
+        def maker(maker_cls, **kwargs):
+            model = maker_cls(**kwargs)
+            return NormalizedMLP(model)
+    else:
+        def maker(maker_cls, **kwargs):
+            return maker_cls(**kwargs)
+
+    net_dict = dict(nb_layers=nb_layers, hidden_size=hidden_size)
+
+    val_function = maker(MLP, nb_inputs=nb_state_feats, nb_outputs=1, **net_dict).to(device)
+
+    policy_dict = dict(val_function=val_function, policy_config=policy_config, device=device)
+
     if isinstance(action_space, Discrete):
-        adv_function = MLP(nb_inputs=nb_state_feats, nb_outputs=action_space.n,
-                           nb_layers=nb_layers, hidden_size=hidden_size).to(device)
+        adv_function = maker(MLP, nb_inputs=nb_state_feats, nb_outputs=action_space.n,
+                             **net_dict).to(device)
         noise = setup_noise(noise_config, network=adv_function,
                             action_shape=(nb_train_env, action_space.n)).to(device)
         eval_noise = setup_noise(eval_noise_config, network=adv_function,
                                  action_shape=(nb_eval_env, action_space.n)).to(device)
-        adv_function = MLP(nb_inputs=nb_state_feats, nb_outputs=action_space.n,
-                           nb_layers=nb_layers, hidden_size=hidden_size).to(device)
-        noise = setup_noise(noise_config, network=adv_function,
-                            action_shape=(nb_train_env, action_space.n)).to(device)
-        eval_noise = setup_noise(eval_noise_config, network=adv_function,
-                                 action_shape=(nb_eval_env, action_space.n)).to(device)
-        policy: Policy = AdvantagePolicy(
-            adv_function=adv_function, val_function=val_function, adv_noise=noise,
-            policy_config=policy_config, device=device)
-        eval_policy: Policy = AdvantagePolicy(
-            adv_function=adv_function, val_function=val_function, adv_noise=eval_noise,
-            policy_config=policy_config, device=device)
+
+        policy_dict["adv_function"] = adv_function
+
+        policy: Policy = AdvantagePolicy(adv_noise=noise, **policy_dict)
+        eval_policy: Policy = AdvantagePolicy(adv_noise=eval_noise, **policy_dict)
 
     elif isinstance(action_space, Box):
         nb_actions = action_space.shape[-1]
-        adv_function = ContinuousAdvantageMLP(
-            nb_state_feats=nb_state_feats, nb_actions=nb_actions,
-            nb_layers=nb_layers, hidden_size=hidden_size).to(device)
+        adv_function = maker(ContinuousAdvantageMLP,
+                             nb_state_feats=nb_state_feats, nb_actions=nb_actions,
+                             **net_dict).to(device)
+        policy_dict["adv_function"] = adv_function
+
         if isinstance(policy_config, ApproximateAdvantagePolicyConfig):
-            policy_function = ContinuousPolicyMLP(
-                nb_inputs=nb_state_feats, nb_outputs=nb_actions,
-                nb_layers=nb_layers, hidden_size=hidden_size).to(device)
-            noise = setup_noise(noise_config, network=policy_function,
-                                action_shape=(nb_train_env, action_space.shape[0])).to(device)
-            eval_noise = setup_noise(eval_noise_config, network=policy_function,
-                                     action_shape=(nb_eval_env, action_space.shape[0])).to(device)
-            policy = ContinuousAdvantagePolicy(
-                adv_function=adv_function, val_function=val_function, policy_function=policy_function,
-                policy_noise=noise, policy_config=policy_config, device=device)
-            eval_policy = ContinuousAdvantagePolicy(
-                adv_function=adv_function, val_function=val_function, policy_function=policy_function,
-                policy_noise=eval_noise, policy_config=policy_config, device=device)
+            policy_function = maker(ContinuousPolicyMLP,
+                                    nb_inputs=nb_state_feats, nb_outputs=nb_actions,
+                                    **net_dict).to(device)
+            policy_dict["policy_function"] = policy_function
+
+            noise_dict = dict(network=policy_function,
+                              action_shape=(nb_train_env, action_space.shape[0]))
+            noise = setup_noise(noise_config, **noise_dict).to(device)
+            eval_noise = setup_noise(eval_noise_config, **noise_dict).to(device)
+
+            policy = ContinuousAdvantagePolicy(policy_noise=noise, **policy_dict)
+            eval_policy = ContinuousAdvantagePolicy(policy_noise=eval_noise, **policy_dict)
+
         elif isinstance(policy_config, SampledAdvantagePolicyConfig):
-            noise = setup_noise(noise_config, network=adv_function,
-                                action_shape=(nb_train_env, 1)).to(device)
-            eval_noise = setup_noise(eval_noise_config, network=adv_function,
-                                     action_shape=(nb_eval_env, 1)).to(device)
-            policy = SampledAdvantagePolicy(
-                adv_function=adv_function, val_function=val_function,
-                adv_noise=noise, policy_config=policy_config, action_shape=action_space.shape,
-                device=device)
-            eval_policy = SampledAdvantagePolicy(
-                adv_function=adv_function, val_function=val_function,
-                adv_noise=eval_noise, policy_config=policy_config, action_shape=action_space.shape,
-                device=device)
+            noise_dict = dict(network=adv_function, action_shape=(nb_train_env, 1))
+            noise = setup_noise(noise_config, **noise_dict).to(device)
+            eval_noise = setup_noise(eval_noise_config, **noise_dict).to(device)
+            policy_dict["action_shape"] = action_space.shape
+
+            policy = SampledAdvantagePolicy(adv_noise=noise, **policy_dict)
+            eval_policy = SampledAdvantagePolicy(adv_noise=eval_noise, **policy_dict)
         else:
             raise NotImplementedError()
 
-    if normalize_state:
-        policy = StateNormalization(policy, normalization_state)
-        eval_policy = StateNormalization(eval_policy, normalization_state)
     return policy, eval_policy
 
 

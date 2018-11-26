@@ -124,3 +124,6 @@ class AdvantagePolicy(SharedAdvantagePolicy):
             "advantage_scheduler": self._schedulers[0].state_dict(),
             "value_scheduler": self._schedulers[1].state_dict(),
             "iteration": self._schedulers[0].last_epoch}
+
+    def networks(self):
+        return self._adv_function, self._val_function

@@ -143,6 +143,9 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
             "value_scheduler": self._schedulers[1].state_dict(),
             "iteration": self._schedulers[0].last_epoch}
 
+    def networks(self):
+        return self._adv_function, self._val_function
+
 class AdvantagePolicy(SharedAdvantagePolicy):
     def __init__(self,
                  adv_function: ParametricFunction,
@@ -283,3 +286,6 @@ class AdvantagePolicy(SharedAdvantagePolicy):
             "value_scheduler": self._schedulers[1].state_dict(),
             "policy_scheduler": self._schedulers[2].state_dict(),
             "iteration": self._schedulers[0].last_epoch}
+
+    def networks(self):
+        return self._adv_function, self._val_function, self._policy_function
