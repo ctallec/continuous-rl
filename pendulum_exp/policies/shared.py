@@ -41,6 +41,9 @@ class SharedAdvantagePolicy(Policy):
         raise NotImplementedError
 
     def step(self, obs: Arrayable):
+        for net in self.networks():
+            net.eval() # make sur batch norm is in eval mode
+
         if self._train:
             self._obs = obs
 
@@ -67,6 +70,9 @@ class SharedAdvantagePolicy(Policy):
             self.learn()
 
     def learn(self):
+        for net in self.networks():
+            net.train() # batch norm in train mode
+
         if self._count % self._steps_btw_train == self._steps_btw_train - 1:
             try:
                 for _ in range(self._learn_per_step):
