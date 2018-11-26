@@ -1,9 +1,10 @@
 from itertools import chain
 import torch
+import numpy as np
 from abstract import ParametricFunction, Arrayable, Noise, StateDict, Policy
 
 import copy
-from convert import arr_to_th, th_to_arr
+from convert import arr_to_th, check_array, th_to_arr
 # from stats import penalize_mean
 from config import DQNConfig
 # from policies.shared import SharedAdvantagePolicy
@@ -32,6 +33,8 @@ class DQNPolicy(Policy):
         self._steps_btw_train = policy_config.steps_btw_train
         self._steps_btw_catchup = policy_config.steps_btw_catchup
         self._sampler = setup_memory(policy_config)
+        self._count = 0
+        self._learn_count = 0
         # optimization/storing
         self._device = device
         self._optimizer = setup_optimizer(
@@ -51,27 +54,60 @@ class DQNPolicy(Policy):
         self._log = 100
 
 
+    def reset(self):
+        # internals
+        self._obs = np.array([])
+        self._action = np.array([])
+        self._reward = np.array([])
+        self._next_obs = np.array([])
+        self._done = np.array([])
+
+    def step(self, obs: Arrayable):
+        if self._train:
+            self._obs = obs
+
+        action = self.act(obs)
+        if self._train:
+            self._action = action
+
+        return action
+
+    def observe(self,
+                next_obs: Arrayable,
+                reward: Arrayable,
+                done: Arrayable):
+        if self._train:
+            self._count += 1
+            self._next_obs = next_obs
+            self._reward = reward
+            self._done = done
+            self._sampler.push(
+                self._obs, self._action, self._next_obs, self._reward, self._done)
+            self.learn()
+
+
     def act(self, obs: Arrayable):
         with torch.no_grad():
-            pre_action = self._adv_noise.perturb_output(
+            pre_action = self._qnet_noise.perturb_output(
                 obs, function=self._qnet_function)
-            self._adv_noise.step()
+            self._qnet_noise.step()
             return pre_action.argmax(axis=-1)
 
     def learn(self):
         if self._count % self._steps_btw_train == self._steps_btw_train - 1:
             # TODO: enlever try except
-            print("Your are not dreaming, you are in DQN.")
             try:
                 for _ in range(self._learn_per_step):
-                    obs, action, next_obs, reward, done = self._sampler.sample()
+                    obs, action, next_obs, reward, done, weights = self._sampler.sample()
+                    reward = arr_to_th(reward, self._device)
+                    weights = arr_to_th(check_array(weights), self._device)
                     # for now, discrete actions
                     indices = arr_to_th(action, self._device).long()
 
                     q = self._qnet_function(obs).gather(1, indices.view(-1, 1)).squeeze()
                     target = torch.max(self._target_function(next_obs), dim=1)[0].squeeze()
 
-                    exp_q = arr_to_th(reward, self._device) + self._gamma ** self._dt 
+                    exp_q = reward + self._gamma ** self._dt 
                     if self._gamma == 1.:
                         assert (1 - done).all(), "Gamma set to 1. with a potentially episodic problem..."
                         exp_q += target.detach()
@@ -79,11 +115,10 @@ class DQNPolicy(Policy):
                         done = arr_to_th(done.astype('float'), self._device)
                         exp_q += self._gamma ** self._dt * target#.detach()
 
-                    loss = ((q - exp_q) ** 2).mean()
+                    loss = (((q - exp_q) ** 2) * weights).mean()
                     self._optimizer.zero_grad()
                     loss.backward()
                     self._optimizer.step()
-                    self._scheduler.step()
 
                     self._cum_loss += loss.item()
                     self._learn_count += 1
@@ -95,8 +130,8 @@ class DQNPolicy(Policy):
                 # If not enough data in the buffer, do nothing
                 pass
 
-        if self.count % self._steps_btw_catchup == self._steps_btw_catchup -1:
-            self._target_function.load_state_dict(self.qnet_function.state_dict())
+        if self._count % self._steps_btw_catchup == self._steps_btw_catchup -1:
+            self._target_function.load_state_dict(self._qnet_function.state_dict())
 
 
     def train(self):
@@ -107,8 +142,11 @@ class DQNPolicy(Policy):
         self._train = False
         self._qnet_function.eval()
 
+    def observe_evaluation(self, eval_return: float):
+        self._schedulers.step(eval_return)
+
     def value(self, obs: Arrayable):
-        return th_to_arr(torch.max(self._qnet_function(obs), dim=1))
+        return th_to_arr(torch.max(self._qnet_function(obs), dim=1)[0])
 
     def advantage(self, obs: Arrayable):
         q = self._qnet_function(obs)
@@ -118,11 +156,13 @@ class DQNPolicy(Policy):
         self._optimizers.load_state_dict(state_dict['optimizer'])
         self._qnet_function.load_state_dict(state_dict['qnet_function'])
         self._target_function.load_state_dict(state_dict['target_function'])
-        self._schedulers.last_epoch = state_dict['iteration']
+        self._schedulers.load_state_dict(state_dict['schedulers'])
+        # self._schedulers.last_epoch = state_dict['iteration']
 
     def state_dict(self):
         return {
-            "optimizer": self._optimizers.state_dict(),
-            "qnet_function": self._adv_function.state_dict(),
-            "target_function": self._val_function.state_dict(),
-            "iteration": self._scheduler.last_epoch}
+            "optimizer": self._optimizer.state_dict(),
+            "qnet_function": self._qnet_function.state_dict(),
+            "target_function": self._target_function.state_dict(),
+            "schedulers": self._schedulers.state_dict(),
+            "iteration": self._schedulers.last_epoch}
