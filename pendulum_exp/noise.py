@@ -111,4 +111,4 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
             with torch.no_grad():
                 return th_to_arr(function(*inputs))
         with torch.no_grad():
-            return th_to_arr(function(*inputs) + self.noise)
+            return th_to_arr(function(*inputs)[:self.noise.size(0)] + self.noise)
