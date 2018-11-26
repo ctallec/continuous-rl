@@ -53,6 +53,7 @@ well-sampled ($\rho>0$) this implies $(\Id-P)V=R$. All terms in this
 equation are \emph{samplable}: we can sample from $\rho R$ and from
 $\rho(\Id-P)$.
 
+\paragraph{Minimizers of errors.}
 A local minimizer of the $L^2(\rho)$ error between $V$ and
 $(\Id-P)^{-1}R$ solves
 \begin{equation}
@@ -66,6 +67,24 @@ $L^2(\rho)$ error between $(\Id-P)V$ and $R$ is
 and in the linear case $V=\Phi\theta$, this is the standard solution to
 the linear regression problem $(\Id-P)\Phi\theta\approx R$ in
 $L^2(\rho)$. However, the matrix on the left is not samplable.
+
+The minimizer of the $L^2(\rho^2)$ error between $R$
+and $(\Id-P)V$ is samplable:
+\begin{equation}
+\transp{\Phi}\transp{(\Id-P)}\rho^2(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho^2
+R
+\end{equation}
+however, the $\rho^2$ is a bit weird... moreover having
+$\transp{\Delta}\Delta$ means we are just facing the double sampling
+problem (we can sample $\transp{(\rho\Delta)}\rho\Delta$, but in practice the sample will always be $0$
+unless we are lucky and select two transitions $s\to s'$ that have the
+same $s$). Even the right-hand-side involves double sampling.
+
+The minimizer of a weird norm $L^2(\rho \Phi\transp{\Phi}\rho)$ is better
+samplable, because now it's enough to sample states \emph{with the same
+features}, not just the exact same state. This is basically what happens
+in the linear case. The features should not be orthogonal. Should use a
+hash of states instead?
 
 The Dirichlet norm associated with $\rho$ is $\E_{ss'}
 (f(s)-f(s'))^2$. Its matrix is $\rho+\rho'-\rho P-\transp{(\rho P)}$ where
@@ -96,21 +115,6 @@ sampling problem.
 
 TD is the only one of those fixed point equations that is
 \emph{samplable} given that we can sample $\rho$, $\rho P$ and $\rho R$.
-\footnote{Actually the minimizer of the $L^2(\rho^2)$ error between $R$
-and $(\Id-P)V$ is also samplable:
-\begin{equation}
-\transp{\Phi}\transp{(\Id-P)}\rho^2(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho^2
-R
-\end{equation}
-however, the $\rho^2$ is a bit weird... moreover having
-$\transp{\Delta}\Delta$ means we are just facing the double sampling
-problem. Even the right-hand-side involves double sampling.
-
-The minimizer of a weird norm $L^2(\rho \Phi\transp{\Phi}\rho)$ is better
-samplable, because now it's enough to sample states \emph{with the same
-features}, not just the exact same state. Use unclear. Should use a hash
-of states instead.
-}
 Thus, from now on we are going to focus on solving
 \begin{equation}
 \transp{\Phi}\rho (\Id-P)V=\transp{\Phi}\rho R
