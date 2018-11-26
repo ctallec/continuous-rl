@@ -1,6 +1,7 @@
 \documentclass[11pt,a4paper]{article}
 \input{header.en.tex}
 
+\newcommand{\Dir}{\mathcal{D}}
 
 
 \begin{document}
@@ -88,7 +89,7 @@ hash of states instead? Or apply ReLU to orthogonal features.
 
 The Dirichlet norm associated with $\rho$ is $\E_{ss'}
 (f(s)-f(s'))^2$. Its matrix is $\rho+\rho'-\rho P-\transp{(\rho P)}$ where
-$\rho'$ is the distribution of $s'$.
+$\rho'$ is the distribution of $s'$ (and is samplable).
 A local minimizer of the Dirichlet error between $V$ and
 $(\Id-P)^{-1}R$ solves
 \begin{equation}
@@ -106,10 +107,32 @@ Instead of applying the Dirichlet norm to $(V-(\Id-P)^{-1}R)$, one can
 apply the inverse Dirichlet norm to $((\Id-P)V-R)$. When $P$ is
 reversible and $\rho=\mu$ this
 is the same. One tries to minimize
-$\transp{((\Id-P)V-R)}\rho\mathcal{D}^{-1}\rho((\Id-P)V-R)$ where
-$\mathcal{D}\deq \rho+\rho'-\rho P-\transp{(\rho P)}$ as above, and use
-TANGO to invert $\mathcal{D}$. However this suffers again from a double
-sampling problem, in several places.
+$\transp{((\Id-P)V-R)}\rho\Dir^{-1}\rho((\Id-P)V-R)$ where
+$\Dir\deq \rho+\rho'-\rho P-\transp{(\rho P)}$ as above, and use
+TANGO to invert $\Dir$. However this suffers again from a double
+sampling problem, in several places. Still, this can be rewritten as a
+correction to TD where only the correction suffers from double
+sampling/large variance. Namely, the gradient of the above with respect
+to $\theta$ is $\transp{\Phi}\transp{(\rho\Delta)} \Dir^{-1}\rho(\Delta V-R)$. Since
+$\rho\Delta$ is half of $\Dir$, this gradient is 
+\begin{gather}
+\transp{\Phi}\transp{(\rho\Delta)} \Dir^{-1}\rho(\Delta V-R)=
+\\
+\frac12\transp{\Phi}(\transp{(\rho \Delta)}+\rho'-\rho P)\Dir^{-1}\rho(\Delta
+V-R)+\frac12 \transp{\Phi}(\transp{(\rho \Delta)}+\rho P-\rho')\Dir^{-1}\rho(\Delta
+V-R)
+\\=\frac12\transp{\Phi}\rho(\Delta
+V-R)+\frac12 \transp{\Phi}(\transp{(\rho \Delta)}+\rho P-\rho')\Dir^{-1}\rho(\Delta
+V-R)
+\end{gather}
+the first part of which is TD. Thus one can write a correction to TD such
+that only the correction suffers from double-sampling. The correction vanishes for reversible
+chains. The double sampling can be simulated with high variance in finite
+state spaces (just take samples from $P$ and $\transp{P}$ until they
+match) but does not make sense in continuous state spaces. Use a model of
+transitions only for the correction? TODO: use the same trick on the
+right? No, because the $R$ term doesn't go away and I'd rather have a
+correction that vanishes when $\Delta V-R$ is small.
 
 \bigskip
 
