@@ -93,6 +93,7 @@ class SharedAdvantagePolicy(Policy):
                     reference_obs = self._sampler.reference_obs
                     reward = arr_to_th(reward, self._device)
                     weights = arr_to_th(check_array(weights), self._device)
+                    done = arr_to_th(check_array(done).astype('float'), self._device)
 
                     v = self._val_function(obs).squeeze()
                     reference_v = self._val_function(reference_obs).squeeze().detach()
@@ -103,7 +104,7 @@ class SharedAdvantagePolicy(Policy):
 
                     expected_v = reward * self._dt + \
                         self._gamma ** self._dt * next_v
-                    dv = (expected_v - v) / self._dt - self._gamma * mean_v
+                    dv = (expected_v - v) / self._dt - (1 - done) * self._gamma * mean_v
                     bell_residual = dv - adv + max_adv
                     self._sampler.observe(np.abs(th_to_arr(bell_residual)))
 
@@ -156,7 +157,7 @@ class SharedAdvantagePolicy(Policy):
             log("stats/std_actions", actions.std().item(), self._learn_count)
             log("stats/mean_noisy_actions", noisy_actions.mean().item(), self._learn_count)
             log("stats/std_noisy_actions", noisy_actions.std().item(), self._learn_count)
-            log("stats/mean_advantage", adv.mean().item())
-            log("stats/std_advantage", adv.std().item())
-            log("stats/mean_reference_v", reference_v.mean().item())
-            log("stats/std_reference_v", reference_v.std().item())
+            log("stats/mean_advantage", adv.mean().item(), self._learn_count)
+            log("stats/std_advantage", adv.std().item(), self._learn_count)
+            log("stats/mean_reference_v", reference_v.mean().item(), self._learn_count)
+            log("stats/std_reference_v", reference_v.std().item(), self._learn_count)

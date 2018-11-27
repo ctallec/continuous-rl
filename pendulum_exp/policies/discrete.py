@@ -125,6 +125,6 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         return self._adv_function, self._val_function
 
     def _get_stats(self):
-        V = self._val_function(self._stats_obs).squeeze()
-        actions = self._adv_function(self._stats_obs).argmax(dim=-1)
+        V = self._val_function(self._stats_obs).squeeze().cpu().numpy().astype('float32')
+        actions = self._adv_function(self._stats_obs).argmax(dim=-1).cpu().numpy().astype('float32')
         return V, actions

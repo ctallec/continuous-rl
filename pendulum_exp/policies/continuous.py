@@ -151,8 +151,8 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
             np.tile(obs, [self._nb_samples] + o_dim * [1]),
             proposed_actions).squeeze()
         action_idx = np.argmax(advantages, axis=0)
-        actions = proposed_actions[action_idx, np.arange(obs.shape[0])]
-        V = self._val_function(self._stats_obs).squeeze()
+        actions = proposed_actions[action_idx, np.arange(obs.shape[0])].astype('float32')
+        V = self._val_function(self._stats_obs).squeeze().cpu().numpy()
         return V, actions
 
 class AdvantagePolicy(SharedAdvantagePolicy):
@@ -296,6 +296,6 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         return self._adv_function, self._val_function, self._policy_function
 
     def _get_stats(self):
-        V = self._val_function(self._stats_obs).squeeze()
-        actions = self._policy_function(self._stats_obs)
+        V = self._val_function(self._stats_obs).squeeze().cpu().numpy()
+        actions = self._policy_function(self._stats_obs).cpu().numpy()
         return V, actions
