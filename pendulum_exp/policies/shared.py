@@ -33,6 +33,7 @@ class SharedAdvantagePolicy(Policy):
         # logging
         self._log_step = 0
         self._stats_obs = None
+        self._stats_actions = None
 
     def reset(self):
         # internals
@@ -142,14 +143,20 @@ class SharedAdvantagePolicy(Policy):
 
     def log_stats(self):
         if self._stats_obs is None:
-            self._stats_obs, _, _, _, _, _, _ = self._sampler.sample()
+            self._stats_obs, self._stats_actions, _, _, _, _, _ = self._sampler.sample()
 
         with torch.no_grad():
             V, actions = self._get_stats()
             noisy_actions = self.act(self._stats_obs)
+            adv, max_adv = self.compute_advantages(self._stats_obs, self._stats_actions)
+            reference_v = self._val_function(self._sampler.reference_obs).squeeze().detach()
             log("stats/mean_v", V.mean().item(), self._learn_count)
             log("stats/std_v", V.std().item(), self._learn_count)
             log("stats/mean_actions", actions.mean().item(), self._learn_count)
             log("stats/std_actions", actions.std().item(), self._learn_count)
             log("stats/mean_noisy_actions", noisy_actions.mean().item(), self._learn_count)
             log("stats/std_noisy_actions", noisy_actions.std().item(), self._learn_count)
+            log("stats/mean_advantage", adv.mean().item())
+            log("stats/std_advantage", adv.std().item())
+            log("stats/mean_reference_v", reference_v.mean().item())
+            log("stats/std_reference_v", reference_v.std().item())
