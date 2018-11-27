@@ -126,6 +126,7 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
         self._val_function.load_state_dict(state_dict['val_function'])
         self._schedulers[0].load_state_dict(state_dict['advantage_scheduler'])
         self._schedulers[1].load_state_dict(state_dict['value_scheduler'])
+        self._learn_count = state_dict['learn_count']
 
     def state_dict(self) -> StateDict:
         return {
@@ -135,7 +136,9 @@ class SampledAdvantagePolicy(SharedAdvantagePolicy):
             "val_function": self._val_function.state_dict(),
             "advantage_scheduler": self._schedulers[0].state_dict(),
             "value_scheduler": self._schedulers[1].state_dict(),
-            "iteration": self._schedulers[0].last_epoch}
+            "iteration": self._schedulers[0].last_epoch,
+            "learn_count": self._learn_count
+        }
 
     def networks(self):
         return self._adv_function, self._val_function
@@ -278,6 +281,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         self._schedulers[0].load_state_dict(state_dict['advantage_scheduler'])
         self._schedulers[1].load_state_dict(state_dict['value_scheduler'])
         self._schedulers[2].load_state_dict(state_dict['policy_scheduler'])
+        self._learn_count = state_dict['learn_count']
 
     def state_dict(self) -> StateDict:
         return {
@@ -290,7 +294,9 @@ class AdvantagePolicy(SharedAdvantagePolicy):
             "advantage_scheduler": self._schedulers[0].state_dict(),
             "value_scheduler": self._schedulers[1].state_dict(),
             "policy_scheduler": self._schedulers[2].state_dict(),
-            "iteration": self._schedulers[0].last_epoch}
+            "iteration": self._schedulers[0].last_epoch,
+            "learn_count": self._learn_count
+        }
 
     def networks(self):
         return self._adv_function, self._val_function, self._policy_function
