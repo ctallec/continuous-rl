@@ -3,7 +3,7 @@ from abstract import DecayFunction
 from typing import NamedTuple, Union, Tuple, Optional
 import numpy as np
 
-
+# TODO: Enlever lr_config
 class ParameterNoiseConfig(NamedTuple):
     sigma: float
     theta: float
@@ -21,7 +21,7 @@ class AdvantagePolicyConfig(NamedTuple):
     gamma: float
     dt: float
     lr: float
-    lr_decay: DecayFunction
+    # lr_decay: DecayFunction
     memory_size: int
     learn_per_step: int
     steps_btw_train: int
@@ -35,7 +35,7 @@ class ApproximateAdvantagePolicyConfig(NamedTuple):
     gamma: float
     dt: float
     lr: float
-    lr_decay: DecayFunction
+    # lr_decay: DecayFunction
     memory_size: int
     learn_per_step: int
     steps_btw_train: int
@@ -50,7 +50,7 @@ class SampledAdvantagePolicyConfig(NamedTuple):
     gamma: float
     dt: float
     lr: float
-    lr_decay: DecayFunction
+    # lr_decay: DecayFunction
     memory_size: int
     learn_per_step: int
     steps_btw_train: int
@@ -65,14 +65,13 @@ class DQNConfig(NamedTuple):
     gamma: float
     dt: float
     lr: float
-    lr_decay: DecayFunction
     memory_size: int
     learn_per_step: int
     steps_btw_train: int
+    steps_btw_catchup: int
     alpha: Optional[float]
     beta: Optional[float]
     weight_decay: float
-    nb_samples: int
     optimizer: str
 
 class EnvConfig(NamedTuple):
@@ -96,12 +95,12 @@ def read_config(
         def noise_decay(_: int) -> float: # type: ignore
             return 1
 
-    def lr_decay(t):
-        return 1 / np.power(1 + args.dt * t, 0)
+    # def lr_decay(t):
+    #     return 1 / np.power(1 + args.dt * t, 0)
 
     policy_config_dict = dict(
         batch_size=args.batch_size, gamma=args.gamma, dt=args.dt,
-        lr=args.lr, lr_decay=lr_decay,
+        lr=args.lr, # lr_decay=lr_decay,
         memory_size=args.memory_size, learn_per_step=args.learn_per_step,
         steps_btw_train=args.steps_btw_train, beta=args.beta, alpha=args.alpha,
         weight_decay=args.weight_decay, optimizer=args.optimizer
@@ -114,7 +113,15 @@ def read_config(
         policy_config_dict['nb_samples'] = args.nb_policy_samples
         policy_config = SampledAdvantagePolicyConfig(**policy_config_dict)
     else:
-        policy_config = AdvantagePolicyConfig(**policy_config_dict)
+        if args.algo == 'drau':
+            policy_config = AdvantagePolicyConfig(**policy_config_dict)
+        elif args.algo == 'qlearn':
+            policy_config = DQNConfig(
+                steps_btw_catchup=args.steps_btw_catchup,
+                **policy_config_dict)
+        else:
+            raise NotImplementedError
+
     if args.noise_type == 'parameter':
         noise_config: NoiseConfig = ParameterNoiseConfig(
             args.sigma, args.theta, args.dt, noise_decay)

@@ -66,12 +66,12 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         assert len(losses) == 1
         self._optimizers[0].zero_grad()
         self._optimizers[1].zero_grad()
-        losses[0].backward()
+        losses[0].mean().backward()
         self._optimizers[0].step()
         self._optimizers[1].step()
 
         # logging
-        self._cum_loss += losses[0].item()
+        self._cum_loss += losses[0].sqrt().mean().item()
         self._log_step += 1
         self._learn_count += 1
 
@@ -110,6 +110,7 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         self._val_function.load_state_dict(state_dict['val_function'])
         self._schedulers[0].load_state_dict(state_dict['advantage_scheduler'])
         self._schedulers[1].load_state_dict(state_dict['value_scheduler'])
+        self._learn_count = state_dict['learn_count']
 
     def state_dict(self):
         return {
@@ -119,7 +120,9 @@ class AdvantagePolicy(SharedAdvantagePolicy):
             "val_function": self._val_function.state_dict(),
             "advantage_scheduler": self._schedulers[0].state_dict(),
             "value_scheduler": self._schedulers[1].state_dict(),
-            "iteration": self._schedulers[0].last_epoch}
+            "iteration": self._schedulers[0].last_epoch,
+            "learn_count": self._learn_count
+        }
 
     def networks(self):
         return self._adv_function, self._val_function

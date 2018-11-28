@@ -49,7 +49,7 @@ class SharedAdvantagePolicy(Policy):
 
     def step(self, obs: Arrayable):
         for net in self.networks():
-            net.eval() # make sur batch norm is in eval mode
+            net.eval() # make sure batch norm is in eval mode
 
         if self._train:
             self._obs = obs
@@ -108,8 +108,8 @@ class SharedAdvantagePolicy(Policy):
                     bell_residual = dv - adv + max_adv
                     self._sampler.observe(np.abs(th_to_arr(bell_residual)))
 
-                    adv_update_loss = ((bell_residual ** 2) * weights).mean()
-                    adv_norm_loss = ((max_adv ** 2) * weights).mean()
+                    adv_update_loss = ((bell_residual ** 2) * weights)
+                    adv_norm_loss = ((max_adv ** 2) * weights)
                     bell_loss = adv_update_loss + adv_norm_loss
 
                     self.optimize_value(bell_loss)
@@ -139,7 +139,7 @@ class SharedAdvantagePolicy(Policy):
             assert (1 - done).byte().all(), "Gamma set to 1. with a potentially"\
                 "episodic problem..."
             return next_v
-        return (1 - done) * next_v - done * self._gamma / (1 - self._gamma) * mean_v
+        return (1 - done) * next_v - done * mean_v * self._gamma / (1 - self._gamma)
 
     def log_stats(self):
         if self._stats_obs is None:
