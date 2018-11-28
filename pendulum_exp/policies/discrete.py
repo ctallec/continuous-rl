@@ -66,12 +66,12 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         assert len(losses) == 1
         self._optimizers[0].zero_grad()
         self._optimizers[1].zero_grad()
-        losses[0].backward()
+        losses[0].mean().backward()
         self._optimizers[0].step()
         self._optimizers[1].step()
 
         # logging
-        self._cum_loss += losses[0].item()
+        self._cum_loss += losses[0].sqrt().mean().item()
         self._log_step += 1
         self._learn_count += 1
 
