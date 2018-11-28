@@ -132,9 +132,8 @@ class SharedAdvantagePolicy(Policy):
         """Computes adv, max_adv."""
         raise NotImplementedError()
 
-    def compute_next_value(self, next_obs: Arrayable, done: Arrayable, mean_v: Tensor) -> Tensor:
+    def compute_next_value(self, next_obs: Arrayable, done: Tensor, mean_v: Tensor) -> Tensor:
         """Also detach next value."""
-        done = arr_to_th(check_array(done).astype('float'), self._device)
         next_v = self._val_function(next_obs).squeeze().detach()
         if self._gamma == 1:
             assert (1 - done).byte().all(), "Gamma set to 1. with a potentially"\
