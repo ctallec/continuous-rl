@@ -67,7 +67,14 @@ $L^2(\rho)$ error between $(\Id-P)V$ and $R$ is
 \end{equation}
 and in the linear case $V=\Phi\theta$, this is the standard solution to
 the linear regression problem $(\Id-P)\Phi\theta\approx R$ in
-$L^2(\rho)$. However, the matrix on the left is not samplable.
+$L^2(\rho)$. However, the matrix on the left is not samplable. We need
+double sampling for that.
+
+Combined with all this, is the problem that a Bellman solution on the
+support of $\rho$ may be very, very far from the global Bellman solution,
+even on the support of $\rho$ (take random walk on a circle, with $\rho$
+being everything but one point: then any linear function solves Bellman
+on the support of $\rho$).
 
 The minimizer of the $L^2(\rho^2)$ error between $R$
 and $(\Id-P)V$ is samplable:
