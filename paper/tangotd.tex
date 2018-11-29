@@ -412,6 +412,11 @@ decrease if and only if
 is positive, namely, if $L\Delta \Phi B \transp{\Phi}\rho $ is a positive
 operator.
 
+On-policy, a choice would seem to be $L=\mu\Phi B \transp{\Phi}\mu$ which
+would result in $(\mu\Phi B \transp{\Phi})(\mu \Delta) \mu\Phi B
+\transp{\Phi}\mu$ which is positive; however, this depends on $\theta$
+since $\Phi$ does. So this is not a suitable Lyapunov function.
+
 In the reversible case, $\mu\Delta$ is symmetric.\footnote{$\rho \Delta$
 can be symmetric if and only if $\rho=\mu$. Indeed, if $\rho \Delta$ is
 symmetric then $\rho=\rho'$ and $\rho$ is the stationary distribution.} We can use the
@@ -422,7 +427,7 @@ positive $B$. Thus, in the reversible case, nonlinear TD converges
 on-policy, for any $B$. It does so by minimizing the Dirichlet norm.
 
 In the non-reversible case, let $\rho\Delta=S+A$ with $S$ symmetric and
-$A$ antisymmetric. Let $L\deq \rho S^{-1} \rho$. Then we have to prove that
+$A$ antisymmetric. Assume $S$ is positive. Let $L\deq \rho S^{-1} \rho$. Then we have to prove that
 $\rho S^{-1} \rho \Delta \Phi B\transp{\Phi}\rho$ is positive. For any
 function $f$,
 \begin{align}
@@ -449,10 +454,11 @@ right-hand-side lives in the image of $\Phi$). In that case $\Phi$ is
 invertible and $B=(\transp{\Phi}S\Phi)^{-1}$ solves the problem; a
 two-timescale algorithm is required to compute $B$.
 
-Thus we have a two-timescale algorithm for non-linear TD in the off-policy
-overparameterized case; it minimizes the Dirichlet norm. TODO WRONG: $S$
-IS NOT NECESSARILY POSITIVE!!!!! $S$ is positive if $\rho=\mu$, so,
-correct on-policy.
+Thus, assuming $S$ is positive, we have a two-timescale algorithm for non-linear TD in the off-policy
+overparameterized case; it minimizes the Dirichlet norm.
+However, in general $S$ is not positive. $S$ is positive if $\rho=\mu$, so,
+we have a two-timescale algorithm for non-linear on-policy
+overparameterized TD.
 
 (Still works for non-overparameterized if $A$ does not couple the image
 of $\Phi$ and its complement...)
