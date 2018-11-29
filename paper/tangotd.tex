@@ -451,14 +451,16 @@ two-timescale algorithm is required to compute $B$.
 
 Thus we have a two-timescale algorithm for non-linear TD in the off-policy
 overparameterized case; it minimizes the Dirichlet norm. TODO WRONG: $S$
-is not necessarily positive!!!!! is positive if $\rho=\mu$.
-
-TODO: Why do I end up using $\rho\Delta+\transp{(\rho \Delta)}$ while the
-Dirichlet form is $\rho \Delta + \rho'-\transp{(\rho P)}$ which is
-different, I think...
+IS NOT NECESSARILY POSITIVE!!!!! $S$ is positive if $\rho=\mu$, so,
+correct on-policy.
 
 (Still works for non-overparameterized if $A$ does not couple the image
 of $\Phi$ and its complement...)
+
+TODO: Why do I end up using $\rho\Delta+\transp{(\rho \Delta)}$ while the
+Dirichlet form is $\rho \Delta + \rho'-\transp{(\rho P)}$ which is
+different, I think...  Probably use the right combination of $\rho$ and
+$\rho'$ and the Dirichlet form rather than $\rho S^{-1}\rho$.
 
 Nonlinear GTD2 etc use a function $L$ that depends on $\theta$ (via
 $\Phi$); this adds Hessian terms to the gradient of $L$, and it's not
