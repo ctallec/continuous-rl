@@ -412,33 +412,35 @@ decrease if and only if
 is positive, namely, if $L\Delta \Phi B \transp{\Phi}\rho $ is a positive
 operator.
 
-In the reversible case, $\mu\Delta$ is symmetric. We can use the
+In the reversible case, $\mu\Delta$ is symmetric.\footnote{$\rho \Delta$
+can be symmetric if and only if $\rho=\mu$. Indeed, if $\rho \Delta$ is
+symmetric then $\rho=\rho'$ and $\rho$ is the stationary distribution.} We can use the
 Dirichlet form which amounts to $L\deq\mu(\mu\Delta)^{-1}\mu$; then
 $L\Delta=\mu$ and we have to prove that $\mu\Phi B\transp{\Phi}\rho$ is
 positive.  On-policy, $\rho=\mu$ and this is obviously true, for any
 positive $B$. Thus, in the reversible case, nonlinear TD converges
 on-policy, for any $B$.
 
-In the non-reversible case, let $\mu\Delta=S+A$ with $S$ symmetric and
-$A$ antisymmetric. Let $L\deq \mu S^{-1} \mu$. Then we have to prove that
-$\mu S^{-1} \mu \Delta \Phi B\transp{\Phi}\rho$ is positive. For any
+In the non-reversible case, let $\rho\Delta=S+A$ with $S$ symmetric and
+$A$ antisymmetric. Let $L\deq \rho S^{-1} \rho$. Then we have to prove that
+$\rho S^{-1} \rho \Delta \Phi B\transp{\Phi}\rho$ is positive. For any
 function $f$,
 \begin{align}
-\transp{f} \mu S^{-1} \mu \Delta \Phi B\transp{\Phi}\rho f
-&=\transp{f} \mu S^{-1} (S+A) \Phi B\transp{\Phi}\rho f
-\\&=\transp{f} \mu \Phi B\transp{\Phi}\rho f + \transp{f} \mu S^{-1}
+\transp{f} \rho S^{-1} \rho \Delta \Phi B\transp{\Phi}\rho f
+&=\transp{f} \rho S^{-1} (S+A) \Phi B\transp{\Phi}\rho f
+\\&=\transp{f} \rho \Phi B\transp{\Phi}\rho f + \transp{f} \rho S^{-1}
 A \Phi B\transp{\Phi}\rho f
 \end{align}
 
-Let us consider the on-policy case. Then the first term is $\transp{f}
-\mu \Phi B\transp{\Phi}\rho f$ and is always positive. For the second
+The first term $\transp{f}
+\rho \Phi B\transp{\Phi}\rho f$ is always positive. For the second
 term, since $A$ is antisymmetric, we have $\transp{x}Ax=0$ for all $x$.
 Thus, we can add any multiple of $\transp{x}Ax=0$; let us take
-$x=S^{-1}\mu f$:
+$x=S^{-1}\rho f$:
 \begin{equation}
-\transp{f} \mu S^{-1}
-A \Phi B\transp{\Phi}\mu f=
-\transp{f} \mu S^{-1}A (S^{-1}-\Phi B\transp{\Phi})\mu f
+\transp{f} \rho S^{-1}
+A \Phi B\transp{\Phi}\rho f=
+\transp{f} \rho S^{-1}A (S^{-1}-\Phi B\transp{\Phi})\rho f
 \end{equation}
 
 In particular, if $S^{-1}=\Phi B\transp{\Phi}$ then this vanishes.
@@ -447,7 +449,10 @@ right-hand-side lives in the image of $\Phi$). In that case $\Phi$ is
 invertible and $B=(\transp{\Phi}S\Phi)^{-1}$ solves the problem; a
 two-timescale algorithm is required to compute $B$.
 
-Thus we have a two-timescale algorithm for non-linear TD in the on-policy
+Thus we have a two-timescale algorithm for non-linear TD in the off-policy
 overparameterized case.
+
+(Still works for non-overparameterized if $A$ does not couple the image
+of $\Phi$ and its complement...)
 
 \end{document}
