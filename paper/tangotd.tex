@@ -230,11 +230,12 @@ functions)
 \begin{enumerate}
 \item On-policy: $\rho=\mu$, the invariant distribution. Then we know that $\rho(\Id-P)$ is positive
 (Dirichlet form). This implies that $A=\transp{\Phi}\rho (\Id-P)\Phi$ is
-positive too. So we recover the convergence result on-policy for linear
-TD.
+positive too. So we can take $L=\Id$ and we recover convergence of linear
+TD on-policy.
 \item In the tabular case: $\Phi=\Id$. Indeed we have $A=\rho (\Id-P)$,
 which is not positive in general. But $\mu (\Id-P)$ is positive, so we can take
-$L=\mu/\rho$ so that $LA$ is positive.
+$L=\mu/\rho$ so that $LA$ is positive. Thus, tabular TD works
+off-policy.
 \end{enumerate}
 
 One can also \emph{precondition} the gradient descent. This can make it
@@ -377,5 +378,76 @@ TODO: in the original TANGO paper: prove that the main learning rate
 doesn't have to be too small even for non-quadratic problems, namely,
 even if the Hessian changes, we're still applying a positive operator to
 earlier gradients so we still have a valid gradient direction.
+
+\paragraph{Nonlinear case.} In the nonlinear case, we still set $\Phi\deq
+\partial V/\partial \theta$ and TD is
+\begin{equation}
+\theta \gets \theta-\eta \transp{\Phi}\rho (V-PV-R)
+\end{equation}
+and the resulting change of $V$ is
+\begin{equation}
+V\gets V-\eta \Phi\transp{\Phi}\rho (V-PV-R)+O(\eta^2)
+\end{equation}
+
+Preconditioning TD with a matrix $B$ amounts to using $B\transp{\Phi}$ instead of
+$\transp{\Phi}$ in the update of $\theta$, and $\Phi B \transp{\Phi}$ instead of
+$\Phi\transp{\Phi}$ in the update of $V$.
+
+Let us consider a loss function $\transp{(V-PV-R)}L(V-PV-R)$ on the
+Bellman gap, with $L$ a symmetric definite positive matrix. For small
+$\eta$, the derivative of this loss function wrt $\theta$ is
+\begin{equation}
+\transp{(V-PV-R)}L(\Phi-P\Phi)
+\end{equation}
+
+The loss function $L$ may not depend on $\theta$, otherwise we are
+decreasing a variable Lyapunov function which does not prove convergence.
+
+If the algorithm is some form of preconditioned TD, namely
+$\delta\theta=-\eta B\transp{\Phi}\rho (V-PV-R)$, the loss function will
+decrease if and only if
+\begin{equation}
+\transp{(V-PV-R)}L(\Phi-P\Phi)B\transp{\Phi}\rho (V-PV-R)
+\end{equation}
+is positive, namely, if $L\Delta \Phi B \transp{\Phi}\rho $ is a positive
+operator.
+
+In the reversible case, $\mu\Delta$ is symmetric. We can use the
+Dirichlet form which amounts to $L\deq\mu(\mu\Delta)^{-1}\mu$; then
+$L\Delta=\mu$ and we have to prove that $\mu\Phi B\transp{\Phi}\rho$ is
+positive.  On-policy, $\rho=\mu$ and this is obviously true, for any
+positive $B$. Thus, in the reversible case, nonlinear TD converges
+on-policy, for any $B$.
+
+In the non-reversible case, let $\mu\Delta=S+A$ with $S$ symmetric and
+$A$ antisymmetric. Let $L\deq \mu S^{-1} \mu$. Then we have to prove that
+$\mu S^{-1} \mu \Delta \Phi B\transp{\Phi}\rho$ is positive. For any
+function $f$,
+\begin{align}
+\transp{f} \mu S^{-1} \mu \Delta \Phi B\transp{\Phi}\rho f
+&=\transp{f} \mu S^{-1} (S+A) \Phi B\transp{\Phi}\rho f
+\\&=\transp{f} \mu \Phi B\transp{\Phi}\rho f + \transp{f} \mu S^{-1}
+A \Phi B\transp{\Phi}\rho f
+\end{align}
+
+Let us consider the on-policy case. Then the first term is $\transp{f}
+\mu \Phi B\transp{\Phi}\rho f$ and is always positive. For the second
+term, since $A$ is antisymmetric, we have $\transp{x}Ax=0$ for all $x$.
+Thus, we can add any multiple of $\transp{x}Ax=0$; let us take
+$x=S^{-1}\mu f$:
+\begin{equation}
+\transp{f} \mu S^{-1}
+A \Phi B\transp{\Phi}\mu f=
+\transp{f} \mu S^{-1}A (S^{-1}-\Phi B\transp{\Phi})\mu f
+\end{equation}
+
+In particular, if $S^{-1}=\Phi B\transp{\Phi}$ then this vanishes.
+The latter can only happen in the overparameterized case (indeed, the
+right-hand-side lives in the image of $\Phi$). In that case $\Phi$ is
+invertible and $B=(\transp{\Phi}S\Phi)^{-1}$ solves the problem; a
+two-timescale algorithm is required to compute $B$.
+
+Thus we have a two-timescale algorithm for non-linear TD in the on-policy
+overparameterized case.
 
 \end{document}
