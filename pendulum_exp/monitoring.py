@@ -1,15 +1,18 @@
 import argparse
 import os
 import pickle
+import re
 from subprocess import call
 
 import matplotlib.pyplot as plt
 
 
-def plots(logs, namefile):
+def plots(logs, namefile, key_regexp=".*(l|L)oss.*|Return"):
     fig, axes = plt.subplots(len(logs), figsize=(10., 15.))
 
     for logkey, ax in zip(logs, axes):
+        if re.match(key_regexp, logkey) is None:
+            continue
         ax.set_title(logkey)
 
         x = list(logs[logkey].keys())
@@ -28,8 +31,11 @@ def plots(logs, namefile):
 
 def summary(logs):
     print('Summary')
-    metrics = [("Avg_adv_loss", min), ("Float_adv_loss", min), ("Return", max)]
+    metrics = [("Avg_adv_loss", min), ("Float_adv_loss", min), ("Return", max),
+        ("loss/advantage", min), ("loss/policy", min), ]
     for met, f in metrics:
+        if met not in logs:
+            continue
         metval = logs[met]
         curr_ts, curr_val = max(metval.items(), key=lambda x: x[0])
         best_ts, best_val = f(metval.items(), key=lambda x: x[1])
@@ -60,6 +66,8 @@ if __name__ == '__main__':
 
         if args.plots:
             plots(logs, os.path.join(args.logdir, 'plots.eps'))
+    else:
+        raise ValueError(f'{log_filename} is not a file')
 
     if args.video:
         if args.xvfb:

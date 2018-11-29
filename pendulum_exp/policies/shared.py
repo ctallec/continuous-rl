@@ -33,6 +33,7 @@ class SharedAdvantagePolicy(Policy):
         # logging
         self._log_step = 0
         self._stats_obs = None
+        self._stats_actions = None
 
     def reset(self):
         # internals
@@ -48,7 +49,7 @@ class SharedAdvantagePolicy(Policy):
 
     def step(self, obs: Arrayable):
         for net in self.networks():
-            net.eval() # make sur batch norm is in eval mode
+            net.eval() # make sure batch norm is in eval mode
 
         if self._train:
             self._obs = obs
@@ -92,6 +93,7 @@ class SharedAdvantagePolicy(Policy):
                     reference_obs = self._sampler.reference_obs
                     reward = arr_to_th(reward, self._device)
                     weights = arr_to_th(check_array(weights), self._device)
+                    done = arr_to_th(check_array(done).astype('float'), self._device)
 
                     v = self._val_function(obs).squeeze()
                     reference_v = self._val_function(reference_obs).squeeze().detach()
@@ -102,12 +104,12 @@ class SharedAdvantagePolicy(Policy):
 
                     expected_v = reward * self._dt + \
                         self._gamma ** self._dt * next_v
-                    dv = (expected_v - v) / self._dt - self._gamma * mean_v
+                    dv = (expected_v - v) / self._dt - (1 - done) * self._gamma * mean_v
                     bell_residual = dv - adv + max_adv
                     self._sampler.observe(np.abs(th_to_arr(bell_residual)))
 
-                    adv_update_loss = ((bell_residual ** 2) * weights).mean()
-                    adv_norm_loss = ((max_adv ** 2) * weights).mean()
+                    adv_update_loss = ((bell_residual ** 2) * weights)
+                    adv_norm_loss = ((max_adv ** 2) * weights)
                     bell_loss = adv_update_loss + adv_norm_loss
 
                     self.optimize_value(bell_loss)
@@ -130,26 +132,31 @@ class SharedAdvantagePolicy(Policy):
         """Computes adv, max_adv."""
         raise NotImplementedError()
 
-    def compute_next_value(self, next_obs: Arrayable, done: Arrayable, mean_v: Tensor) -> Tensor:
+    def compute_next_value(self, next_obs: Arrayable, done: Tensor, mean_v: Tensor) -> Tensor:
         """Also detach next value."""
-        done = arr_to_th(check_array(done).astype('float'), self._device)
         next_v = self._val_function(next_obs).squeeze().detach()
         if self._gamma == 1:
             assert (1 - done).byte().all(), "Gamma set to 1. with a potentially"\
                 "episodic problem..."
             return next_v
-        return (1 - done) * next_v - done * self._gamma / (1 - self._gamma) * mean_v
+        return (1 - done) * next_v - done * mean_v * self._gamma / (1 - self._gamma)
 
     def log_stats(self):
         if self._stats_obs is None:
-            self._stats_obs, _, _, _, _, _, _ = self._sampler.sample()
+            self._stats_obs, self._stats_actions, _, _, _, _, _ = self._sampler.sample()
 
         with torch.no_grad():
             V, actions = self._get_stats()
             noisy_actions = self.act(self._stats_obs)
+            adv, max_adv = self.compute_advantages(self._stats_obs, self._stats_actions)
+            reference_v = self._val_function(self._sampler.reference_obs).squeeze().detach()
             log("stats/mean_v", V.mean().item(), self._learn_count)
             log("stats/std_v", V.std().item(), self._learn_count)
             log("stats/mean_actions", actions.mean().item(), self._learn_count)
             log("stats/std_actions", actions.std().item(), self._learn_count)
             log("stats/mean_noisy_actions", noisy_actions.mean().item(), self._learn_count)
             log("stats/std_noisy_actions", noisy_actions.std().item(), self._learn_count)
+            log("stats/mean_advantage", adv.mean().item(), self._learn_count)
+            log("stats/std_advantage", adv.std().item(), self._learn_count)
+            log("stats/mean_reference_v", reference_v.mean().item(), self._learn_count)
+            log("stats/std_reference_v", reference_v.std().item(), self._learn_count)

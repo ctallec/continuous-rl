@@ -9,3 +9,5 @@
 **/__pycache__/
 **/dock_config.json
 exp/logs*
+*.orig
+*~
