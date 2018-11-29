@@ -419,7 +419,7 @@ Dirichlet form which amounts to $L\deq\mu(\mu\Delta)^{-1}\mu$; then
 $L\Delta=\mu$ and we have to prove that $\mu\Phi B\transp{\Phi}\rho$ is
 positive.  On-policy, $\rho=\mu$ and this is obviously true, for any
 positive $B$. Thus, in the reversible case, nonlinear TD converges
-on-policy, for any $B$.
+on-policy, for any $B$. It does so by minimizing the Dirichlet norm.
 
 In the non-reversible case, let $\rho\Delta=S+A$ with $S$ symmetric and
 $A$ antisymmetric. Let $L\deq \rho S^{-1} \rho$. Then we have to prove that
@@ -440,7 +440,7 @@ $x=S^{-1}\rho f$:
 \begin{equation}
 \transp{f} \rho S^{-1}
 A \Phi B\transp{\Phi}\rho f=
-\transp{f} \rho S^{-1}A (S^{-1}-\Phi B\transp{\Phi})\rho f
+\transp{f} \rho S^{-1}A (\Phi B\transp{\Phi}-S^{-1})\rho f
 \end{equation}
 
 In particular, if $S^{-1}=\Phi B\transp{\Phi}$ then this vanishes.
@@ -450,9 +450,18 @@ invertible and $B=(\transp{\Phi}S\Phi)^{-1}$ solves the problem; a
 two-timescale algorithm is required to compute $B$.
 
 Thus we have a two-timescale algorithm for non-linear TD in the off-policy
-overparameterized case.
+overparameterized case; it minimizes the Dirichlet norm. TODO WRONG: $S$
+is not necessarily positive!!!!! is positive if $\rho=\mu$.
+
+TODO: Why do I end up using $\rho\Delta+\transp{(\rho \Delta)}$ while the
+Dirichlet form is $\rho \Delta + \rho'-\transp{(\rho P)}$ which is
+different, I think...
 
 (Still works for non-overparameterized if $A$ does not couple the image
 of $\Phi$ and its complement...)
+
+Nonlinear GTD2 etc use a function $L$ that depends on $\theta$ (via
+$\Phi$); this adds Hessian terms to the gradient of $L$, and it's not
+obvious how to interpret the local minima of $L$.
 
 \end{document}
