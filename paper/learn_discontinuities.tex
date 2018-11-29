@@ -1,0 +1,47 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath,amssymb}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\bern}[1]{\mathcal{B}\left(#1\right)}
+\newcommand{\gauss}[1]{\mathcal{N}\left(#1\right)}
+\newcommand{\argmax}{\text{amax}}
+\newcommand{\bigO}{O}
+
+\begin{document}
+Consider the advantage updating set of equations in continuous time
+\begin{align}
+	A^*(s, a) &= \max_a A^*(s,a) + \frac{r_t dt + \gamma^{dt} \E_{s_{t+dt}} V^*(s_{t+dt}) - V^*(s_t)}{dt}\\
+	\max_a A^*(s, a) &= 0.
+	\label{eq:adv_up}
+\end{align}
+On ergodic reversible environments, those equations are mostly well defined in
+term of orders of magnitude, as $Q^*(s,a) - V^*(s) = \bigO(dt)$ for all $s, a$.
+However, when facing highly non reversible environments, e.g. episodic
+environments, action state pairs where the advantage between two different actions
+is not of order $dt$ exist, i.e., there can exist $s_0, a_0$ such that
+$Q^*(s_0, a_0) - V^*(s_0) = \bigO(dt)$. In such cases, $A^*(s_0, a_0)$ is infinite,
+and it is doubtful that an algorithm learning parametric approximations of
+$V$ and $A$ based on~\eqref{eq:adv_up} will properly converge.
+
+To palliate this behaviour, when learning parametric approximations of $V^*$ and $A^*$,
+$V_\theta$, $A_\phi$, one can parameterize $A_\phi$ as a mixture of gaussians
+\begin{align}
+	A_\phi(s, a) = \bern{\mu_\phi(s, a)dt} \frac{\gauss{\tilde{A}_\phi(s, a), 1}}{dt} + \bern{1 - \mu_\phi(s, a)dt} \gauss{\bar{A}_\phi(s, a), 1}
+\end{align}
+where $\bern{p}$ denotes independant bernoulli random variables of parameter $p$, and
+$\gauss{\mu, \sigma}$ independant gaussian random variables of mean $\mu$, variance
+$\sigma$.
+
+Suppose the value of $V^*(s)$ and $V^*(s')$ given on a dataset of transitions.
+We want to compute the likelihood of our model of $A$.
+The likelihood of the model of $A$ on a single datapoint is given by the log likelihood
+of the following mixture density
+\begin{align}
+	&\bern{\mu(s, a)\mu(s, \argmax_{a'} \tilde{A}(s, a')dt^2} \frac{\gauss{\tilde{A}(s, a) - \max_a \tilde{A}(s, a), 2}}{dt} + \nonumber\\
+	&\bern{(1 - \mu(s, a)dt)\mu(s, \argmax_{a'} \tilde{A}(s, a')dt} \frac{\gauss{\bar{A}(s, a)dt - \max_a \tilde{A}(s, a), 1 + dt^2}}{dt} + \nonumber\\
+	&\bern{(1 - \mu(s, a)dt)(1 - \mu(s, \argmax_{a'} \bar{A}(s, a')dt)} \gauss{\bar{A}(s, a) - \max_a \bar{A}(s, a), 2} + \nonumber\\
+	&\bern{\mu(s, a)dt(1 - \mu(s, \argmax_{a'} \bar{A}(s, a')dt)} \frac{\gauss{\tilde{A}(s, a) - \max_a \tilde{A}(s, a), 1 + dt^2}}{dt}
+\end{align}
+from which a gradient based learning procedure can be derived for $A$.
+\end{document}
