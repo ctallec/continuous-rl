@@ -169,7 +169,12 @@ gradient descent of the loss function
 $\transp{(A\theta-b)}A^{-1}(A\theta-b)$. However, we want to apply this
 to matrices $A$ that are not necessarily of this type.
 
-This works only if $A$ is \emph{stable}.
+Under this update for $\theta$, the error $\theta-A^{-1}b$ is updated as
+\begin{equation}
+\theta-A^{-1}b \gets (\Id-\eta A)(\theta-A^{-1}b)
+\end{equation}
+
+This converges if only if $A$ is \emph{stable}.
 
 
 \begin{defi}
@@ -179,6 +184,8 @@ conditions are satisfied:
 \item All the eigenvalues of $A$ have positive real part.
 \item The matrix $(\Id-\eps A)$ has spectral radius $<1$ for small enough
 $\eps$.
+\item For $\eps$ small enough, iterating $\theta\gets (\Id-\eps A)\theta$
+converges to $0$.
 \item The differential equation $\theta'=-A\theta$ converges to $0$ for
 any initial value.
 \item There exists a symmetric, positive definite matrix $L$ (Lyapunov
