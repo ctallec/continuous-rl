@@ -100,7 +100,6 @@ class ContinuousPusherEnv(AbstractPusher):
         return action
 
 
-
 if __name__ == '__main__':
     from pyglet.window import key
 

@@ -4,6 +4,7 @@ import gym
 from envs.wrappers import TimeLimit
 import numpy as np
 from envs.pusher import DiscretePusherEnv, ContinuousPusherEnv
+from envs.hill import HillEnv
 from config import EnvConfig
 from envs.wrappers import WrapContinuousPendulum, WrapPendulum
 from envs.biped import WalkerHardcore
@@ -206,6 +207,9 @@ def make_env(env_config: EnvConfig): # noqa: C901
         # env.model.opt.timestep = dt / env.frame_skip
     elif env_id == 'pusher':
         env = DiscretePusherEnv()
+        env.dt = dt
+    elif env_id == 'hill':
+        env = HillEnv()
         env.dt = dt
     else:
         raise NotImplementedError()
