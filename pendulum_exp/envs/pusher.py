@@ -41,7 +41,7 @@ class AbstractPusher(gym.Env, Env):
 
         action = self.action(action)
         self._x -= action * self.dt
-        return self._x, np.exp(- self._x[0] ** 2), False, None
+        return self._x, np.exp(- self._x[0] ** 2), False, {}
 
     def reset(self):
         # without this, all thread have the same seed

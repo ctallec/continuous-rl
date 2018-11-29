@@ -44,6 +44,7 @@ class ApproximateAdvantagePolicyConfig(NamedTuple):
     weight_decay: float
     policy_lr: float
     optimizer: str
+    mixture: bool
 
 class SampledAdvantagePolicyConfig(NamedTuple):
     batch_size: int
@@ -81,7 +82,7 @@ class EnvConfig(NamedTuple):
 
 
 NoiseConfig = Union[ParameterNoiseConfig, ActionNoiseConfig]
-PolicyConfig = Union[SampledAdvantagePolicyConfig, AdvantagePolicyConfig, ApproximateAdvantagePolicyConfig]
+PolicyConfig = Union[SampledAdvantagePolicyConfig, AdvantagePolicyConfig, ApproximateAdvantagePolicyConfig, DQNConfig]
 
 def read_config(
         args,
@@ -107,13 +108,14 @@ def read_config(
     )
     if args.policy_lr is not None:
         policy_config_dict['policy_lr'] = args.policy_lr
+        policy_config_dict['mixture'] = args.algo == 'mdrau'
         policy_config: PolicyConfig = ApproximateAdvantagePolicyConfig(
             **policy_config_dict)
     elif args.nb_policy_samples is not None:
         policy_config_dict['nb_samples'] = args.nb_policy_samples
         policy_config = SampledAdvantagePolicyConfig(**policy_config_dict)
     else:
-        if args.algo == 'drau':
+        if 'drau' in args.algo:
             policy_config = AdvantagePolicyConfig(**policy_config_dict)
         elif args.algo == 'qlearn':
             policy_config = DQNConfig(

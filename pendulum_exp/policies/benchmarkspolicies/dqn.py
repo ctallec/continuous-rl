@@ -54,7 +54,6 @@ class DQNPolicy(Policy):
         self._cum_loss = 0
         self._log = 100
 
-
     def reset(self):
         # internals
         self._obs = np.array([])
@@ -63,7 +62,6 @@ class DQNPolicy(Policy):
         self._next_obs = np.array([])
         self._done = np.array([])
         self._time_limit = np.array([])
-
 
     def step(self, obs: Arrayable):
         if self._train:
@@ -79,7 +77,7 @@ class DQNPolicy(Policy):
                 next_obs: Arrayable,
                 reward: Arrayable,
                 done: Arrayable,
-                time_limit:Optional[Arrayable]=None):
+                time_limit: Optional[Arrayable]=None):
         if self._train:
             self._count += 1
             self._next_obs = next_obs
@@ -90,7 +88,6 @@ class DQNPolicy(Policy):
             self._sampler.push(
                 self._obs, self._action, self._next_obs, self._reward, self._done, self._time_limit)
             self.learn()
-
 
     def act(self, obs: Arrayable):
         with torch.no_grad():
@@ -113,13 +110,13 @@ class DQNPolicy(Policy):
                     q = self._qnet_function(obs).gather(1, indices.view(-1, 1)).squeeze()
                     target = torch.max(self._target_function(next_obs), dim=1)[0].squeeze()
 
-                    exp_q = reward + self._gamma ** self._dt 
+                    exp_q = reward + self._gamma ** self._dt
                     if self._gamma == 1.:
                         assert (1 - done).all(), "Gamma set to 1. with a potentially episodic problem..."
                         exp_q += target.detach()
                     else:
                         done = arr_to_th(done.astype('float'), self._device)
-                        exp_q += self._gamma ** self._dt * target#.detach()
+                        exp_q += self._gamma ** self._dt * target # .detach()
 
                     loss = (((q - exp_q) ** 2) * weights).mean()
                     self._optimizer.zero_grad()
@@ -136,9 +133,8 @@ class DQNPolicy(Policy):
                 # If not enough data in the buffer, do nothing
                 pass
 
-        if self._count % self._steps_btw_catchup == self._steps_btw_catchup -1:
+        if self._count % self._steps_btw_catchup == self._steps_btw_catchup - 1:
             self._target_function.load_state_dict(self._qnet_function.state_dict())
-
 
     def train(self):
         self._train = True
@@ -159,7 +155,7 @@ class DQNPolicy(Policy):
         return th_to_arr(q - torch.max(q, dim=1))
 
     def load_state_dict(self, state_dict: StateDict):
-        self._optimizers.load_state_dict(state_dict['optimizer'])
+        self._optimizer.load_state_dict(state_dict['optimizer'])
         self._qnet_function.load_state_dict(state_dict['qnet_function'])
         self._target_function.load_state_dict(state_dict['target_function'])
         self._schedulers.load_state_dict(state_dict['schedulers'])

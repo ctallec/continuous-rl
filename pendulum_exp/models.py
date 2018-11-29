@@ -40,8 +40,8 @@ class ContinuousPolicyMLP(MLP, ParametricFunction):
 class ContinuousAdvantageMLP(MLP, ParametricFunction):
     """MLP with 2 inputs, 1 output."""
     def __init__(self, nb_state_feats: int, nb_actions: int,
-                 nb_layers: int, hidden_size: int) -> None:
-        super().__init__(nb_state_feats + nb_actions, 1,
+                 nb_layers: int, hidden_size: int, nb_outputs: int) -> None:
+        super().__init__(nb_state_feats + nb_actions, nb_outputs,
                          nb_layers, hidden_size)
         self._nb_state_feats = nb_state_feats
         self._nb_actions = nb_actions

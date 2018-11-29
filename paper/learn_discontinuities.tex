@@ -44,4 +44,11 @@ of the following mixture density
 	&\bern{\mu(s, a)dt(1 - \mu(s, \argmax_{a'} \bar{A}(s, a')dt)} \frac{\gauss{\tilde{A}(s, a) - \max_a \tilde{A}(s, a), 1 + dt^2}}{dt}
 \end{align}
 from which a gradient based learning procedure can be derived for $A$.
+
+Similarily, in non reversible environments, $V$ can vary extremely quickly, and
+even be non continuous, with gaps of order of magnitude $\frac{1}{1 - \gamma}$.
+A reasonable model to learn such a function is
+\begin{align}
+	V_\theta(s) = \tilde{V}_\theta(s) + \bern(\rho_\theta(s)dt)
+\end{equation}
 \end{document}

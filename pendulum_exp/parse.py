@@ -4,7 +4,7 @@ import argload
 
 def setup_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--algo', type=str, default='drau', choices=['drau', 'qlearn'])
+    parser.add_argument('--algo', type=str, default='drau', choices=['mdrau', 'drau', 'qlearn'])
     parser.add_argument('--dt', type=float, default=.05)
     parser.add_argument('--steps_btw_train', type=int, default=3)
     parser.add_argument('--steps_btw_catchup', type=int, default=10)
@@ -37,7 +37,7 @@ def setup_args():
                         default='sgd')
     parser.add_argument('--noreload', action='store_true')
     parser = argload.ArgumentLoader(parser, to_reload=[
-        'algo', 'dt', 'steps_btw_train', 'steps_btw_catchup', 'env_id', 'noise_type', 
+        'algo', 'dt', 'steps_btw_train', 'steps_btw_catchup', 'env_id', 'noise_type',
         'batch_size', 'hidden_size', 'nb_layers', 'gamma', 'nb_epochs', 'nb_steps',
         'sigma_eval', 'sigma', 'theta', 'nb_train_env', 'nb_eval_env', 'memory_size',
         'learn_per_step', 'cyclic_expliration', 'normalize_state', 'lr', 'time_limit',
