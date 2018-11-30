@@ -70,28 +70,26 @@ the linear regression problem $(\Id-P)\Phi\theta\approx R$ in
 $L^2(\rho)$. However, the matrix on the left is not samplable. We need
 double sampling for that.
 
-Combined with all this, is the problem that a Bellman solution on the
-support of $\rho$ may be very, very far from the global Bellman solution,
-even on the support of $\rho$ (take random walk on a circle, with $\rho$
-being everything but one point: then any linear function solves Bellman
-on the support of $\rho$).
-
 The minimizer of the $L^2(\rho^2)$ error between $R$
 and $(\Id-P)V$ is samplable:
 \begin{equation}
 \transp{\Phi}\transp{(\Id-P)}\rho^2(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho^2
 R
 \end{equation}
-however, the $\rho^2$ is a bit weird... moreover having
-$\transp{\Delta}\Delta$ means we are just facing the double sampling
+however, having
+$\transp{\Delta}\rho^2\Delta$ means we are just facing the double sampling
 problem (we can sample $\transp{(\rho\Delta)}\rho\Delta$, but in practice the sample will always be $0$
 unless we are lucky and select two transitions $s\to s'$ that have the
 same $s$). Even the right-hand-side involves double sampling.
 
-The minimizer of a weird norm $L^2(\rho \Phi\transp{\Phi}\rho)$ is better
-samplable, because now it's enough to sample states \emph{with the same
+If one has access to some features $\Psi$,
+the minimizer of a weird norm $L^2(\rho \Psi\transp{\Psi}\rho)$ is better
+samplable, because now in double sampling it's enough to sample states \emph{which share
+some
 features}, not just the exact same state. This is basically what happens
-in the linear case. The features should not be orthogonal. Should use a
+in the linear case, with $\Psi=\Phi$. In the nonlinear case taking
+$\Psi=\Phi$ is not acceptable because $\Phi$ depends on $\theta$, so the
+objective is not a fixed norm to be minimized. The features $\Psi$ should not be orthogonal. Should use a
 hash of states instead? Or apply ReLU to orthogonal features.
 
 The Dirichlet norm associated with $\rho$ is $\E_{ss'}
@@ -140,6 +138,12 @@ match) but does not make sense in continuous state spaces. Use a model of
 transitions only for the correction? TODO: use the same trick on the
 right? No, because the $R$ term doesn't go away and I'd rather have a
 correction that vanishes when $\Delta V-R$ is small.
+
+[Combined with all these problems, is the problem that a Bellman solution on the
+support of $\rho$ may be very, very far from the global Bellman solution,
+even on the support of $\rho$ (take random walk on a circle, with $\rho$
+being everything but one point: then any linear function solves Bellman
+on the support of $\rho$).]
 
 \bigskip
 
