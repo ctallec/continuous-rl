@@ -17,12 +17,13 @@ from the policy. Therefore the policy had better have good features. Thus
 the performance of Reinforce may improve significantly by providing
 enhanced features to the policy, eg features coming from an auto-encoder
 or world model. (I think this applies to all algorithms, actually, and
-could be quite important.)
+could be quite important.) On-policy only.
 
 \item TD(1) then policy gradient or a variant of policy gradient.
+On-policy only. (a2c, a3c.)
 
 \item TD(1) trained on a model of the reward, then some form of policy
-gradient.
+gradient. On-policy.
 
 \item 4?
 \end{enumerate}
