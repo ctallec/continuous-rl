@@ -1,0 +1,36 @@
+\documentclass[11pt,a4paper]{article}
+\input{header.en.tex}
+
+
+\begin{document}
+Let us gather a few baselines for continuous-time RL, starting with the
+most basic. The baselines below have no problem with the continuous-time
+limit (provided $\gamma<1$).
+
+All to be tested with the same exploration strategies etc. (I want to
+test how much the problem lies with solving Bellman.)
+
+\begin{enumerate}
+
+\item Reinforce (online version). High variance. All generalization comes
+from the policy. Therefore the policy had better have good features. Thus
+the performance of Reinforce may improve significantly by providing
+enhanced features to the policy, eg features coming from an auto-encoder
+or world model. (I think this applies to all algorithms, actually, and
+could be quite important.)
+
+\item TD(1) then policy gradient or a variant of policy gradient.
+
+\item TD(1) trained on a model of the reward, then some form of policy
+gradient.
+
+\item 4?
+\end{enumerate}
+
+Baselines that should not (in principle) pass to the limit:
+\begin{itemize}
+\item All fashionable deep RL algorithms, DQN, TRPO, PPO,...
+\item DPG when applicable
+\end{itemize}
+
+\end{document}
