@@ -143,7 +143,7 @@ class SharedAdvantagePolicy(Policy):
 
     def log_stats(self):
         if self._stats_obs is None:
-            self._stats_obs, self._stats_actions, _, _, _, _, _ = self._sampler.sample()
+            self._stats_obs, self._stats_actions, _, _, _, _, _ = self._sampler.sample(to_observe=False)
 
         with torch.no_grad():
             V, actions = self._get_stats()

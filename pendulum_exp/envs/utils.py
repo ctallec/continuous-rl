@@ -211,6 +211,9 @@ def make_env(env_config: EnvConfig): # noqa: C901
     elif env_id == 'hill':
         env = HillEnv()
         env.dt = dt
+    elif env_id == 'continuous_hill':
+        env = HillEnv(discrete=False)
+        env.dt = dt
     else:
         raise NotImplementedError()
     if time_limit is not None:

@@ -3,9 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from abstract import Policy, Env
 from policies import ContinuousAdvantagePolicy
+from policies.mixture import ContinuousAdvantageMixturePolicy
 from envs.vecenv import SubprocVecEnv
+from envs.hill import HillEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv
+from convert import th_to_arr
 from gym.envs.classic_control import PendulumEnv
+from gym.spaces import Box
 
 def specific_evaluation(
         epoch: int,
@@ -52,4 +56,42 @@ def specific_evaluation(
         plt.subplot(122)
         plt.imshow(vs, origin='lower')
         plt.colorbar()
+        plt.pause(.1)
+    elif isinstance(env.envs[0].unwrapped, HillEnv):
+        nb_pixels = 50
+        state_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
+
+        mixture = isinstance(policy, ContinuousAdvantageMixturePolicy)
+        if mixture:
+            nb_plots = 4
+        else:
+            nb_plots = 3
+
+        vs = policy.value(state_space)
+        actions = policy.step(state_space).squeeze()
+
+        plt.clf()
+        plt.subplot(1, nb_plots, 1)
+        if mixture:
+            mean_v, _, logpi_v = policy.compute_values(state_space, None, None)
+            v_macro = th_to_arr(mean_v).squeeze()[:, 0]
+            v_micro = th_to_arr(mean_v).squeeze()[:, 1]
+            pi_v = th_to_arr(logpi_v.exp())[:, 0]
+            plt.plot(state_space, vs)
+            plt.plot(state_space, v_macro)
+            plt.plot(state_space, v_micro)
+            plt.subplot(1, nb_plots, nb_plots)
+            plt.plot(state_space, pi_v)
+        else:
+            plt.plot(state_space, vs)
+        plt.subplot(1, nb_plots, 2)
+        plt.plot(state_space, actions)
+        if isinstance(env.envs[0].unwrapped.action_space, Box): # type: ignore
+            action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
+            states, actions = np.meshgrid(state_space, action_space)
+            states = states[..., np.newaxis]
+            actions = actions[..., np.newaxis]
+            adv = policy.advantage(states, actions).squeeze()
+            plt.subplot(1, nb_plots, 3)
+            plt.imshow(adv)
         plt.pause(.1)
