@@ -67,8 +67,8 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
             adv - torch.stack([max_adv[..., 1], max_adv[..., 0]], dim=-1)],
             dim=-1) # (b, 4)
         sigmas = arr_to_th([[
-            np.sqrt(2), np.sqrt(2) * self._dt,
-            np.sqrt(1 + self._dt ** 2), np.sqrt(1 + self._dt ** 2)]], self._device) # (1, 4)
+            np.sqrt(2 * self._dt), np.sqrt(2) * self._dt,
+            np.sqrt(self._dt + self._dt ** 2), np.sqrt(self._dt + self._dt ** 2)]], self._device) # (1, 4)
         logpis = torch.cat([
             logpi + max_logpi,
             logpi + torch.stack([max_logpi[..., 1], max_logpi[..., 0]], dim=-1)],
