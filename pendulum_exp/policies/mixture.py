@@ -96,32 +96,39 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
                                      [[np.log(self._dt), 1]]) # (b, 4)
         return (adv * logpi.exp()).sum(-1)
 
-    def compute_values(self, obs: Arrayable, next_obs: Arrayable, done: Tensor):
+    def compute_values(self, obs: Arrayable, next_obs: Optional[Arrayable], done: Optional[Tensor]):
         mean, logpi = self.to_mixture(
             self._val_function(obs),
             [[1 / (1 - self._gamma), 1]],
             [[np.log(self._dt), 1]])
-        next_v, next_logpi = self.to_mixture(
-            self._val_function(next_obs),
-            [[1 / (1 - self._gamma), 1]],
-            [[np.log(self._dt), 1]])
-        ref_v, ref_logpi = self.to_mixture(
-            self._val_function(self._sampler.reference_obs),
-            [[1 / (1 - self._gamma), 1]], [[np.log(self._dt), 1]])
-        next_v, next_logpi = next_v.detach(), next_logpi.detach()
-        ref_v, ref_logpi = ref_v.detach(), ref_logpi.detach()
-        ref_v = (ref_v * ref_logpi.exp()).sum(dim=-1)
-        mean_v = ref_v.mean()
+        if next_obs is not None and done is not None:
+            next_v, next_logpi = self.to_mixture(
+                self._val_function(next_obs),
+                [[1 / (1 - self._gamma), 1]],
+                [[np.log(self._dt), 1]])
+            ref_v, ref_logpi = self.to_mixture(
+                self._val_function(self._sampler.reference_obs),
+                [[1 / (1 - self._gamma), 1]], [[np.log(self._dt), 1]])
+            next_v, next_logpi = next_v.detach(), next_logpi.detach()
+            ref_v, ref_logpi = ref_v.detach(), ref_logpi.detach()
+            ref_v = (ref_v * ref_logpi.exp()).sum(dim=-1)
+            mean_v = ref_v.mean()
+            next_v = (next_v * next_logpi.exp()).sum(dim=-1) * (1 - done) -\
+                done * mean_v * self._gamma / (1 - self._gamma)
 
         sigma = arr_to_th([[
             1, np.sqrt(self._dt)
         ]], self._device)
 
         v = (mean * logpi.exp()).sum(dim=-1)
-        next_v = (next_v * next_logpi.exp()).sum(dim=-1) * (1 - done) -\
-            done * mean_v * self._gamma / (1 - self._gamma)
 
-        return mean.unsqueeze(-1), sigma.unsqueeze(-1), logpi, v, next_v, mean_v
+        if next_obs is not None and done is not None:
+            return mean.unsqueeze(-1), sigma.unsqueeze(-1), logpi, v, next_v, mean_v
+
+        # very hacky ...
+        # mean[:, 1] = (1 - self._dt) * mean[:, 1].detach() + mean[:, 1] * self._dt
+
+        return mean.unsqueeze(-1), sigma.unsqueeze(-1), logpi
 
     def learn(self):
         for net in self.networks():
