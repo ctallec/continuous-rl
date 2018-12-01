@@ -1,5 +1,5 @@
 """Policies subpackage."""
-from typing import Tuple
+from typing import Tuple, Type, Any
 from gym import Space
 from gym.spaces import Discrete, Box
 from abstract import Policy
@@ -14,7 +14,7 @@ from config import NoiseConfig, PolicyConfig
 from config import SampledAdvantagePolicyConfig, ApproximateAdvantagePolicyConfig
 from config import AdvantagePolicyConfig, DQNConfig
 
-def setup_policy(observation_space: Space,
+def setup_policy(observation_space: Space, # flake8: noqa
                  action_space: Space,
                  policy_config: PolicyConfig,
                  nb_layers: int,
@@ -28,7 +28,7 @@ def setup_policy(observation_space: Space,
     # assume observation space has shape (F,) for now
     nb_state_feats = observation_space.shape[0]
 
-    if hasattr(policy_config, 'mixture') and policy_config.mixture:
+    if hasattr(policy_config, 'mixture') and policy_config.mixture: # type: ignore
         nb_outputs = 4
     else:
         nb_outputs = 1
@@ -84,7 +84,7 @@ def setup_policy(observation_space: Space,
                 eval_noise = setup_noise(eval_noise_config, **noise_dict).to(device)
 
                 if policy_config.mixture:
-                    policy_cls = ContinuousAdvantageMixturePolicy
+                    policy_cls: Type[Any] = ContinuousAdvantageMixturePolicy
                 else:
                     policy_cls = ContinuousAdvantagePolicy
                 policy = policy_cls(policy_noise=noise, **policy_dict)

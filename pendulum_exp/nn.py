@@ -45,7 +45,7 @@ def gmm_loss(batch: Tensor,
     return - log_prob
 
 class Scale(torch.nn.Module, ParametricFunction):
-    def __init__(self, core: ParametricFunction, scale: Tuple[float, ...]):
+    def __init__(self, core: ParametricFunction, scale: Tuple[float, ...]) -> None:
         super().__init__()
         self._core = core
         assert(self._core.output_shape()[0][0] == len(scale))
@@ -62,7 +62,7 @@ class Scale(torch.nn.Module, ParametricFunction):
         return self._core.output_shape()
 
 class LogSoftmax(torch.nn.Module, ParametricFunction):
-    def __init__(self, core: ParametricFunction):
+    def __init__(self, core: ParametricFunction) -> None:
         super().__init__()
         self._core = core
 
