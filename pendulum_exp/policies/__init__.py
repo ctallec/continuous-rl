@@ -46,7 +46,7 @@ def setup_policy(observation_space: Space, # flake8: noqa
                   ApproximateAdvantagePolicyConfig)):
         net_dict = dict(nb_layers=nb_layers, hidden_size=hidden_size)
 
-        val_function = maker(MLP, nb_inputs=nb_state_feats, nb_outputs=nb_outputs, **net_dict).to(device)
+        val_function = maker(MLP, nb_inputs=nb_state_feats, nb_outputs=1, **net_dict).to(device)
 
         policy_dict = dict(val_function=val_function, policy_config=policy_config, device=device)
 

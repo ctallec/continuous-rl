@@ -42,7 +42,7 @@ def main(logdir: str, hidden_size: int, nb_layers: int, nb_eval_env: int,
         state_dict = torch.load(policy_file)
         R = state_dict["return"]
         info(f"Loading policy with return {R}...")
-        eval_policy.load_state_dict(torch.load(policy_file))
+        eval_policy.load_state_dict(state_dict)
     else:
         raise ValueError(f"{policy_file} does not exists, no policy available...")
 

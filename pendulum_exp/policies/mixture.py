@@ -85,10 +85,7 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
         return adv, max_adv
 
     def _value(self, obs: Arrayable):
-        mean, logpi = self.to_mixture(self._val_function(obs),
-                                      [[1 / (1 - self._gamma), 1]],
-                                      [[np.log(self._dt), 1]])
-        return (mean * logpi.exp()).sum(-1)
+        return self._val_function(obs)
 
     def _advantage(self, obs: Arrayable, action: Arrayable):
         adv, logpi = self.to_mixture(self._adv_function(obs, action),
@@ -97,38 +94,17 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
         return (adv * logpi.exp()).sum(-1)
 
     def compute_values(self, obs: Arrayable, next_obs: Optional[Arrayable], done: Optional[Tensor]):
-        mean, logpi = self.to_mixture(
-            self._val_function(obs),
-            [[1 / (1 - self._gamma), 1]],
-            [[np.log(self._dt), 1]])
+        v = self._val_function(obs).squeeze()
         if next_obs is not None and done is not None:
-            next_v, next_logpi = self.to_mixture(
-                self._val_function(next_obs),
-                [[1 / (1 - self._gamma), 1]],
-                [[np.log(self._dt), 1]])
-            ref_v, ref_logpi = self.to_mixture(
-                self._val_function(self._sampler.reference_obs),
-                [[1 / (1 - self._gamma), 1]], [[np.log(self._dt), 1]])
-            next_v, next_logpi = next_v.detach(), next_logpi.detach()
-            ref_v, ref_logpi = ref_v.detach(), ref_logpi.detach()
-            ref_v = (ref_v * ref_logpi.exp()).sum(dim=-1)
-            mean_v = ref_v.mean()
-            next_v = (next_v * next_logpi.exp()).sum(dim=-1) * (1 - done) -\
+            ref_v = self._val_function(self._sampler.reference_obs)
+            mean_v = ref_v.mean().detach()
+            next_v = self._val_function(next_obs).detach().squeeze()
+            next_v = next_v * (1 - done) -\
                 done * mean_v * self._gamma / (1 - self._gamma)
 
-        sigma = arr_to_th([[
-            1, np.sqrt(self._dt)
-        ]], self._device)
+            return v, next_v, mean_v
 
-        v = (mean * logpi.exp()).sum(dim=-1)
-
-        if next_obs is not None and done is not None:
-            return mean.unsqueeze(-1), sigma.unsqueeze(-1), logpi, v, next_v, mean_v
-
-        # very hacky ...
-        # mean[:, 1] = (1 - self._dt) * mean[:, 1].detach() + mean[:, 1] * self._dt
-
-        return mean.unsqueeze(-1), sigma.unsqueeze(-1), logpi
+        return v
 
     def learn(self):
         for net in self.networks():
@@ -149,13 +125,15 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
                     done = arr_to_th(check_array(done).astype('float'), self._device)
 
                     # compute values
-                    mu_v, sigma_v, logpi_v, v, next_v, mean_v = self.compute_values(obs, next_obs, done)
+                    v, next_v, mean_v = self.compute_values(obs, next_obs, done)
 
                     # compute advantages
-                    mu_adv, sigma_adv, logpi_adv, adv, max_adv = self.compute_mixture_advantages(obs, action)
+                    mu_adv, sigma_adv, logpi_adv, adv, max_adv = \
+                        self.compute_mixture_advantages(obs, action)
 
                     # compute advantage loss
-                    expected_adv = reward * self._dt + self._gamma ** self._dt * next_v - v.detach() -\
+                    expected_adv = reward * self._dt + \
+                        self._gamma ** self._dt * next_v - v.detach() -\
                         (1 - done) * self._gamma * mean_v * self._dt
                     expected_adv = expected_adv.detach()
                     adv_loss = gmm_loss(expected_adv.unsqueeze(-1), mu_adv, sigma_adv, logpi_adv, reduce=False) * weights
@@ -166,7 +144,7 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
                     expected_v = reward * self._dt + self._gamma ** self._dt * next_v -\
                         (1 - done) * self._gamma * mean_v * self._dt + max_adv - adv
                     expected_v = expected_v.detach()
-                    value_loss = gmm_loss(expected_v.unsqueeze(-1), mu_v, sigma_v, logpi_v, reduce=False) * weights
+                    value_loss = ((v - expected_v) / self._dt) ** 2 * weights
 
                     self.optimize_value(adv_loss, value_loss)
                     self.optimize_policy(max_adv)
@@ -194,7 +172,7 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
         self._optimizers[1].step()
 
         # logging
-        self._cum_loss += losses[0].mean().item()
+        self._cum_loss += losses[1].mean().item()
         self._log_step += 1
         self._learn_count += 1
 

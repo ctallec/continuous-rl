@@ -72,18 +72,7 @@ def specific_evaluation(
 
         plt.clf()
         plt.subplot(1, nb_plots, 1)
-        if mixture:
-            mean_v, _, logpi_v = policy.compute_values(state_space, None, None)
-            v_macro = th_to_arr(mean_v).squeeze()[:, 0]
-            v_micro = th_to_arr(mean_v).squeeze()[:, 1]
-            pi_v = th_to_arr(logpi_v.exp())[:, 0]
-            plt.plot(state_space, vs)
-            plt.plot(state_space, v_macro)
-            plt.plot(state_space, v_micro)
-            plt.subplot(1, nb_plots, nb_plots)
-            plt.plot(state_space, pi_v)
-        else:
-            plt.plot(state_space, vs)
+        plt.plot(state_space, vs)
         plt.subplot(1, nb_plots, 2)
         plt.plot(state_space, actions)
         if isinstance(env.envs[0].unwrapped.action_space, Box): # type: ignore
@@ -92,6 +81,12 @@ def specific_evaluation(
             states = states[..., np.newaxis]
             actions = actions[..., np.newaxis]
             adv = policy.advantage(states, actions).squeeze()
+            if mixture:
+                _, _, logpi, _, _ = \
+                    policy.compute_mixture_advantages(states, actions)
+                pi = th_to_arr(logpi.exp())[..., 0]
+                plt.subplot(1, nb_plots, nb_plots)
+                plt.imshow(pi)
             plt.subplot(1, nb_plots, 3)
             plt.imshow(adv)
         plt.pause(.1)
