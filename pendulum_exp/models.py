@@ -86,7 +86,7 @@ class CustomBN(nn.Module):
             log(prefix + 'max_mean', self._mean.abs().max(), count) # type: ignore
             log(prefix + 'min_sq_mean', self._squared_mean.min(), count) # type: ignore
             log(prefix + 'max_sq_mean', self._squared_mean.max(), count) # type: ignore
-        std = torch.sqrt(self._squared_mean - self._mean ** 2 + self._eps) # type: ignore
+        std = torch.sqrt(torch.clamp(self._squared_mean - self._mean ** 2, min=1e-2)) # type: ignore
         output = (t_input - self._mean) / std # type: ignore
         with torch.no_grad():
             self._mean = (self._mean * self._count + batch_size * t_input.mean(dim=0)) / (self._count + batch_size) # type: ignore
