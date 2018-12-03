@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 from abstract import ParametricFunction, Tensorable, Shape
 from convert import check_tensor
+from mylog import log
+from uuid import uuid4
 
 class MLP(nn.Module, ParametricFunction):
     """MLP"""
@@ -68,10 +70,22 @@ class CustomBN(nn.Module):
         self.register_buffer('_mean', torch.zeros(nb_feats, requires_grad=False))
         self.register_buffer('_squared_mean', torch.ones(nb_feats, requires_grad=False))
 
+        # debug: we are going to log _count, _mean and _squared_mean
+
     def forward(self, *inputs: Tensorable) -> torch.Tensor:
         device = self._mean.device # type: ignore
         t_input = check_tensor(inputs[0], device)
         batch_size = t_input.size(0)
+
+        # log
+        count = int(self._count.item())
+        if (count // batch_size) % 100 == 99:
+            prefix = 'stats/' + str(uuid4()) + '_'
+            log(prefix + 'count', count, count)
+            log(prefix + 'min_mean', self._mean.abs().min(), count) # type: ignore
+            log(prefix + 'max_mean', self._mean.abs().max(), count) # type: ignore
+            log(prefix + 'min_sq_mean', self._squared_mean.min(), count) # type: ignore
+            log(prefix + 'max_sq_mean', self._squared_mean.max(), count) # type: ignore
         std = torch.sqrt(self._squared_mean - self._mean ** 2 + self._eps) # type: ignore
         output = (t_input - self._mean) / std # type: ignore
         with torch.no_grad():
