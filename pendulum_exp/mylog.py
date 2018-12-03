@@ -16,7 +16,7 @@ class KVTWritter(ABC):
         pass
 
     @abstractmethod
-    def set_dir(self, logdir: str, reload: bool=False):
+    def set_dir(self, logdir: str, reload: bool = False):
         pass
 
     @abstractmethod
@@ -40,7 +40,7 @@ class PickleKVTWriter(KVTWritter):
             self._count = 0
             self.dump()
 
-    def set_dir(self, logdir: str, reload: bool=True):
+    def set_dir(self, logdir: str, reload: bool = True):
         self._dir = logdir
         log_file = join(self._dir, 'logs.pkl')
         if isfile(log_file):
@@ -66,7 +66,7 @@ class TensorboardKVTWriter(KVTWritter):
         self._writer = None
         self._dir = None
 
-    def set_dir(self, logdir: str, reload: bool=True):
+    def set_dir(self, logdir: str, reload: bool = True):
         self._dir = join(logdir, 'train')
         try:
             makedirs(self._dir)
@@ -108,11 +108,12 @@ class Logger:
             makedirs(video_dir)
         np.savez(join(video_dir, f"{tag}_{timestamp}.npz"), frames)
 
-    def set_dir(self, logdir: str, reload: bool=True):
+    def set_dir(self, logdir: str, reload: bool = True):
+        self._dir = logdir
         for writer in self._writers:
             writer.set_dir(logdir, reload)
 
-def logto(logdir: str, reload: bool=True):
+def logto(logdir: str, reload: bool = True):
     assert Logger.CURRENT is not None
     Logger.CURRENT.set_dir(logdir, reload)
 

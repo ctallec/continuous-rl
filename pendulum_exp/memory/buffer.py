@@ -72,7 +72,7 @@ class MemorySampler:
             self._full = True
         self._cur = (self._cur + nb_envs) % (self._true_size)
 
-    def sample(self, idxs: Optional[Arrayable]=None, to_observe: bool=True) -> Tuple[Arrayable, ...]:
+    def sample(self, idxs: Optional[Arrayable] = None, to_observe: bool = True) -> Tuple[Arrayable, ...]:
         size = self._true_size if self._full else self._cur
         if idxs is None:
             idxs = np.random.randint(0, size, self._batch_size)
@@ -93,6 +93,10 @@ class MemorySampler:
         if self._true_size == -1:
             raise IndexError()
         return self._ref_obs
+
+    @reference_obs.setter
+    def reference_obs(self, ref_obs):
+        self._ref_obs = ref_obs
 
 class PrioritizedMemorySampler:
     def __init__(self, size: int, batch_size: int,
@@ -131,7 +135,7 @@ class PrioritizedMemorySampler:
         for _ in check_array(obs):
             self._sum_tree.add(self._max_priority ** self._alpha)
 
-    def sample(self, to_observe: bool=True) -> Tuple[Arrayable, ...]:
+    def sample(self, to_observe: bool = True) -> Tuple[Arrayable, ...]:
         if to_observe:
             assert self._idxs is None, "No observe after sample ..."
         idxs, priorities = zip(*[self._sum_tree.sample() for _ in range(self._batch_size)])

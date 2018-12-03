@@ -18,7 +18,7 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
                  policy_function: ParametricFunction, policy_noise: Noise,
                  device) -> None:
         super().__init__(policy_config, val_function, device)
-        self._adv_function = adv_function
+        self._adv_function = adv_function.to(device)
         self._policy_function = policy_function.to(device)
         self._policy_noise = policy_noise
 
@@ -230,6 +230,7 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
         self._schedulers[0].load_state_dict(state_dict['advantage_scheduler'])
         self._schedulers[1].load_state_dict(state_dict['value_scheduler'])
         self._schedulers[2].load_state_dict(state_dict['policy_scheduler'])
+        self._sampler.reference_obs = state_dict["reference_point"]
         self._learn_count = state_dict['learn_count']
 
     def state_dict(self) -> StateDict:
@@ -244,7 +245,8 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
             "value_scheduler": self._schedulers[1].state_dict(),
             "policy_scheduler": self._schedulers[2].state_dict(),
             "iteration": self._schedulers[0].last_epoch,
-            "learn_count": self._learn_count
+            "learn_count": self._learn_count,
+            "reference_point": self._sampler.reference_obs
         }
 
     def networks(self):

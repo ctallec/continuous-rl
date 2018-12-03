@@ -38,10 +38,10 @@ def evaluate(
         epoch: int,
         env: Env,
         policy: Policy,
-        time_limit: Optional[float]=None,
-        eval_return: bool=False,
-        progress_bar: bool=False,
-        video: bool=False):
+        time_limit: Optional[float] = None,
+        eval_return: bool = False,
+        progress_bar: bool = False,
+        video: bool = False):
     """ Evaluate. """
     log_gap = int(.1 / dt)
     policy.eval()
@@ -111,7 +111,7 @@ def main(
         R = state_dict["return"]
         cur_e = state_dict["epoch"]
         info(f"Loading policy with return {R} at epoch {cur_e}...")
-        policy.load_state_dict(torch.load(policy_file))
+        policy.load_state_dict(state_dict)
     log_gap = int(.1 / env_config.dt)
 
     for e in range(cur_e, nb_epochs):
@@ -122,7 +122,7 @@ def main(
             e, eval_env,
             eval_policy,
             env_config.time_limit,
-            eval_return=e % log_gap == log_gap - 1
+            eval_return=e % log_gap == log_gap - 1,
         )
         if new_R is not None:
             policy.observe_evaluation(new_R)

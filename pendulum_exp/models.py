@@ -61,10 +61,10 @@ class ContinuousAdvantageMLP(MLP, ParametricFunction):
         return ((self._nb_outputs,),)
 
 class CustomBN(nn.Module):
-    def __init__(self, nb_feats: int, eps: float=1e-5) -> None:
+    def __init__(self, nb_feats: int, eps: float = 1e-5) -> None:
         super().__init__()
-        self._count = 0
         self._eps = eps
+        self.register_buffer('_count', torch.zeros(1, requires_grad=False))
         self.register_buffer('_mean', torch.zeros(nb_feats, requires_grad=False))
         self.register_buffer('_squared_mean', torch.ones(nb_feats, requires_grad=False))
 

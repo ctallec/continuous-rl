@@ -60,14 +60,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     log_filename = os.path.join(args.logdir, 'logs.pkl')
-    if os.path.isfile(log_filename):
-        with open(log_filename, 'rb') as f:
-            logs = pickle.load(f)
-
-        if args.plots:
-            plots(logs, os.path.join(args.logdir, 'plots.eps'))
-    else:
-        raise ValueError(f'{log_filename} is not a file')
 
     if args.video:
         if args.xvfb:
@@ -77,5 +69,14 @@ if __name__ == '__main__':
         cmd += ['python', 'eval.py', '--logdir', args.logdir, '--sigma_eval',
                 str(args.sigma_eval), '--overwrite']
         call(' '.join(cmd), shell=True)
+
+    if os.path.isfile(log_filename):
+        with open(log_filename, 'rb') as f:
+            logs = pickle.load(f)
+
+        if args.plots:
+            plots(logs, os.path.join(args.logdir, 'plots.eps'))
+    else:
+        raise ValueError(f'{log_filename} is not a file')
 
     summary(logs)
