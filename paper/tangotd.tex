@@ -54,101 +54,7 @@ well-sampled ($\rho>0$) this implies $(\Id-P)V=R$. All terms in this
 equation are \emph{samplable}: we can sample from $\rho R$ and from
 $\rho(\Id-P)$.
 
-\paragraph{Minimizers of errors.}
-A local minimizer of the $L^2(\rho)$ error between $V$ and
-$(\Id-P)^{-1}R$ solves
-\begin{equation}
-\transp{\Phi} \rho V=\transp{\Phi}\rho (\Id-P)^{-1} R
-\end{equation}
-which is not quite the same as the above. A local minimizer of the
-$L^2(\rho)$ error between $(\Id-P)V$ and $R$ is
-\begin{equation}
-\transp{\Phi}\transp{(\Id-P)}\rho(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho R
-\end{equation}
-and in the linear case $V=\Phi\theta$, this is the standard solution to
-the linear regression problem $(\Id-P)\Phi\theta\approx R$ in
-$L^2(\rho)$. However, the matrix on the left is not samplable. We need
-double sampling for that.
 
-The minimizer of the $L^2(\rho^2)$ error between $R$
-and $(\Id-P)V$ is samplable:
-\begin{equation}
-\transp{\Phi}\transp{(\Id-P)}\rho^2(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho^2
-R
-\end{equation}
-however, having
-$\transp{\Delta}\rho^2\Delta$ means we are just facing the double sampling
-problem (we can sample $\transp{(\rho\Delta)}\rho\Delta$, but in practice the sample will always be $0$
-unless we are lucky and select two transitions $s\to s'$ that have the
-same $s$). Even the right-hand-side involves double sampling.
-
-If one has access to some features $\Psi$,
-the minimizer of a weird norm $L^2(\rho \Psi\transp{\Psi}\rho)$ is better
-samplable, because now in double sampling it's enough to sample states \emph{which share
-some
-features}, not just the exact same state. This is basically what happens
-in the linear case, with $\Psi=\Phi$. In the nonlinear case taking
-$\Psi=\Phi$ is not acceptable because $\Phi$ depends on $\theta$, so the
-objective is not a fixed norm to be minimized. The features $\Psi$ should not be orthogonal. Should use a
-hash of states instead? Or apply ReLU to orthogonal features.
-
-The Dirichlet norm associated with $\rho$ is $\E_{ss'}
-(f(s)-f(s'))^2$. Its matrix is $\rho+\rho'-\rho P-\transp{(\rho P)}$ where
-$\rho'$ is the distribution of $s'$ (and is samplable).
-A local minimizer of the Dirichlet error between $V$ and
-$(\Id-P)^{-1}R$ solves
-\begin{equation}
-\transp{\Phi} (\rho+\rho'-\rho P-\transp{(\rho P)})(V-(\Id-P)^{-1}R)=0
-\end{equation}
-If $\rho$ is the stationary distribution $\mu$ and $P$ is reversible, one
-has $\transp{(\mu P)}=\mu P$ and $\rho'=\mu$ so $\rho+\rho'-\rho P-\transp{(\rho
-P)}=2\mu(\Id-P)$ and this is equivalent to
-\begin{equation}
-\transp{\Phi}\mu ((\Id-P)V-R)=0
-\end{equation}
-namely, the same as a fixed point of TD.
-
-Instead of applying the Dirichlet norm to $(V-(\Id-P)^{-1}R)$, one can
-apply the inverse Dirichlet norm to $((\Id-P)V-R)$. When $P$ is
-reversible and $\rho=\mu$ this
-is the same. One tries to minimize
-$\transp{((\Id-P)V-R)}\rho\Dir^{-1}\rho((\Id-P)V-R)$ where
-$\Dir\deq \rho+\rho'-\rho P-\transp{(\rho P)}$ as above, and use
-TANGO to invert $\Dir$. However this suffers again from a double
-sampling problem, in several places. Still, this can be rewritten as a
-correction to TD where only the correction suffers from double
-sampling/large variance. Namely, the gradient of the above with respect
-to $\theta$ is $\transp{\Phi}\transp{(\rho\Delta)} \Dir^{-1}\rho(\Delta V-R)$. Since
-$\rho\Delta$ is half of $\Dir$, this gradient is 
-\begin{gather}
-\transp{\Phi}\transp{(\rho\Delta)} \Dir^{-1}\rho(\Delta V-R)=
-\\
-\frac12\transp{\Phi}(\transp{(\rho \Delta)}+\rho'-\rho P)\Dir^{-1}\rho(\Delta
-V-R)+\frac12 \transp{\Phi}(\transp{(\rho \Delta)}+\rho P-\rho')\Dir^{-1}\rho(\Delta
-V-R)
-\\=\frac12\transp{\Phi}\rho(\Delta
-V-R)+\frac12 \transp{\Phi}(\transp{(\rho \Delta)}+\rho P-\rho')\Dir^{-1}\rho(\Delta
-V-R)
-\end{gather}
-the first part of which is TD. Thus one can write a correction to TD such
-that only the correction suffers from double-sampling. The correction vanishes for reversible
-chains. The double sampling can be simulated with high variance in finite
-state spaces (just take samples from $P$ and $\transp{P}$ until they
-match) but does not make sense in continuous state spaces. Use a model of
-transitions only for the correction? TODO: use the same trick on the
-right? No, because the $R$ term doesn't go away and I'd rather have a
-correction that vanishes when $\Delta V-R$ is small.
-
-[Combined with all these problems, is the problem that a Bellman solution on the
-support of $\rho$ may be very, very far from the global Bellman solution,
-even on the support of $\rho$ (take random walk on a circle, with $\rho$
-being everything but one point: then any linear function solves Bellman
-on the support of $\rho$).]
-
-\bigskip
-
-TD is the only one of those fixed point equations that is
-\emph{samplable} given that we can sample $\rho$, $\rho P$ and $\rho R$.
 Thus, from now on we are going to focus on solving
 \begin{equation}
 \transp{\Phi}\rho (\Id-P)V=\transp{\Phi}\rho R
@@ -167,8 +73,11 @@ obvious way to solve $A\theta=b$ via a stochastic gradient method is
 \begin{equation}
 \theta\gets \theta - \eta (A\theta-b)
 \end{equation}
-using samples for $A$ and $b$.
-This is TD. If $A$ is symmetric positive definite, this is also the
+using samples for $A$ and $b$: the only fixed point solves $A\theta=b$.
+TD does exactly this, 
+with $A=\transp{\Phi}\rho(\Id-P)\Phi$ and $b=\transp{\Phi}\rho R$.
+
+If $A$ is symmetric positive definite, this is also the
 gradient descent of the loss function
 $\transp{(A\theta-b)}A^{-1}(A\theta-b)$. However, we want to apply this
 to matrices $A$ that are not necessarily of this type.
@@ -186,9 +95,9 @@ A matrix $A$ is \emph{stable} if one of the following equivalent
 conditions are satisfied:
 \begin{itemize}
 \item All the eigenvalues of $A$ have positive real part.
-\item The matrix $(\Id-\eps A)$ has spectral radius $<1$ for small enough
-$\eps$.
-\item For $\eps$ small enough, iterating $\theta\gets (\Id-\eps A)\theta$
+\item The matrix $(\Id-\eta A)$ has spectral radius $<1$ for small enough
+$\eta$.
+\item For $\eta$ small enough, iterating $\theta\gets (\Id-\eta A)\theta$
 converges to $0$.
 \item The differential equation $\theta'=-A\theta$ converges to $0$ for
 any initial value.
@@ -505,5 +414,109 @@ and
 \end{equation}
 which in general is not positive (take $\rho$ concentrated on a single $s$, and a large value
 for $f(s')$).
+
+\paragraph{Minimizers of errors.} Rather than the fixed point of TD, one
+can look for minimizers of the error in various norms.
+
+A local minimizer of the $L^2(\rho)$ error between $V$ and
+$(\Id-P)^{-1}R$ solves
+\begin{equation}
+\transp{\Phi} \rho V=\transp{\Phi}\rho (\Id-P)^{-1} R
+\end{equation}
+which is not quite the same as the fixed point of TD. We have no access
+to the right-hand-side, indeed, computing $(\Id-P)^{-1} R$ is exactly the
+original problem.
+
+A local minimizer of the
+$L^2(\rho)$ error between $(\Id-P)V$ and $R$ is
+\begin{equation}
+\transp{\Phi}\transp{(\Id-P)}\rho(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho R
+\end{equation}
+and in the linear case $V=\Phi\theta$, this is the standard solution to
+the linear regression problem $(\Id-P)\Phi\theta\approx R$ in
+$L^2(\rho)$. However, the matrix on the left is not samplable: sampling
+$\transp{(\Id-P)}\rho(\Id-P)$ is exactly equivalent to double sampling
+from $s\sim \rho$.
+Indeed, $\transp{P}\rho P$ is equal to $\E[\1_{s' s''}]$ where $s'$ and
+$s''$ are two independent states from a transition $s\to s'$ with $s\sim
+\rho$.
+
+The minimizer of the $L^2(\rho^2)$ error between $R$
+and $(\Id-P)V$ is samplable:
+\begin{equation}
+\transp{\Phi}\transp{(\Id-P)}\rho^2(\Id-P)V=\transp{\Phi}\transp{(\Id-P)}\rho^2
+R
+\end{equation}
+Indeed, denoting $\Delta\deq \Id-P$, we can sample $\rho \Delta$ and
+therefore we can take two samples from $\rho \Delta$ which provides a
+sample from $\transp{(\rho\Delta)}\rho\Delta$. However, the double sampling
+problem resurfaces: Most of the time, taking the product
+$\transp{(\rho\Delta)}\rho\Delta$ from two samples of $\rho
+\Delta$ is $0$ unless we are lucky enough to sample two transitions $s\to
+s'$ with the same $s$.
+Even the right-hand-side $\rho^2 R$ involves double sampling.
+
+If one has access to some features $\Psi$, this can be mitigated:
+the minimizer of the norm $L^2(\rho \Psi\transp{\Psi}\rho)$ is better
+samplable, because now in double sampling it's enough to sample states \emph{which share
+some
+features}, not just the exact same state. This is basically what happens
+in the linear case, with $\Psi=\Phi$. In the nonlinear case taking
+$\Psi=\Phi$ is not acceptable because $\Phi$ depends on $\theta$, so the
+objective is not a fixed norm to be minimized. The features $\Psi$ should not be orthogonal. Should use a
+hash of states instead? Or apply ReLU to orthogonal features.
+
+The Dirichlet norm associated with $\rho$ is $\E_{ss'}
+(f(s)-f(s'))^2$. Its matrix is $\rho+\rho'-\rho P-\transp{(\rho P)}$ where
+$\rho'$ is the distribution of $s'$ (and is samplable).
+A local minimizer of the Dirichlet error between $V$ and
+$(\Id-P)^{-1}R$ solves
+\begin{equation}
+\transp{\Phi} (\rho+\rho'-\rho P-\transp{(\rho P)})(V-(\Id-P)^{-1}R)=0
+\end{equation}
+If $\rho$ is the stationary distribution $\mu$ and $P$ is reversible, one
+has $\transp{(\mu P)}=\mu P$ and $\rho'=\mu$ so $\rho+\rho'-\rho P-\transp{(\rho
+P)}=2\mu(\Id-P)$ and this is equivalent to
+\begin{equation}
+\transp{\Phi}\mu ((\Id-P)V-R)=0
+\end{equation}
+namely, the same as a fixed point of TD.
+
+Instead of applying the Dirichlet norm to $(V-(\Id-P)^{-1}R)$, one can
+apply the inverse Dirichlet norm to $((\Id-P)V-R)$. When $P$ is
+reversible and $\rho=\mu$ this
+is the same. One tries to minimize
+$\transp{((\Id-P)V-R)}\rho\Dir^{-1}\rho((\Id-P)V-R)$ where
+$\Dir\deq \rho+\rho'-\rho P-\transp{(\rho P)}$ as above, and use
+TANGO to invert $\Dir$. However this suffers again from a double
+sampling problem, in several places. Still, this can be rewritten as a
+correction to TD where only the correction suffers from double
+sampling/large variance. Namely, the gradient of the above with respect
+to $\theta$ is $\transp{\Phi}\transp{(\rho\Delta)} \Dir^{-1}\rho(\Delta V-R)$. Since
+$\rho\Delta$ is half of $\Dir$, this gradient is 
+\begin{gather}
+\transp{\Phi}\transp{(\rho\Delta)} \Dir^{-1}\rho(\Delta V-R)=
+\\
+\frac12\transp{\Phi}(\transp{(\rho \Delta)}+\rho'-\rho P)\Dir^{-1}\rho(\Delta
+V-R)+\frac12 \transp{\Phi}(\transp{(\rho \Delta)}+\rho P-\rho')\Dir^{-1}\rho(\Delta
+V-R)
+\\=\frac12\transp{\Phi}\rho(\Delta
+V-R)+\frac12 \transp{\Phi}(\transp{(\rho \Delta)}+\rho P-\rho')\Dir^{-1}\rho(\Delta
+V-R)
+\end{gather}
+the first part of which is TD. Thus one can write a correction to TD such
+that only the correction suffers from double-sampling. The correction vanishes for reversible
+chains. The double sampling can be simulated with high variance in finite
+state spaces (just take samples from $P$ and $\transp{P}$ until they
+match) but does not make sense in continuous state spaces. Use a model of
+transitions only for the correction? TODO: use the same trick on the
+right? No, because the $R$ term doesn't go away and I'd rather have a
+correction that vanishes when $\Delta V-R$ is small.
+
+[Combined with all these problems, is the problem that a Bellman solution on the
+support of $\rho$ may be very, very far from the global Bellman solution,
+even on the support of $\rho$ (take random walk on a circle, with $\rho$
+being everything but one point: then any linear function solves Bellman
+on the support of $\rho$).]
 
 \end{document}
