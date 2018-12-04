@@ -70,8 +70,12 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
 
         # hacky hack to multiply by 1. / dt the contribution of points with high loss
         # to the change of parameters in A
-        max_adv[..., 0] = (1 - 1 / self._dt) * max_adv[..., 0].detach() + max_adv[..., 0] / self._dt
-        adv[..., 0] = (1 - 1 / self._dt) * adv[..., 0].detach() + adv[..., 0] / self._dt
+        max_adv = torch.stack(
+            [(1 - 1 / self._dt) * max_adv[..., 0].detach() + max_adv[..., 0] / self._dt,
+             max_adv[..., 1]], dim=-1)
+        adv = torch.stack(
+            [(1 - 1 / self._dt) * adv[..., 0].detach() + adv[..., 0] / self._dt,
+             adv[..., 1]], dim=-1)
 
         sigmas = arr_to_th([[
             np.sqrt(2), np.sqrt(2) * self._dt,
