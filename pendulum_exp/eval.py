@@ -55,7 +55,10 @@ if __name__ == '__main__':
 
     policy_config, _, eval_noise_config, env_config = read_config(args)
 
-    logto(args.logdir)
+    try:
+        logto(args.logdir)
+    except Exception:
+        pass # Errors can occur with pickle. Still try to output video even if pickle is corrupted
     main(
         logdir=args.logdir, hidden_size=args.hidden_size, nb_layers=args.nb_layers,
         nb_eval_env=args.nb_eval_env, policy_config=policy_config,
