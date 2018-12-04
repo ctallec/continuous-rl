@@ -55,6 +55,8 @@ if __name__ == '__main__':
     parser.add_argument('--video', action='store_true',
                         help='outputs a video as a stack of numpy frames at '
                         'logdir/videos/demo_0.npz')
+    parser.add_argument('--nolog', action='store_true',
+                        help="don't compute log summaries")
     parser.add_argument('--xvfb', action='store_true', help='Use xvfb for rendering.')
 
     args = parser.parse_args()
@@ -70,7 +72,7 @@ if __name__ == '__main__':
                 str(args.sigma_eval), '--overwrite']
         call(' '.join(cmd), shell=True)
 
-    if os.path.isfile(log_filename):
+    if os.path.isfile(log_filename) and not args.nolog:
         with open(log_filename, 'rb') as f:
             logs = pickle.load(f)
 
