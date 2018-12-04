@@ -198,9 +198,12 @@ standard two-point counterexample with a single $\Phi=\transp{(1,2)}$,
 orthonormalizing $\Phi$ is not going to help as $\transp{\Phi}\rho\Phi$
 is just a number.
 
-Still, this is stable
-on-policy (take $L=B^{-1}$, given that $A$ is stable on-policy) or assuming overparameterization. (Indeed in the latter case we
-are back to the tabular case.)
+Still, this is stable in two cases:
+on-policy (take $L=B^{-1}$, given that $A$ is stable on-policy), or
+assuming overparameterization ($\Phi$ invertible: then we can take
+$L=\transp{\Phi}\mu \Phi$ so that $LBA=\transp{\Phi}\mu (\Id-P)\Phi$
+which is positive because $\mu(\Id-P)$ is positive; essentially, if
+$\Phi$ is invertible we are back to the tabular case.)
 % Then we have to prove th
 % $(\transp{\Phi}\Phi)^{-1}\transp{\Phi}\rho(\Id-P)\Phi$ is stable. Taking
 % $L=\transp{\Phi}(\mu/\rho)\Phi$, and computing
