@@ -1,0 +1,170 @@
+%%%%%%%% ICML 2018 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{amsmath, amssymb}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
+\usepackage{xcolor}
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2018} with \usepackage[nohyperref]{icml2018} above.
+\usepackage{hyperref}
+
+\input{macros.tex}
+
+% Use the following line for the initial blind version submitted for review:
+\usepackage{icml2018}
+
+% If accepted, instead use the following line for the camera-ready submission:
+%\usepackage[accepted]{icml2018}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Deep Relativistic Advantage Updating}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{There are no small Advantages:
+	Reinforcement learning in near continuous time
+	with Deep RelAtive Mixture of Advantages
+}
+
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2018
+% package.
+
+% List of affiliations: The first argument should be a (short)
+% identifier you will use later to specify author affiliations
+% Academic affiliations should list Department, University, City, Region, Country
+% Industry affiliations should list Company, City, Region, Country
+
+% You can specify symbols, otherwise they are numbered in order.
+% Ideally, you should not use this facility. Affiliations will be numbered
+% in order of appearance and this is the preferred way.
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+%\icmlauthor{Aeiau Zzzz}{equal,to}
+%\icmlauthor{Bauiu C.~Yyyy}{equal,to,goo}
+%\icmlauthor{Cieua Vvvvv}{goo}
+%\icmlauthor{Iaesut Saoeu}{ed}
+%\icmlauthor{Fiuea Rrrr}{to}
+%\icmlauthor{Tateu H.~Yasehe}{ed,to,goo}
+%\icmlauthor{Aaoeu Iasoh}{goo}
+%\icmlauthor{Buiui Eueu}{ed}
+%\icmlauthor{Aeuia Zzzz}{ed}
+%\icmlauthor{Bieea C.~Yyyy}{to,goo}
+%\icmlauthor{Teoau Xxxx}{ed}
+%\icmlauthor{Eee Pppp}{ed}
+\end{icmlauthorlist}
+
+%\icmlaffiliation{to}{Department of Computation, University of Torontoland, Torontoland, Canada}
+%\icmlaffiliation{goo}{Googol ShallowMind, New London, Michigan, USA}
+%\icmlaffiliation{ed}{School of Computation, University of Edenborrow, Edenborrow, United Kingdom}
+%
+%\icmlcorrespondingauthor{Cieua Vvvvv}{c.vvvvv@googol.com}
+%\icmlcorrespondingauthor{Eee Pppp}{ep@eden.co.uk}
+
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{Reinforcement learning}
+
+\vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[
+
+% This command actually creates the footnote in the first column
+% listing the affiliations and the copyright notice.
+% The command takes one argument, which is text to display at the start of the footnote.
+% The \icmlEqualContribution command is standard text for equal contribution.
+% Remove it (just {}) if you do not need this facility.
+
+%\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+\section{Related work}
+\label{sec:related}
+
+\section{Continuous reinforcement learning and scaling problems}
+\label{sec:continous}
+In the following section, a restrictive framework for near continuous
+time reinforcement learning is introduced, and the main challenges of this
+setup are explained. \RKC{This is not what we want to write: we want to explain
+why current reinforcement learning practices are ill suited for this framework}
+
+\subsection{Framework}
+Consider a fully observable \emph{Markov Decision Process} defined by the following
+transitions and rewards
+\begin{align}
+	s_{t + \deltat} &= s_t + F(s_t, a_t) \deltat + \Sigma(s_t, a_t) \deltabt\\
+	r_{t} &= \reward(s_t, a_t) \deltat + \Sigma_r(s_t, a_t) \deltabt^r
+\end{align}
+where the $s$'s are $n$-dimensional vectors, $F(s_t, a_t)$ is a $n$-dimensional
+drift coeficient, $\Sigma(s_t, a_t)$ is a $n \times n$ diffusion matrix,
+$\deltat$ is a small but finite discretization step, and $\deltabt$ is a sample
+from $\gauss(0, \deltat I)$.
+
+This framework is quite general, and most discretized deterministic continuous
+control environments fall in this framework, with $\Sigma = 0$ and $\Sigma_r =
+0$, as well as many stochastic control environments.
+
+A deterministic policy $\pi$ is defined as a deterministic mapping from state
+space to action space\footnote{We restrict ourselves to deterministic policies.
+	In continuous time, defining stochastic policies with well defined
+	state-value function is non trivial. In the discrete case, the
+distribution of actions of a policy given a state only depends on the previous
+state, and not on previous actions. In continuous time, such policies are akin
+to white noise, and do not define stochastic processes.}.
+
+Under a deterministic policy $\pi$, one can define the \emph{state value function} $V^\pi(s)$
+and \emph{state action value function} $Q^\pi(s, a)$ as
+\begin{align}
+
+\end{align}
+
+\section{Multi-chain continuous environments and biscale advantage}
+\label{sec:multi-chain}
+
+\section{Deep RelAtivistic Mixture of Advantage learning}
+\label{sec:algo}
+
+\section{Experiments}
+\label{sec:exp}
+
+\section{Conclusion}
+\label{sec:concl}
+
+\bibliography{icml_drau.bib}
+\bibliographystyle{icml2018}
+\end{document}
+
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was created
+% by Iain Murray in 2018. It was modified from a version from Dan Roy in
+% 2017, which was based on a version from Lise Getoor and Tobias
+% Scheffer, which was slightly modified from the 2010 version by
+% Thorsten Joachims & Johannes Fuernkranz, slightly modified from the
+% 2009 version by Kiri Wagstaff and Sam Roweis's 2008 version, which is
+% slightly modified from Prasad Tadepalli's 2007 version which is a
+% lightly changed version of the previous year's version by Andrew
+% Moore, which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.

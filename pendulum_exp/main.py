@@ -63,7 +63,8 @@ def evaluate(
         R = compute_return(np.stack(rewards, axis=0),
                            np.stack(dones, axis=0))
         info(f"At epoch {epoch}, return: {R}")
-        log("Return", R, epoch)
+        if not video:
+            log("Return", R, epoch) # don't log when outputing video
         if video:
             log_video("demo", epoch, np.stack(imgs, axis=0))
 
