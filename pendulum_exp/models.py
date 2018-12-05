@@ -98,12 +98,14 @@ class NormalizedMLP(nn.Module, ParametricFunction):
     def __init__(self, model: ParametricFunction) -> None:
         super().__init__()
         self._model = model
-        self._bns = nn.ModuleList([CustomBN(*feat) for feat in self._model.input_shape()])
+        # only normalize first input (is this what we want to do in the long go?)
+        self._bn = CustomBN(self._model.input_shape()[0][0])
 
     def forward(self, *inputs: Tensorable):
         device = next(self.parameters())
         tens_inputs = [check_tensor(inp, device) for inp in inputs]
-        return self._model(*[bn(inp) for (bn, inp) in zip(self._bns, tens_inputs)])
+        tens_inputs = [self._bn(tens_inputs[0])] + tens_inputs[1:]
+        return self._model(*tens_inputs)
 
     def input_shape(self) -> Shape:
         return self._model.input_shape()
