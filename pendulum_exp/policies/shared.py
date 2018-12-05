@@ -28,7 +28,7 @@ class SharedAdvantagePolicy(Policy):
 
         # scheduling parameters
         self._schedule_params = dict(
-            mode='max', factor=.5, patience=25)
+            mode='max', factor=.5, patience=1000)
 
         # logging
         self._log_step = 0
