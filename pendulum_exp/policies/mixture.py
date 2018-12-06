@@ -57,29 +57,22 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
     def compute_mixture_advantages(self, obs: Arrayable, action: Arrayable):
         adv, logpi = self.to_mixture(
             self._adv_function(obs, action),
-            [[1, self._dt]], [[np.log(self._dt), 1]]) # (b, 4)
+            [[1, self._dt]], [[np.log(self._dt / (1 - self._dt)), 0]]) # (b, 4)
         max_action = self._policy_function(obs)
         max_adv, max_logpi = self.to_mixture(
             self._adv_function(obs, max_action),
-            [[1, self._dt]], [[np.log(self._dt), 1]]) # (b, 4)
+            [[1, self._dt]], [[np.log(self._dt / (1 - self._dt)), 0]]) # (b, 4)
 
         # hacky hack to multiply by 1. / dt the contribution of points with high loss
         # to the change of parameters in A
-        max_adv = torch.stack(
-            [(1 - 1 / self._dt) * max_adv[..., 0].detach() + max_adv[..., 0] / self._dt,
-             max_adv[..., 1]], dim=-1)
-        adv = torch.stack(
-            [(1 - 1 / self._dt) * adv[..., 0].detach() + adv[..., 0] / self._dt,
-             adv[..., 1]], dim=-1)
-
         mus = torch.cat([
             adv - max_adv,
             adv - torch.stack([max_adv[..., 1], max_adv[..., 0]], dim=-1)],
             dim=-1) # (b, 4)
 
         sigmas = arr_to_th([[
-            np.sqrt(2), np.sqrt(2) * self._dt,
-            np.sqrt(1 + self._dt ** 2), np.sqrt(1 + self._dt ** 2)]], self._device) # (1, 4)
+            np.sqrt(2 * self._dt), np.sqrt(2) * self._dt,
+            np.sqrt(self._dt + self._dt ** 2), np.sqrt(self._dt + self._dt ** 2)]], self._device) # (1, 4)
         logpis = torch.cat([
             logpi + max_logpi,
             logpi + torch.stack([max_logpi[..., 1], max_logpi[..., 0]], dim=-1)],
