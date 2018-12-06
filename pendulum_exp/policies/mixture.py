@@ -27,12 +27,12 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
                             opt_name=policy_config.optimizer,
                             lr=policy_config.lr, dt=self._dt,
                             inverse_gradient_magnitude=1,
-                            weight_decay=policy_config.weight_decay),
+                            weight_decay=0),
             setup_optimizer(self._val_function.parameters(),
                             opt_name=policy_config.optimizer,
                             lr=policy_config.lr, dt=self._dt,
                             inverse_gradient_magnitude=1,
-                            weight_decay=policy_config.weight_decay),
+                            weight_decay=0),
             setup_optimizer(self._policy_function.parameters(),
                             opt_name=policy_config.optimizer,
                             lr=policy_config.policy_lr, dt=self._dt,
@@ -182,7 +182,7 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
         self._optimizers[1].step()
 
         # logging
-        self._cum_loss += losses[1].mean().item()
+        self._cum_loss += losses[0].mean().item()
         self._log_step += 1
         self._learn_count += 1
 

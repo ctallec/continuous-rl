@@ -6,6 +6,8 @@
 
 \begin{document}
 
+\section{Recovering known convergence results for TD, and a few ideas}
+
 We consider the Bellman equation for a policy $\pi$ in a finite MDP with
 expected reward $R$ and transition probability matrix $P$ ($P$ includes $\pi$ and
 the environment response). The Bellman equation is
@@ -174,8 +176,10 @@ A few choices are:
 $\transp{(A\theta-b)}(A\theta-b)$ (Sutton 2009).
 This corresponds to $B=\transp{A}$. Then
 $BA=\transp{A}A$ is
-obviously stable. This helps with $A$ being non-symmetric. TODO: check if
-GTD uses the same sample for $\tilde{A}$ and $A$. If so, it will
+obviously stable. This helps with $A$ being non-symmetric.
+
+TODO: check if
+GTD uses the same sample for $\transp{A}$ and $A$. If so, it will
 converge to a different stable point. TODO: Can be applied TANGO-style
 (by formally inverting $\Id$ in TANGO), advantage=fewer variance due to
 two-sampling (Is this equivalent to eligibility traces without the
@@ -516,10 +520,79 @@ transitions only for the correction? TODO: use the same trick on the
 right? No, because the $R$ term doesn't go away and I'd rather have a
 correction that vanishes when $\Delta V-R$ is small.
 
-[Combined with all these problems, is the problem that a Bellman solution on the
+\section{A function that almost solves the Bellman equation can be very
+far from the true Bellman function}
+
+Combined with all these problems, is the problem that a Bellman solution on the
 support of $\rho$ may be very, very far from the global Bellman solution,
 even on the support of $\rho$ (take random walk on a circle, with $\rho$
 being everything but one point: then any linear function solves Bellman
-on the support of $\rho$).]
+on the support of $\rho$).
+
+TODO seems to be much worse off-policy.
+
+\section{Storing a summary of possible transitions?}
+
+The derivative of the average reward with respect to the policy
+parameters $\psi$ is equal to
+\begin{align}
+\partial_\psi \left(\E_\mu r\right)&=
+\E_{s,a,s'} \partial_\psi \log \pi(a|s)\left(
+r+V(s')
+\right)
+\\&=\E_{s,a}\partial_\psi \log \pi(a|s)\E_{s'|s,a}\sum_{k\geq 0}P^k R(s')
+\\&=\E_{s,a,s'}\partial_\psi \log \pi(a|s)(\Delta^{-1}R)(s')
+\end{align}
+by expanding $V(s')$ as a sum of expected future rewards (and attributing
+the reward of a transition $s\to s'$ to $s'$, which makes sense if $s'$
+is a sufficient statistic).
+(Here I'm neglecting constant functions again.)
+
+Thus if we denote
+\begin{equation}
+g(s')\deq \E_{s,a,s'}\partial_\psi \log \pi(a|s)\1_{s'}
+\end{equation}
+we have
+\begin{equation}
+\partial_\psi \left(\E_\mu r\right)=\transp{g}\Delta^{-1}R
+\end{equation}
+Let us define the row vector
+\begin{equation}
+G\deq \transp{g}\Delta^{-1},\qquad \partial_\psi \left(\E_\mu
+r\right)=GR
+\end{equation}
+then one has
+\begin{equation}
+G(s)=\partial_\psi \mu(s)
+\end{equation}
+namely, $G$ encodes the derivative of the invariant distribution with
+respect to the policy parameters. Thus, if we find a state $s$ with high
+reward $R(s)$, $G$ tells us how we can visit $s$ more often. This
+explains that the derivative of the average reward is $GR$.
+
+Eligibility traces are a random, unbiased estimator of $G$: if $s_t$ is a
+trajectory from the current policy then
+\begin{equation}
+\E(\sum_{k\geq 1}\partial_\psi \pi(a_{t-k}|s_{t-k})\1_{s_t})=G
+\end{equation}
+Moreover $G$ satisfies a backward Bellman equation on-policy,
+\begin{equation}
+G=\E_{s,a,s'} \partial_\psi \pi(a|s)\1_{s'}+GP
+\end{equation}
+thanks to $\Delta^{-1}=\sum P^k=\Id+\Delta^{-1}P$. Eligibility traces are
+updated this way at each step, via a sampling of $P$.
+
+$G$ cannot be stored but one can store an approximate model. For instance
+one could approximate $G$ as a sum of parameters times functions:
+\begin{equation}
+G\approx \sum_i \psi_i \phi_{\theta_i}(s)
+\end{equation}
+where each $\psi_i$ is a policy parameter, and each $\phi_{\theta_i}$ is
+a function of the state parameterized by some model. Then the reverse
+Bellman equation above allows us to learn $\psi_i$ and $\theta_i$ via 
+a TD-like algorithm.
+
+TODO: not the right representation, plus works only on-policy. Maybe learn a function $a(s,s')$ that
+returns the first action to be taken if we want to reach $s'$ from $s$?
 
 \end{document}
