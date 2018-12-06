@@ -173,10 +173,10 @@ gradient descent.}
 A few choices are:
 \begin{itemize}
 \item GTD is a gradient descent of
-$\transp{(A\theta-b)}(A\theta-b)$ (Sutton 2009).
+$\transp{(A\theta-b)}(A\theta-b)$ (Sutton 2009). This helps with $A$ being non-symmetric.
 This corresponds to $B=\transp{A}$. Then
 $BA=\transp{A}A$ is
-obviously stable. This helps with $A$ being non-symmetric.
+obviously stable, hence convergence.
 
 TODO: check if
 GTD uses the same sample for $\transp{A}$ and $A$. If so, it will
