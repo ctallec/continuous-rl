@@ -91,7 +91,7 @@
 % Remove it (just {}) if you do not need this facility.
 
 %\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
-\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
+%\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \begin{abstract}
 
@@ -102,10 +102,13 @@
 
 \section{Related work}
 \label{sec:related}
+\cite{adv_upd}
+\cite{adv_learn}
+\cite{dueling_nets}
 
 \section{Continuous reinforcement learning and scaling problems}
 \label{sec:continous}
-In the following section, a restrictive framework for near continuous
+In the following section, a restricted framework for near continuous
 time reinforcement learning is introduced, and the main challenges of this
 setup are explained. \RKC{This is not what we want to write: we want to explain
 why current reinforcement learning practices are ill suited for this framework}
@@ -134,11 +137,29 @@ distribution of actions of a policy given a state only depends on the previous
 state, and not on previous actions. In continuous time, such policies are akin
 to white noise, and do not define stochastic processes.}.
 
-Under a deterministic policy $\pi$, one can define the \emph{state value function} $V^\pi(s)$
-and \emph{state action value function} $Q^\pi(s, a)$ as
+Under a deterministic policy $\pi$, one can define the $\gamma$ discounted
+\emph{state value function} $V^\pi(s)$ and \emph{state action value function}
+$Q^\pi(s, a)$\footnote{
+	The values of $V^\pi$ and $Q^\pi$ are derived as discretization of e.g.
+	$V^\pi_\text{cont}(s) = \E\left[\int\limits_0^\infty \gamma^t \reward(s_t, \pi(s_t)) dt \mid s_0 = s\right]$.
+}as
 \begin{align}
-
+	V^\pi(s) &= \E\left[
+		\sum\limits_{k=0}^\infty \gamma^{k\deltat}
+		r_{k \deltat} \mid s_0 = s
+	\right]\\
+	Q^\pi(s, a) &= \E\left[
+		\sum\limits_{k=0}^\infty \gamma^{k\deltat}
+		r_{k \deltat} \mid s_0 = s, a_0 = a
+	\right].
 \end{align}
+Both $V^\pi$ and $Q^\pi$ verify Bellman equations, e.g.
+\begin{align}
+	V^\pi(s) = \reward(s, \pi(s)) \deltat + \gamma^{\deltat} \E_{s_{t+\deltat}\mid s_t=s} V^\pi(s_{t+\deltat}).
+\end{align}
+
+\subsection{Scaling problems}
+
 
 \section{Multi-chain continuous environments and biscale advantage}
 \label{sec:multi-chain}
