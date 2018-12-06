@@ -584,6 +584,7 @@ Moreover $G$ satisfies a backward Bellman equation on-policy,
 G=\E_{s,a,s'} \partial_\psi \log \pi(a|s)\1_{s'}+GP
 \end{equation}
 thanks to $\Delta^{-1}=\sum P^k=\Id+\Delta^{-1}P$. Eligibility traces are
+precisely
 updated this way at each step, via a sampling of $P$.
 
 $G$ cannot be stored but one can store an approximate model. For instance
