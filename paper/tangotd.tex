@@ -570,8 +570,8 @@ respect to the policy parameters. Thus, if we find a state $s$ with high
 reward $R(s)$, $G$ tells us how we can visit $s$ more often. This
 explains that the derivative of the average reward is $GR$.
 
-[$g$ averages to $0$ on-policy, so I think we don't have to worry about removing
-constants and can directly take $\gamma=1$. TODO CHECK]
+[$g$ averages to $0$ on-policy, so we don't have to worry about removing
+constants and can directly take $\gamma=1$.]
 
 Eligibility traces are a random, unbiased estimator of $G$: if $s_t$ is a
 trajectory from the current policy then
