@@ -548,9 +548,9 @@ the reward of a transition $s\to s'$ to $s'$, which makes sense if $s'$
 is a sufficient statistic).
 (Here I'm neglecting constant functions again.)
 
-Thus if we denote
+Thus if we define the vector
 \begin{equation}
-g(s')\deq \E_{s,a,s'}\partial_\psi \log \pi(a|s)\1_{s'}
+g\deq \E_{s,a,s'}\partial_\psi \log \pi(a|s)\1_{s'}
 \end{equation}
 we have
 \begin{equation}
@@ -570,17 +570,18 @@ respect to the policy parameters. Thus, if we find a state $s$ with high
 reward $R(s)$, $G$ tells us how we can visit $s$ more often. This
 explains that the derivative of the average reward is $GR$.
 
-[$g$ averages to $0$ on-policy, so we don't have to worry about removing
-constants and can directly take $\gamma=1$.]
+[$g$ sums to $0$ on-policy, so we don't have to worry about removing
+constants and can directly take $\gamma=1$: $\transp{g}\Delta^{-1}$ is
+well-defined.]
 
 Eligibility traces are a random, unbiased estimator of $G$: if $s_t$ is a
 trajectory from the current policy then
 \begin{equation}
-\E(\sum_{k\geq 1}\partial_\psi \pi(a_{t-k}|s_{t-k})\1_{s_t})=G
+\E\sum_{k\geq 1}\partial_\psi \log \pi(a_{t-k}|s_{t-k})\1_{s_t}=G
 \end{equation}
 Moreover $G$ satisfies a backward Bellman equation on-policy,
 \begin{equation}
-G=\E_{s,a,s'} \partial_\psi \pi(a|s)\1_{s'}+GP
+G=\E_{s,a,s'} \partial_\psi \log \pi(a|s)\1_{s'}+GP
 \end{equation}
 thanks to $\Delta^{-1}=\sum P^k=\Id+\Delta^{-1}P$. Eligibility traces are
 updated this way at each step, via a sampling of $P$.
