@@ -16,10 +16,12 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
     def __init__(self, policy_config: ApproximateAdvantagePolicyConfig,
                  val_function: ParametricFunction, adv_function: ParametricFunction,
                  policy_function: ParametricFunction, policy_noise: Noise,
+                 mixture_function: ParametricFunction,
                  device) -> None:
         super().__init__(policy_config, val_function, device)
         self._adv_function = adv_function.to(device)
         self._policy_function = policy_function.to(device)
+        self._mixture_function = mixture_function.to(device)
         self._policy_noise = policy_noise
 
         self._optimizers = (
@@ -37,7 +39,13 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
                             opt_name=policy_config.optimizer,
                             lr=policy_config.policy_lr, dt=self._dt,
                             inverse_gradient_magnitude=1,
-                            weight_decay=policy_config.weight_decay))
+                            weight_decay=policy_config.weight_decay),
+            setup_optimizer(self._mixture_function.parameters(),
+                            opt_name=policy_config.optimizer,
+                            lr=policy_config.policy_lr, dt=self._dt,
+                            inverse_gradient_magnitude=1,
+                            weight_decay=0)
+        )
 
         self._schedulers = (
             torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -48,19 +56,20 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
                 self._optimizers[2], **self._schedule_params)
         )
 
-    def to_mixture(self, tens: Tensor, v_scale, logpi_scale) -> Tensor:
-        v, logpi = tens[..., :2], tens[..., 2:]
-        v = v * arr_to_th(v_scale, self._device)
+    def scale(self, val: Tensor, logpi: Tensor, val_scale, logpi_scale) -> Tensor:
+        val = val * arr_to_th(val_scale, self._device)
         logpi = f.log_softmax(logpi + arr_to_th(logpi_scale, self._device), dim=-1)
-        return v, logpi
+        return val, logpi
 
     def compute_mixture_advantages(self, obs: Arrayable, action: Arrayable):
-        adv, logpi = self.to_mixture(
-            self._adv_function(obs, action),
+        adv, logpi = self._adv_function(obs, action), self._mixture_function(obs, action)
+        adv, logpi = self.scale(
+            adv, logpi,
             [[1, self._dt]], [[np.log(self._dt / (1 - self._dt)), 0]]) # (b, 4)
         max_action = self._policy_function(obs)
-        max_adv, max_logpi = self.to_mixture(
-            self._adv_function(obs, max_action),
+        max_adv, max_logpi = self._adv_function(obs, max_action), self._mixture_function(obs, max_action)
+        max_adv, max_logpi = self.scale(
+            max_adv, max_logpi,
             [[1, self._dt]], [[np.log(self._dt / (1 - self._dt)), 0]]) # (b, 4)
 
         # hacky hack to multiply by 1. / dt the contribution of points with high loss
@@ -71,8 +80,8 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
             dim=-1) # (b, 4)
 
         sigmas = arr_to_th([[
-            np.sqrt(2 * self._dt), np.sqrt(2) * self._dt,
-            np.sqrt(self._dt + self._dt ** 2), np.sqrt(self._dt + self._dt ** 2)]], self._device) # (1, 4)
+            np.sqrt(2), np.sqrt(2 * self._dt),
+            np.sqrt(self._dt + 1), np.sqrt(self._dt + 1)]], self._device) # (1, 4)
         logpis = torch.cat([
             logpi + max_logpi,
             logpi + torch.stack([max_logpi[..., 1], max_logpi[..., 0]], dim=-1)],
@@ -91,9 +100,10 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
         return self._val_function(obs)
 
     def _advantage(self, obs: Arrayable, action: Arrayable):
-        adv, logpi = self.to_mixture(self._adv_function(obs, action),
-                                     [[1, self._dt]],
-                                     [[np.log(self._dt), 1]]) # (b, 4)
+        adv, logpi = self._adv_function(obs, action), self._mixture_function(obs, action)
+        adv, logpi = self.scale(adv, logpi,
+                                [[1, self._dt]],
+                                [[np.log(self._dt), 1]]) # (b, 4)
         return (adv * logpi.exp()).sum(-1)
 
     def compute_values(self, obs: Arrayable, next_obs: Optional[Arrayable], done: Optional[Tensor]):
@@ -168,8 +178,10 @@ class ContinuousAdvantageMixturePolicy(SharedAdvantagePolicy):
 
     def optimize_value(self, *losses: Tensor):
         self._optimizers[0].zero_grad()
+        self._optimizers[3].zero_grad()
         losses[0].mean().backward(retain_graph=True)
         self._optimizers[0].step()
+        self._optimizers[3].step()
         self._optimizers[1].zero_grad()
         losses[1].mean().backward(retain_graph=True)
         self._optimizers[1].step()

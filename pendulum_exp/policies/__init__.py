@@ -29,7 +29,7 @@ def setup_policy(observation_space: Space, # flake8: noqa
     nb_state_feats = observation_space.shape[0]
 
     if hasattr(policy_config, 'mixture') and policy_config.mixture: # type: ignore
-        nb_outputs = 4
+        nb_outputs = 2
     else:
         nb_outputs = 1
 
@@ -85,6 +85,11 @@ def setup_policy(observation_space: Space, # flake8: noqa
 
                 if policy_config.mixture:
                     policy_cls: Type[Any] = ContinuousAdvantageMixturePolicy
+                    mixture_function = maker(
+                        ContinuousAdvantageMLP, nb_outputs=nb_outputs,
+                        nb_state_feats=nb_state_feats, nb_actions=nb_actions,
+                        **net_dict).to(device)
+                    policy_dict['mixture_function'] = mixture_function
                 else:
                     policy_cls = ContinuousAdvantagePolicy
                 policy = policy_cls(policy_noise=noise, **policy_dict)
