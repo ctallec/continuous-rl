@@ -600,4 +600,35 @@ a TD-like algorithm.
 TODO: not the right representation, plus works only on-policy. Maybe learn a function $a(s,s')$ that
 returns the first action to be taken if we want to reach $s'$ from $s$?
 
+\paragraph{Learning navigation.} Define a function $V(s,s')$ that
+represents the time spent in $s'$ if starting at $s$ and acting optimally
+towards $s'$. It is defined by the Bellman equation
+\begin{equation}
+V(s,s')=\1_{s=s'}+\gamma \max_a \E_{s_1|s,a} V(s_1,s')
+\end{equation}
+and also satisfies
+\begin{equation}
+V(s,s')=\1_{s=s'}+\gamma \sum_{s_{t-1}} V(s,s_{t-1})\max_a
+\E_{s_t|s_{t-1},a}\1_{s_t=s'}
+\end{equation}
+although it's not clear to me how to exploit the last expression. But I
+think we have to work from both ends if we want to represent
+compositionality of actions... (With the first equation, different values
+of $s'$ are just completely separate Bellman problems; the generalization
+abilities of the function approximator for $V$ may help, but only so
+much.)
+
+Then we may learn a goal-oriented policy $\pi_\theta(a|s,s')$ that returns an
+action $a$ at state $s$ which produces a move towards $s'$. Learning
+$\pi_\theta$ may be done by observing transitions and maximizing
+$V(s,s')$.
+
+It's not clear either how to exploit $V(s,s')$ to maximize a reward. If
+we were considering a fixed policy we would have
+$V(s)=\sum_{s'}V(s,s')R(s')$ (namely $V(s,s')$ would be the value
+function of the reward function $\1_{s'}$). But here $V(s,s')$ uses a
+strategy that depends on the goal $s'$.
+
+
+
 \end{document}
