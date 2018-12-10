@@ -655,6 +655,9 @@ This can be done either via learning a value function $V(s,(\alpha_i))$
 then actor-critic, or via an eligibility-trace-like thing (but then it
 has to be on-policy, for which policy??)
 
+See \emph{Universal value function approximators},
+Schaul--Horgan--Gregor--Silver ICML 2015
+
 Then we can learn an approximate decomposition of the actual reward over
 the $\Psi_i$, and we know what to do. (This assumes the reward is well
 approximated by the $\Psi_i$; or that we learn the complement.) Advantage
@@ -671,8 +674,5 @@ is more general, by taking a full basis of Dirac features $\1_{s'}$. Then
 $V(s,(\alpha_i))$ does not just learn how to go to individual states, but
 how to maximize time spent in an arbitrary weighted sum of states. This
 is why we can later extend to an arbitrary reward function.)
-
-See \emph{Universal value function approximators},
-Schaul--Horgan--Gregor--Silver ICML 2015
 
 \end{document}
