@@ -637,7 +637,10 @@ expected reward $\sum \alpha_i \Psi_i$ (thus, simultaneously learning to
 solve a number of RL problems). Then we can learn an approximate
 decomposition of the actual reward over the $\Psi_i$, and we know what to
 do. (This assumes the reward is well approximated by the $\Psi_i$; or
-that we learn the complement.) There are many ways to build interesting
+that we learn the complement.) Advantage = even if there is no reward
+signal for some time, we still learn to navigate the environment.
+
+There are many ways to build interesting
 $\Psi_i$'s: hidden features of a world model/reward model, eigenfunctions
 of $P$, or just setting a basis of random time-dependent functions on a
 trajectory and smoothing them via a NN (``zeitgeist'').
