@@ -637,13 +637,19 @@ precisely
 updated this way at each step, via a sampling of $P$.
 
 $G$ cannot be stored but one can store an approximate model. For instance
-one could approximate $G$ as a sum of parameters times functions:
+one could approximate $G$ via a neural network with input $s$ and output
+in the policy parameter space. \footnote{The policy parameter space may
+be quite large. This means the neural network should have a small
+next-to-last layer. Indeed, with a next-to-last layer of size $r$,
+the weights of the last layer are represented by $r$ policy parameters.
+This corresponds to a rank-$r$ approximation of $G$,
+as a sum of parameters times functions:
 \begin{equation}
-G\approx \sum_i \psi_i \phi_{\theta_i}(s)
+G\approx \sum_i \psi_i \phi_i(s)
 \end{equation}
-where each $\psi_i$ is a policy parameter, and each $\phi_{\theta_i}$ is
-a function of the state parameterized by some model. Then the reverse
-Bellman equation above allows us to learn $\psi_i$ and $\theta_i$ via 
+where each $\psi_i$ is a policy parameter, and each $\phi_i$ is
+a function of the state, corresponding to a feature in the network.} Then the reverse
+Bellman equation above allows us to learn this model via
 a TD-like algorithm, \emph{on-policy}.
 
 TODO: not the right representation, plus works only on-policy. Maybe learn a function $a(s,s')$ that
