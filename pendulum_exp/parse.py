@@ -4,7 +4,7 @@ import argload
 
 def setup_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--algo', type=str, default='drau', choices=['mdrau', 'drau', 'qlearn'])
+    parser.add_argument('--algo', type=str, default='approximate_advantage')
     parser.add_argument('--dt', type=float, default=.05)
     parser.add_argument('--steps_btw_train', type=int, default=3)
     parser.add_argument('--steps_btw_catchup', type=int, default=10)

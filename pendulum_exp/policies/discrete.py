@@ -58,10 +58,6 @@ class AdvantagePolicy(SharedAdvantagePolicy):
         adv = adv_a.gather(1, indices.view(-1, 1)).squeeze()
         return adv, max_adv
 
-    def reset_log(self):
-        self._cum_loss = 0
-        self._log_step = 0
-
     def optimize_value(self, *losses: Tensor):
         assert len(losses) == 1
         self._optimizers[0].zero_grad()

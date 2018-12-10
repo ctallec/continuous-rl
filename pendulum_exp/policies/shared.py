@@ -1,39 +1,56 @@
 """ Define shared elements between continuous and discrete. """
 import numpy as np
-from abstract import Policy, Arrayable, ParametricFunction
-from config import PolicyConfig
+from abstract import Policy, Arrayable, ParametricFunction, Actor, StateDict
 from memory.utils import setup_memory
 import torch
 from torch import Tensor
 from convert import arr_to_th, check_array, th_to_arr
 from typing import Optional
 from mylog import log
+from stateful import CompoundStateful
+from optimizer import setup_optimizer
 
-class SharedAdvantagePolicy(Policy):
-    def __init__(self, policy_config: PolicyConfig,
-                 val_function: ParametricFunction, device) -> None:
+class AdvantagePolicy(Policy, CompoundStateful):
+    def __init__(self, gamma: float, dt: float, lr: float, optimizer: str,
+                 learn_per_step: int, steps_btw_train: int, memory_size: int,
+                 batch_size: int, alpha: Optional[float], beta: Optional[float],
+                 val_function: ParametricFunction, adv_function: ParametricFunction,
+                 actor: Actor, device) -> None:
         self._train = True
         self.reset()
 
         # parameters
-        self._gamma = policy_config.gamma
-        self._dt = policy_config.dt
-        self._learn_per_step = policy_config.learn_per_step
-        self._steps_btw_train = policy_config.steps_btw_train
-        self._sampler = setup_memory(policy_config)
+        self._gamma = gamma
+        self._dt = dt
+        self._learn_per_step = learn_per_step
+        self._steps_btw_train = steps_btw_train
         self._count = 0
         self._learn_count = 0
         self._device = device
-        self._val_function = val_function
-
-        # scheduling parameters
-        self._schedule_params = dict(
-            mode='max', factor=.5, patience=1000)
 
         # logging
         self._log_step = 0
         self._stats_obs = None
         self._stats_actions = None
+
+        # learning
+        self._adv_function = adv_function.to(device)
+        self._val_function = val_function.to(device)
+        self._actor = actor.to(device)
+        self._sampler = setup_memory(
+            alpha=alpha, beta=beta, memory_size=memory_size, batch_size=batch_size)
+
+        # optimization/storing
+        self._adv_optimizer = \
+            setup_optimizer(self._adv_function.parameters(),
+                            opt_name=optimizer, lr=lr, dt=dt,
+                            inverse_gradient_magnitude=1,
+                            weight_decay=0)
+        self._val_optimizer = \
+            setup_optimizer(self._val_function.parameters(),
+                            opt_name=optimizer, lr=lr, dt=dt,
+                            inverse_gradient_magnitude=dt,
+                            weight_decay=0)
 
     def reset(self):
         # internals
@@ -45,7 +62,7 @@ class SharedAdvantagePolicy(Policy):
         self._time_limit = np.array([])
 
     def act(self, obs: Arrayable):
-        raise NotImplementedError
+        return self._actor.act_noisy(obs)
 
     def step(self, obs: Arrayable):
         for net in self.networks():
@@ -64,7 +81,7 @@ class SharedAdvantagePolicy(Policy):
                 next_obs: Arrayable,
                 reward: Arrayable,
                 done: Arrayable,
-                time_limit: Optional[Arrayable]=None):
+                time_limit: Optional[Arrayable] = None):
         if self._train:
             self._count += 1
             self._next_obs = next_obs
@@ -113,7 +130,7 @@ class SharedAdvantagePolicy(Policy):
                     bell_loss = adv_update_loss + adv_norm_loss
 
                     self.optimize_value(bell_loss)
-                    self.optimize_policy(max_adv)
+                    self._actor.optimize(-max_adv.mean())
 
                 self.log()
                 self.log_stats()
@@ -122,15 +139,22 @@ class SharedAdvantagePolicy(Policy):
                 raise e
                 pass
 
-    def optimize_value(self, *losses: Tensor):
-        raise NotImplementedError()
-
-    def optimize_policy(self, max_adv: Tensor):
-        raise NotImplementedError()
+    def reset_log(self):
+        self._cum_loss = 0
+        self._log_step = 0
 
     def compute_advantages(self, obs: Arrayable, action: Arrayable) -> Tensor:
         """Computes adv, max_adv."""
-        raise NotImplementedError()
+        max_action = self.actor.act(obs)
+        if len(self._adv_function.input_shape()) == 2:
+            adv = self._adv_function(obs, action).squeeze()
+            max_adv = self._adv_function(obs, max_action).squeeze()
+        else:
+            adv_all = self._adv_function(obs)
+            action = arr_to_th(action, self._device).long()
+            adv = adv_all.gather(1, action.view(-1, 1)).squeeze()
+            max_adv = adv_all.gather(1, max_action.view(-1, 1)).squeeze()
+        return adv, max_adv
 
     def compute_next_value(self, next_obs: Arrayable, done: Tensor, mean_v: Tensor) -> Tensor:
         """Also detach next value."""
@@ -140,6 +164,19 @@ class SharedAdvantagePolicy(Policy):
                 "episodic problem..."
             return next_v
         return (1 - done) * next_v - done * mean_v * self._gamma / (1 - self._gamma)
+
+    def optimize_value(self, *losses: Tensor):
+        assert len(losses) == 1
+        self._adv_optimizer.zero_grad()
+        self._val_optimizer.zero_grad()
+        losses[0].mean().backward()
+        self._adv_optimizer.step()
+        self._val_optimizer.step()
+
+        # logging
+        self._cum_loss += losses[0].sqrt().mean().item()
+        self._log_step += 1
+        self._learn_count += 1
 
     def log_stats(self):
         if self._stats_obs is None:
@@ -160,3 +197,12 @@ class SharedAdvantagePolicy(Policy):
             log("stats/std_advantage", adv.std().item(), self._learn_count)
             log("stats/mean_reference_v", reference_v.mean().item(), self._learn_count)
             log("stats/std_reference_v", reference_v.std().item(), self._learn_count)
+
+    def state_dict(self) -> StateDict:
+        state = super(CompoundStateful, self).state_dict()
+        state["learn_count"] = self._learn_count
+        return state
+
+    def load_state_dcit(self, state_dict: StateDict):
+        state = super(CompoundStateful, self).load_state_dict(state_dict)
+        self._learn_count = state["learn_count"]

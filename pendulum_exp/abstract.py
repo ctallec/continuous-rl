@@ -2,15 +2,30 @@
 from typing import Union, Callable, Dict, Any, Optional, Tuple
 from abc import ABC, abstractmethod
 import numpy as np
-import torch
+from torch import Tensor
 
 Arrayable = Union[list, float, np.ndarray]
-Tensorable = Union[Arrayable, torch.Tensor]
+Tensorable = Union[Arrayable, Tensor]
 DecayFunction = Callable[[int], float]
 StateDict = Dict[str, Any]
 Shape = Tuple[Tuple[int, ...], ...]
 
-class ParametricFunction(ABC):
+
+class Stateful(ABC):
+    @abstractmethod
+    def load_state_dict(self, state_dict: StateDict):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def state_dict(self) -> StateDict:
+        raise NotImplementedError()
+
+class Cudaable(ABC):
+    @abstractmethod
+    def to(self, device):
+        raise NotImplementedError()
+
+class ParametricFunction(Stateful):
     """Wrap around a torch module."""
     @abstractmethod
     def __call__(self, *obs: Tensorable):
@@ -37,14 +52,6 @@ class ParametricFunction(ABC):
         pass
 
     @abstractmethod
-    def load_state_dict(self, state_dict: StateDict):
-        pass
-
-    @abstractmethod
-    def state_dict(self) -> StateDict:
-        pass
-
-    @abstractmethod
     def input_shape(self) -> Shape:
         pass
 
@@ -52,7 +59,7 @@ class ParametricFunction(ABC):
     def output_shape(self) -> Shape:
         pass
 
-class Policy(ABC):
+class Policy(Stateful):
     @abstractmethod
     def step(self, obs: Arrayable):
         pass
@@ -63,10 +70,6 @@ class Policy(ABC):
                 reward: Arrayable,
                 done: Arrayable,
                 time_limit: Optional[Arrayable]):
-        pass
-
-    @abstractmethod
-    def observe_evaluation(self, eval_return: float):
         pass
 
     @abstractmethod
@@ -84,23 +87,6 @@ class Policy(ABC):
     @abstractmethod
     def eval(self):
         pass
-
-    @abstractmethod
-    def load_state_dict(self, state_dict: StateDict):
-        pass
-
-    @abstractmethod
-    def state_dict(self) -> StateDict:
-        pass
-
-    @abstractmethod
-    def networks(self) -> Tuple[ParametricFunction, ...]:
-        pass
-
-    @abstractmethod
-    def log_stats(self):
-        pass
-
 
 class Env(ABC):
     @abstractmethod
@@ -129,7 +115,7 @@ class Env(ABC):
     def action_space(self):
         pass
 
-class Noise(ABC):
+class Noise(Cudaable):
     @abstractmethod
     def step(self):
         pass
@@ -141,8 +127,26 @@ class Noise(ABC):
             function: ParametricFunction):
         pass
 
+class Actor(Stateful, Cudaable):
     @abstractmethod
-    def to(
-            self,
-            device):
-        pass
+    def act(self, obs: Arrayable) -> Tensor:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def act_noisy(self, obs: Arrayable) -> Arrayable:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def optimize(self, loss: Tensor):
+        raise NotImplementedError()
+
+class Critic(Stateful, Cudaable):
+    @abstractmethod
+    def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,
+                 next_obs: Arrayable, max_next_action: Tensor, reward: Arrayable,
+                 done: Arrayable, time_limit: Arrayable, weights: Arrayable) -> Tensor:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def critic(self, obs: Arrayable, max_action: Tensor) -> Tensor:
+        raise NotImplementedError()
