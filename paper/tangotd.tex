@@ -636,7 +636,8 @@ $\pi_\theta(a|s,(\alpha_i))$ to produce a policy that maximizes the
 expected reward $\sum \alpha_i \Psi_i$ (thus, simultaneously learning to
 solve a number of RL problems). 
 This can be done either via learning a value function $V(s,(\alpha_i))$
-then actor-critic, or via an eligibility-trace-like thing, but
+then actor-critic, or via an eligibility-trace-like thing (but then it
+has to be on-policy, for which policy??)
 
 Then we can learn an approximate decomposition of the actual reward over
 the $\Psi_i$, and we know what to do. (This assumes the reward is well
