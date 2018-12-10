@@ -92,7 +92,7 @@ Under this update for $\theta$, the error $\theta-A^{-1}b$ is updated as
 This converges if only if $A$ is \emph{stable}.
 
 
-\begin{defi}
+\begin{defi}[ (Stable matrix)]
 A matrix $A$ is \emph{stable} if one of the following equivalent
 conditions are satisfied:
 \begin{itemize}
@@ -157,6 +157,7 @@ Non-lin GTD2 & 2ts, different objective &
 $B=\transp{A}(\transp{\Phi}\rho\Phi)^{-1}$  & $L=\Id$
 \\\hline
 \end{tabular}
+\label{tab:TDlist}
 \caption{Various cases of convergence of TD-like algorithms, the
 preconditioner $B$ for the TD step, and the matrix $L$ that proves
 convergence via the Lyapunov criterion. 2ts=two-timescale.}
@@ -171,10 +172,14 @@ and we want to solve
 A\theta=b\,\qquad b\deq \transp{\Phi}\rho R
 \end{equation}
 If $A$ is stable, then iterating $\theta\gets \theta -\eta(A\theta-b)$ will
-converge.
+converge. (TODO: I will ignore the problem with constant functions for
+$\gamma=1$.)
 
-We know $A$ is stable in several cases: (TODO here I just ignore constant
-functions)
+We now review several cases in which $A$ is known to be stable, or cases
+in which a modified TD algorithm makes the iteration stable (by
+preconditioning the gradient descent by a matrix $B$). See also
+Table~\ref{tab:TDlist}.
+
 \begin{enumerate}
 \item On-policy: $\rho=\mu$, the invariant distribution. Then we know that $\rho(\Id-P)$ is positive
 (Dirichlet form: $\transp{f}\rho(\Id-P)f=\E(f(s_t)-f(s_{t+1}))^2$). This implies that $A=\transp{\Phi}\rho (\Id-P)\Phi$ is
