@@ -574,7 +574,8 @@ explains that the derivative of the average reward is $GR$.
 constants and can directly take $\gamma=1$: $\transp{g}\Delta^{-1}$ is
 well-defined.]
 
-Eligibility traces are a random, unbiased estimator of $G$: if $s_t$ is a
+Eligibility traces are a random, unbiased estimator of $G$: if
+$(s_t)_{t\in \Z}$ is a
 trajectory from the current policy then
 \begin{equation}
 \E\sum_{k\geq 1}\partial_\psi \log \pi(a_{t-k}|s_{t-k})\1_{s_t}=G
@@ -595,7 +596,7 @@ G\approx \sum_i \psi_i \phi_{\theta_i}(s)
 where each $\psi_i$ is a policy parameter, and each $\phi_{\theta_i}$ is
 a function of the state parameterized by some model. Then the reverse
 Bellman equation above allows us to learn $\psi_i$ and $\theta_i$ via 
-a TD-like algorithm.
+a TD-like algorithm, \emph{on-policy}.
 
 TODO: not the right representation, plus works only on-policy. Maybe learn a function $a(s,s')$ that
 returns the first action to be taken if we want to reach $s'$ from $s$?
@@ -612,7 +613,12 @@ and it also satisfies
 V(s,s')=\1_{s=s'}+\gamma \sum_{s_{t-1}} V(s,s_{t-1})\max_a
 \E_{s_t|s_{t-1},a}\1_{s_t=s'}
 \end{equation}
-although it's not clear to me how to exploit the last expression. But I
+although it's not clear to me how to exploit the last expression. 
+\footnote{On-policy it works, I think, because on-policy we can sample
+reverse transitions. But I think in that case $V(s,s')$ has to be defined
+as a density wrt $\mu(s')$.\\Should also work if we maintain a low-rank
+estimate of $V$ as a sum of Diracs over a few $s'$.}
+But I
 think we have to work from both ends if we want to represent
 compositionality of actions. Indeed with the first equation, different values
 of $s'$ are just completely separate Bellman problems; the generalization
