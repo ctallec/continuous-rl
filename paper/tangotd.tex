@@ -625,6 +625,9 @@ trajectory from the current policy then
 \begin{equation}
 \E\sum_{k\geq 1}\partial_\psi \log \pi(a_{t-k}|s_{t-k})\1_{s_t}=G
 \end{equation}
+namely, if $v$ is the eligibility trace vector, then the expectation of
+$\transp{v}\1_{s_t}$ is $G$, at every time $t$.
+
 Moreover $G$ satisfies a backward Bellman equation on-policy,
 \begin{equation}
 G=\E_{s,a,s'} \partial_\psi \log \pi(a|s)\1_{s'}+GP
