@@ -600,7 +600,7 @@ a TD-like algorithm.
 TODO: not the right representation, plus works only on-policy. Maybe learn a function $a(s,s')$ that
 returns the first action to be taken if we want to reach $s'$ from $s$?
 
-\paragraph{Learning navigation.} Define a function $V(s,s')$ that
+\paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$. It is defined by the Bellman equation
 \begin{equation}
@@ -629,6 +629,17 @@ $V(s)=\sum_{s'}V(s,s')R(s')$ (namely $V(s,s')$ would be the value
 function of the reward function $\1_{s'}$). But here $V(s,s')$ uses a
 strategy that depends on the goal $s'$.
 
-
+Another possibility is to learn a goal-oriented policy towards desired
+\emph{features} of the final state $s'$. Given a basis $(\Psi_i)$ of
+features, and a set of coefficient $\alpha_i$, one might want
+$\pi_\theta(a|s,(\alpha_i))$ to produce a policy that maximizes the
+expected reward $\sum \alpha_i \Psi_i$ (thus, simultaneously learning to
+solve a number of RL problems). Then we can learn an approximate
+decomposition of the actual reward over the $\Psi_i$, and we know what to
+do. (This assumes the reward is well approximated by the $\Psi_i$; or
+that we learn the complement.) There are many ways to build interesting
+$\Psi_i$'s: hidden features of a world model/reward model, eigenfunctions
+of $P$, or just setting a basis of random time-dependent functions on a
+trajectory and smoothing them via a NN (``zeitgeist'').
 
 \end{document}
