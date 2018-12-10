@@ -129,6 +129,39 @@ instead of $0$. Explicitly this is
 $L=\int_{t\geq 0} \transp{(e^{-t A})}
 e^{-tA}$.
 
+
+\begin{table}
+\begin{tabular}{cccc}
+Algorithm & Conditions & Preconditioner & Lyapunov
+\\
+\hline
+\emph{Linear $V$} \\
+TD	& On-policy & $B=\Id$ & $L=\Id$ \\
+TD & Tabular & $B=\Id$ & $L=\mu/\rho$ \\
+GTD & 2ts & $B=\transp{A}$ & $L=\Id$\\
+– & On-policy, 2ts & $B=(\transp{\Phi}\rho\Phi)^{-1}$ & $L=B^{-1}$ \\
+– & Overparameterized, 2ts & $B=(\transp{\Phi}\rho\Phi)^{-1}$ &
+$L=\transp{\Phi}\mu\Phi$ \\
+TDC, GTD2 & 2ts & $B=\transp{A}(\transp{\Phi}\rho\Phi)^{-1}$ &
+$L=\Id$ \\
+2nd-order & On-policy, 2ts & $B=A^{-1}$ & $L=\Id$\\
+2nd-order & 2ts & $B=\transp{A}(A\transp{A})^{-1}$ & $L=\Id$\\
+– & 2ts & $B=\transp{A}(A+\transp{A})^{-1}$ & $L=\Id$\\
+\hline
+\emph{Non-linear $V$} \\
+TD & On-policy, reversible & any $B\succ 0$ & $L=\mu(\mu(\Id-P))^{-1}\mu$
+\\
+– & On-policy, overparameterized, 2ts & $B=(\transp{\Phi}S\Phi)^{-1}$ &
+$L= \mu S^{-1} \mu$ \\
+Non-lin GTD2 & 2ts, different objective &
+$B=\transp{A}(\transp{\Phi}\rho\Phi)^{-1}$  & $L=\Id$
+\\\hline
+\end{tabular}
+\caption{Various cases of convergence of TD-like algorithms, the
+preconditioner $B$ for the TD step, and the matrix $L$ that proves
+convergence via the Lyapunov criterion. 2ts=two-timescale.}
+\end{table}
+
 \paragraph{Making the TD iteration stable.} In linear TD the matrix $A$ is
 \begin{equation}
 A\deq \transp{\Phi}\rho (\Id-P)\Phi
