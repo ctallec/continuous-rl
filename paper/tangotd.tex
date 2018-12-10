@@ -634,15 +634,25 @@ Another possibility is to learn a goal-oriented policy towards desired
 features, and a set of coefficient $\alpha_i$, one might want
 $\pi_\theta(a|s,(\alpha_i))$ to produce a policy that maximizes the
 expected reward $\sum \alpha_i \Psi_i$ (thus, simultaneously learning to
-solve a number of RL problems). Then we can learn an approximate
-decomposition of the actual reward over the $\Psi_i$, and we know what to
-do. (This assumes the reward is well approximated by the $\Psi_i$; or
-that we learn the complement.) Advantage = even if there is no reward
-signal for some time, we still learn to navigate the environment.
+solve a number of RL problems). 
+This can be done either via learning a value function $V(s,(\alpha_i))$
+then actor-critic, or via an eligibility-trace-like thing, but
+
+Then we can learn an approximate decomposition of the actual reward over
+the $\Psi_i$, and we know what to do. (This assumes the reward is well
+approximated by the $\Psi_i$; or that we learn the complement.) Advantage
+= even if there is no reward signal for some time, we still learn to
+navigate the environment.
 
 There are many ways to build interesting
 $\Psi_i$'s: hidden features of a world model/reward model, eigenfunctions
 of $P$, or just setting a basis of random time-dependent functions on a
 trajectory and smoothing them via a NN (``zeitgeist'').
+
+(The relationship between $V(s,s')$ and $V(s,(\alpha_i))$ is: the latter
+is more general, by taking a full basis of Dirac features $\1_{s'}$. Then
+$V(s,(\alpha_i))$ does not just learn how to go to individual states, but
+how to maximize time spent in an arbitrary weighted sum of states. This
+is why we can later extend to an arbitrary reward function.)
 
 \end{document}
