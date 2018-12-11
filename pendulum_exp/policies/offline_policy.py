@@ -103,12 +103,12 @@ class OfflinePolicy(CompoundStateful, Policy, Cudaable):
 
     def state_dict(self) -> StateDict:
         state = CompoundStateful.state_dict(self)
-        state["learn_count"] = self._learn_count
+        state["count"] = self._count
         return state
 
     def load_state_dict(self, state_dict: StateDict):
-        state = CompoundStateful.load_state_dict(self, state_dict)
-        self._learn_count = state["learn_count"]
+        CompoundStateful.load_state_dict(self, state_dict)
+        self._count = state_dict["count"]
 
     def train(self):
         self._train = True

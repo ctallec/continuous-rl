@@ -3,7 +3,7 @@ from policies.offline_policy import OfflinePolicy
 from abstract import Env
 from actors import DiscreteActor, SampledActor, ApproximateActor
 from actors import DelayedDiscreteActor, DelayedApproximateActor
-from critics import AdvantageCritic, ValueCritic
+from critics import AdvantageCritic, ValueCritic, MixtureAdvantageCritic
 from envs.utils import make_env
 from envs.vecenv import SubprocVecEnv
 from noise import setup_noise
@@ -32,7 +32,8 @@ def configure(args):
 
     critic_cls = {
         "advantage": AdvantageCritic,
-        "value": ValueCritic
+        "value": ValueCritic,
+        "mixture-advantage": MixtureAdvantageCritic
     }[critic_type]
 
     critic = critic_cls.configure(**kwargs)
