@@ -673,7 +673,7 @@ solution then $-V$ is also a solution.
 More generally, in dim $>1$, an equation such as $\abs{\partial
 V(s)/\partial s}=-R(s)$ leaves total freedom as to the direction of the
 gradient of $V$. Thus, with a randomly initialized $V$, my guess is that
-early TD-like optimization would ``freeze'' upon random choices of local
+TD-like optimization would quickly ``freeze'' upon locally random choices of 
 directions of the gradient of $V$, each corresponding to a local belief
 that ``the optimum lies in this direction''. Regions with different
 directions of $\partial
