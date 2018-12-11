@@ -659,9 +659,24 @@ function is well-defined only if one shifts the rewards by the maximum
 reward so that the maximum reward becomes $0$.]
 
 This equation is wildly underdetermined. For instance, if $V$ is a
-solution then $-V$ is also a solution...
+solution then $-V$ is also a solution.
 
+More generally, in dim $>1$, an equation such as $\abs{\partial
+V(s)/\partial s}=-R(s)$ leaves total freedom as to the direction of the
+gradient of $V$. Thus, with a randomly initialized $V$, my guess is that
+early TD-like optimization would ``freeze'' upon random choices of local
+directions of the gradient of $V$, each corresponding to a local belief
+that ``the optimum lies in this direction''. Regions with different
+directions of $\partial
+V(s)/\partial s$ would meet on a $(D-1)$-dimensional set where Bellman
+would be violated, but Bellman would still be satisfied on a set of
+measure $1$.
 
+Thus, off-policy algorithms based on sampling random transitions $(s,s')$
+from a dataset would be slow to detect a problem, while on-policy (or
+partly on-policy) algorithms would ``follow the local belief'' until
+reaching a state where it becomes clear that this belief is unfounded, or
+until they reach infinity.
 
 \section{Storing a summary of possible transitions?}
 
