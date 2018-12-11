@@ -40,7 +40,7 @@ class AdvantageCritic(CompoundStateful, Critic):
         if self._reference_obs is None:
             self._reference_obs = arr_to_th(obs, self._device)
 
-        action = arr_to_th(action, self._device)
+        action = arr_to_th(action, self._device).type_as(max_action)
         reward = arr_to_th(reward, self._device)
         weights = arr_to_th(check_array(weights), self._device)
         done = arr_to_th(check_array(done).astype('float'), self._device)
@@ -72,7 +72,7 @@ class AdvantageCritic(CompoundStateful, Critic):
 
         return critic_loss
 
-    def critic(self, obs: Arrayable, action: Tensorable, future: bool=False) -> Tensor:
+    def critic(self, obs: Arrayable, action: Tensorable, target: bool=False) -> Tensor:
         if len(self._adv_function.input_shape()) == 2:
             adv = self._adv_function(obs, action).squeeze()
         else:
@@ -84,8 +84,7 @@ class AdvantageCritic(CompoundStateful, Critic):
     def log(self):
         pass
 
-    @property
-    def critic_function(self):
+    def critic_function(self, target: bool=False):
         return self._adv_function
 
     def to(self, device):

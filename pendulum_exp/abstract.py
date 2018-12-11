@@ -134,7 +134,7 @@ class Loggable(ABC):
 
 class Actor(Stateful, Cudaable, Loggable):
     @abstractmethod
-    def act(self, obs: Arrayable, future: bool=False) -> Tensor:
+    def act(self, obs: Arrayable, target: bool=False) -> Tensor:
         raise NotImplementedError()
 
     @abstractmethod
@@ -153,5 +153,5 @@ class Critic(Stateful, Cudaable, Loggable):
         raise NotImplementedError()
 
     @abstractmethod
-    def critic(self, obs: Arrayable, action: Tensorable, future: bool=False) -> Tensor:
+    def critic(self, obs: Arrayable, action: Tensorable, target: bool=False) -> Tensor:
         raise NotImplementedError()

@@ -16,7 +16,7 @@ class ValueCritic(CompoundStateful, Critic):
         CompoundStateful.__init__(self)
         self._reference_obs: Tensor = None
         self._q_function = q_function
-        self._target_q_function = copy.deepcopy(q_function)
+        self._target_q_function = copy.deepcopy(self._q_function)
         self._tau = tau
 
         self._q_optimizer = \
@@ -41,7 +41,7 @@ class ValueCritic(CompoundStateful, Critic):
         obs = check_array(obs)
         next_obs = check_array(next_obs)
         q = self.critic(obs, action)
-        q_next = self.critic(next_obs, max_next_action, future=True)
+        q_next = self.critic(next_obs, max_next_action, target=True)
 
         expected_q = (reward * self._dt + self._gamma ** self._dt * q_next).detach()
         critic_loss = (q - expected_q) ** 2
@@ -54,8 +54,8 @@ class ValueCritic(CompoundStateful, Critic):
 
         return critic_loss
 
-    def critic(self, obs: Arrayable, action: Tensorable, future: bool=False) -> Tensor:
-        q_function = self._q_function if not future else self._target_q_function
+    def critic(self, obs: Arrayable, action: Tensorable, target: bool=False) -> Tensor:
+        q_function = self._q_function if not target else self._target_q_function
         if len(q_function.input_shape()) == 2:
             q = q_function(obs, action).squeeze()
         else:
@@ -67,9 +67,10 @@ class ValueCritic(CompoundStateful, Critic):
     def log(self):
         pass
 
-    @property
-    def critic_function(self):
-        return self._target_q_function
+    def critic_function(self, target: bool=False):
+        if target:
+            return self._target_q_function
+        return self._q_function
 
     def to(self, device):
         self._q_function = self._q_function.to(device)

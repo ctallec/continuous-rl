@@ -29,7 +29,7 @@ class SampledActor(Actor):
         action_idx = np.argmax(advantages, axis=0)
         return proposed_actions[action_idx, np.arange(obs.shape[0])]
 
-    def act(self, obs: Arrayable, future=False) -> Tensor:
+    def act(self, obs: Arrayable, target=False) -> Tensor:
         obs = check_array(obs)
         proposed_actions = np.random.uniform(
             -1, 1, [self._nb_samples, obs.shape[0], *self._action_shape])

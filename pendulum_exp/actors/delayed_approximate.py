@@ -17,8 +17,8 @@ class DelayedApproximateActor(ApproximateActor):
         self._target_policy_function = self._target_policy_function.to(device)
         return self
 
-    def act(self, obs: Arrayable, future=False) -> Tensor:
-        if future:
+    def act(self, obs: Arrayable, target=False) -> Tensor:
+        if target:
             return self._target_policy_function(obs)
         return self._policy_function(obs)
 

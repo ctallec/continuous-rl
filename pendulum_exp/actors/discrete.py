@@ -12,9 +12,9 @@ class DiscreteActor(Actor):
         self._noise.step()
         return pre_action.argmax(axis=-1)
 
-    def act(self, obs: Arrayable, future=False) -> Tensor:
+    def act(self, obs: Arrayable, target=False) -> Tensor:
         pre_action = self._critic(obs)
-        return pre_action.argmax(axis=-1)
+        return pre_action.argmax(dim=-1)
 
     def optimize(self, loss: Tensor):
         pass

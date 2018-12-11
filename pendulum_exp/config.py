@@ -1,7 +1,8 @@
 from functools import partial
 from policies.offline_policy import OfflinePolicy
 from abstract import Env
-from actors import DiscreteActor, SampledActor, ApproximateActor, DelayedApproximateActor
+from actors import DiscreteActor, SampledActor, ApproximateActor
+from actors import DelayedDiscreteActor, DelayedApproximateActor
 from critics import AdvantageCritic, ValueCritic
 from envs.utils import make_env
 from envs.vecenv import SubprocVecEnv
@@ -35,12 +36,14 @@ def configure(args):
     }[critic_type]
 
     critic = critic_cls.configure(**kwargs)
-    kwargs["critic_function"] = critic.critic_function
+    kwargs["critic_function"] = critic.critic_function()
+    kwargs["target_critic_function"] = critic.critic_function(target=True)
 
     actor_cls = {
         "sampled": SampledActor,
         "approximate": ApproximateActor,
         "delayed-approximate": DelayedApproximateActor,
+        "delayed-discrete": DelayedDiscreteActor,
         "discrete": DiscreteActor}[actor_type]
 
     actor = actor_cls.configure(**kwargs)

@@ -79,7 +79,7 @@ class OfflinePolicy(CompoundStateful, Policy, Cudaable):
                     weights = weights * (1 - time_limit)
 
                 max_action = self._actor.act(obs)
-                max_next_action = self._actor.act(next_obs, future=True)
+                max_next_action = self._actor.act(next_obs, target=True)
 
                 critic_loss = self._critic.optimize(
                     obs, action, max_action,

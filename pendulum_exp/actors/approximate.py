@@ -28,7 +28,7 @@ class ApproximateActor(CompoundStateful, Actor):
         self._noise.step()
         return action
 
-    def act(self, obs: Arrayable, future=False) -> Tensor:
+    def act(self, obs: Arrayable, target=False) -> Tensor:
         return self._policy_function(obs)
 
     def optimize(self, loss: Tensor):
