@@ -1,4 +1,5 @@
 \documentclass[11pt,a4paper]{article}
+\usepackage[colorlinks=true,linkcolor=blue]{hyperref}
 \input{header.en.tex}
 
 \newcommand{\Dir}{\mathcal{D}}
@@ -566,11 +567,11 @@ right? No, because the $R$ term doesn't go away and I'd rather have a
 correction that vanishes when $\Delta V-R$ is small.
 
 \section{A function that almost solves the Bellman equation can be very
-far from the true Bellman function}
+far from the true value function}
 
 Combined with all these problems, is the problem that an approximate
 solution to the Bellman equation may be very, very far from the true
-Bellman solution.  This is an absolutely major problem off-policy.
+Bellman solution.  I believe this is an absolutely major problem off-policy.
 
 In a finite MDP, the solution to the Bellman equation is unique. However,
 in infinite MDPs this is not the case at all. And even in finite MDPs,
@@ -584,16 +585,16 @@ place (with arbitrary probabilities). Then the Bellman equation on $V$
 is, at each state $s$, a linear equation involving $V(s)$, $V(s+1)$ and
 $V(s-1)$. It is easy to build many solutions by choosing arbitrary
 values for $V(0)$ and $V(1)$, and then just solving the Bellman equation
-in $V(s+1)$ for $s\geq 1$ and in $V(s-1)$ for $s\leq -1$.
+in $V(s+1)$ for $s\geq 2$ and solving in $V(s-1)$ for $s\leq -1$.
 
 For instance, imagine that the policy is a nearest-neighbor random walk
-on $\Z$ (with probabilities $1/2$ to jump right or left), and that
+on $\Z$, with probabilities $1/2$ to jump right or left, and that
 $\gamma=1$. Then any linear function $f$ satisfies $f=Pf$, therefore,
 linear functions lie in the kernel of the Bellman gap operator.
 Consequently, if $V$ solves the Bellman equation, then $V+f$ is another
-solution, for any linear function $f$.
+solution, for any linear function $f$. (This works in any dimension.)
 
-What happens with linear functions is that the system ``believes''
+What happens with linear functions is that the solution ``believes''
 there's a source of reward at infinity, and this belief cannot be
 falsified via the Bellman equation alone.
 
@@ -609,7 +610,9 @@ policy satisfies (with $\gamma=1$)
 V(s)=R(s)+\max_{s'\in \{s-1,s,s+1\}} V(s')
 \end{equation}
 
-For instance, if the reward is $0$ at $0$ and $-1$ everywhere else, the
+For instance, if the reward is $0$ at $0$ and $-1$ everywhere else
+(a typical episodic problem of reaching a specific state as fast as
+possible), the
 optimal policy moves towards $0$, and the value function is
 $V(s)=-\abs{s}$. However, it is easy to check that
 $V(s)=\abs{s}+\1_{s=0}$ also solves the Bellman equation. This solution
@@ -619,12 +622,16 @@ This ``almost'' happens in a finite state space. For instance, take a
 state space $[-n;n]$ with reward $0$ at the boundaries $\pm n$, and
 reward $-1$
 everywhere else. The optimal policy goes to the nearest boundary point,
-and the value function is $V(s)=\abs{s}-n$, shaped like a ``V''.
+and the value function is the distance to the boundary, $V(s)=\abs{s}-n$, shaped like a ``V''.
 
 This solution is unique; however, there are near-solutions that violate
 the Bellman equation only at one or a few points. For instance, $-V$ is a
-solution everywhere except at $s=0$.
+solution everywhere except at $s=0$. More generally one can start with a
+solution and ``flip'' it
+vertically in a segment; this creates a few points at which Bellman is
+violated, but Bellman is still satisfied at most points.
 
+Assume we start with the pseudo-solution $-V$ in this example.
 In an off-policy situation where we sample transitions $(s,s')$ and apply
 TD at $(s,s')$, it would take a long time to realize that $-V$ is
 not the correct solution, and convergence to the true solution would be
@@ -634,7 +641,8 @@ this belief is consistent as long as we do not actually reach $s=0$.
 This phenomenon is fully general and not specific to 1D problems; in any
 MDP one can build near-Bellman solutions
 that ``believe'' there is a reward at a state $s_0$ and solve Bellman
-exactly everywhere except at $s_0$. Off-policy these violations would not be
+exactly everywhere except at $s_0$. Off-policy, these violations would
+rarely be
 detected. On-policy, the policy would move towards $s_0$ and detect the
 problem. I believe this is a serious limitation of off-policy approaches.
 
@@ -652,11 +660,12 @@ is just
 \end{equation}
 (as one can see by expanding $V(s+\eps)$ and $V(s-\eps)$ in the equation
 $V(s)=R(s)\eps +\max \{V(s+\eps),V(s-\eps)\}$; for simplicity I have
-discarded the possibility to stay in place). [One gets a constraint that
-rewards are negative because in such a situation, the optimal policy
+discarded the possibility to stay in place). \footnote{One gets a constraint that
+rewards are negative for technical reasons due to $\gamma=1$: in such a situation, the optimal policy
 moves to the state with highest reward, so with $\gamma=1$ the value
 function is well-defined only if one shifts the rewards by the maximum
-reward so that the maximum reward becomes $0$.]
+reward so that the reward of the terminal state becomes $0$. This is the
+typical setup for many episodic environments.}
 
 This equation is wildly underdetermined. For instance, if $V$ is a
 solution then $-V$ is also a solution.
