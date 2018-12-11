@@ -6,7 +6,7 @@ from critics.advantage import AdvantageCritic
 from nn import gmm_loss
 from gym import Space
 from gym.spaces import Box, Discrete
-from models import MLP, ContinuousAdvantageMLP, NormalizedMLP
+from models import MLP, ContinuousAdvantageMLP, NormalizedMLP, MixtureNetwork
 import torch
 import torch.nn.functional as f
 import numpy as np
@@ -65,6 +65,10 @@ class MixtureAdvantageCritic(AdvantageCritic):
     def critic(self, obs: Arrayable, action: Tensorable, target: bool=False) -> Tensor:
         _, _, adv = self.compute_mixture_advantage(obs, action)
         return adv
+
+    def critic_function(self, target: bool=False):
+        return MixtureNetwork(self._adv_function, self._mixture_function,
+                              [1, self._dt], [np.log(self._dt / (1 - self._dt)), 0])
 
     def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,
                  next_obs: Arrayable, max_next_action: Tensor, reward: Arrayable,

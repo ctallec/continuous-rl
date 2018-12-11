@@ -2,8 +2,9 @@
 from collections import OrderedDict
 import torch
 import torch.nn as nn
-from abstract import ParametricFunction, Tensorable, Shape
-from convert import check_tensor
+import torch.nn.functional as f
+from abstract import ParametricFunction, Tensorable, Shape, Arrayable
+from convert import check_tensor, check_array, arr_to_th
 from mylog import log
 from uuid import uuid4
 
@@ -112,3 +113,24 @@ class NormalizedMLP(nn.Module, ParametricFunction):
 
     def output_shape(self) -> Shape:
         return self._model.output_shape()
+
+class MixtureNetwork(nn.Module, ParametricFunction):
+    def __init__(self, value_net: ParametricFunction,
+                 mixture_net: ParametricFunction,
+                 val_scale: Arrayable, logpi_scale: Arrayable) -> None:
+        super().__init__()
+        self._value_net = value_net
+        self._mixture_net = mixture_net
+        self._val_scale = check_array([[val_scale]])
+        self._logpi_scale = check_array([[logpi_scale]])
+
+    def forward(self, *inputs: Tensorable):
+        device = next(self.parameters())
+        tens_inputs = [check_tensor(inp) for inp in inputs]
+        batch_size = tens_inputs[0].size(0)
+        val = self._value_net(*tens_inputs)
+        logpi = self._mixture_net(*tens_inputs)
+        nb_mix = self._val_scale.shape[-1]
+        val = val.view(batch_size, nb_mix, -1) * arr_to_th(self._val_scale, device)
+        logpi = f.log_softmax(val.view(batch_size, nb_mix, -1) + arr_to_th(self._logpi_scale, device), dim=-2)
+        return (val * logpi.exp()).sum(dim=-1)
