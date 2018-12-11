@@ -74,3 +74,13 @@ class LogSoftmax(torch.nn.Module, ParametricFunction):
 
     def output_shape(self) -> Shape:
         return self._core.output_shape()
+
+def soft_update(net: ParametricFunction, target_net: ParametricFunction, tau: float):
+    with torch.no_grad():
+        for target_param, param in zip(target_net.parameters(), net.parameters()):
+            target_param.add_(tau, param - target_param)
+
+def hard_update(net: ParametricFunction, target_net: ParametricFunction, tau: float):
+    with torch.no_grad():
+        for target_param, param in zip(target_net.parameters(), net.parameters()):
+            target_param.copy_(param)

@@ -3,27 +3,19 @@ from typing import Optional
 import sys
 from os.path import join, exists
 from logging import info, basicConfig, INFO
-from functools import partial
 import numpy as np
 import torch
 from tqdm import tqdm
 
 from abstract import Policy, Env, Arrayable
-from config import NoiseConfig, PolicyConfig, EnvConfig, read_config
-from policies import setup_policy
 from interact import interact
-from envs.vecenv import SubprocVecEnv
-from envs.utils import make_env
 from evaluation import specific_evaluation
 from utils import compute_return
 from mylog import log, logto, log_video
 from parse import setup_args
+from config import configure
 
-def train(
-        nb_steps: int,
-        env: Env,
-        policy: Policy,
-        start_obs: Arrayable):
+def train(nb_steps: int, env: Env, policy: Policy, start_obs: Arrayable):
     """ Trains for one epoch. """
     policy.train()
 
@@ -33,15 +25,9 @@ def train(
         obs, _, _ = interact(env, policy, obs)
     return obs
 
-def evaluate(
-        dt: float,
-        epoch: int,
-        env: Env,
-        policy: Policy,
-        time_limit: Optional[float] = None,
-        eval_return: bool = False,
-        progress_bar: bool = False,
-        video: bool = False):
+def evaluate(dt: float, epoch: int, env: Env, policy: Policy,
+             time_limit: Optional[float] = None, eval_return: bool = False,
+             progress_bar: bool = False, video: bool = False):
     """ Evaluate. """
     log_gap = int(.1 / dt)
     policy.eval()
@@ -71,37 +57,22 @@ def evaluate(
     specific_evaluation(epoch, log_gap, dt, env, policy)
     return R
 
-def main(
-        logdir: str,
-        noreload: bool,
-        nb_train_env: int,
-        hidden_size: int,
-        nb_layers: int,
-        nb_epochs: int,
-        nb_steps: int,
-        nb_eval_env: int,
-        normalize_state: bool,
-        policy_config: PolicyConfig,
-        noise_config: NoiseConfig,
-        eval_noise_config: NoiseConfig,
-        env_config: EnvConfig):
+def main(args):
     """ Starts training. """
+    logdir = args.logdir
+    noreload = args.noreload
+    dt = args.dt
+    nb_epochs = args.nb_epochs
+    nb_steps = args.nb_steps
+    time_limit = args.time_limit
+
     # device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    # setting up envs
-    env_fn = partial(make_env, env_config)
-    env: Env = SubprocVecEnv([env_fn() for _ in range(nb_train_env)]) # type: ignore
-    eval_env: Env = SubprocVecEnv([env_fn() for _ in range(nb_eval_env)]) # type: ignore
-    obs = env.reset()
+    policy, env, eval_env = configure(args)
+    policy = policy.to(device)
 
-    policy, eval_policy = \
-        setup_policy(observation_space=env.observation_space,
-                     action_space=env.action_space, policy_config=policy_config,
-                     nb_layers=nb_layers, nb_train_env=nb_train_env,
-                     nb_eval_env=nb_eval_env, hidden_size=hidden_size,
-                     noise_config=noise_config, eval_noise_config=eval_noise_config,
-                     normalize_state=normalize_state, device=device)
+    obs = env.reset()
 
     # load checkpoints if directory is not empty
     policy_file = join(logdir, 'best_policy.pt')
@@ -113,20 +84,20 @@ def main(
         cur_e = state_dict["epoch"]
         info(f"Loading policy with return {R} at epoch {cur_e}...")
         policy.load_state_dict(state_dict)
-    log_gap = int(.1 / env_config.dt)
+    log_gap = int(.1 / dt)
 
     for e in range(cur_e, nb_epochs):
         info(f"Epoch {e}...")
         obs = train(nb_steps, env, policy, obs)
         new_R = evaluate(
-            env_config.dt,
+            dt,
             e, eval_env,
-            eval_policy,
-            env_config.time_limit,
+            policy,
+            time_limit,
             eval_return=e % log_gap == log_gap - 1,
         )
         if new_R is not None:
-            policy.observe_evaluation(new_R)
+            # policy.observe_evaluation(new_R)
             if new_R > R:
                 info(f"Saving new policy with return {new_R}")
                 state_dict = policy.state_dict()
@@ -149,11 +120,4 @@ if __name__ == '__main__':
 
     logto(args.logdir, reload=not args.noreload)
 
-    policy_config, noise_config, eval_noise_config, env_config = read_config(args)
-    main(
-        logdir=args.logdir, noreload=args.noreload, nb_train_env=args.nb_train_env,
-        hidden_size=args.hidden_size, nb_layers=args.nb_layers,
-        nb_epochs=args.nb_epochs, nb_steps=args.nb_steps,
-        nb_eval_env=args.nb_eval_env, policy_config=policy_config,
-        noise_config=noise_config, eval_noise_config=eval_noise_config,
-        env_config=env_config, normalize_state=args.normalize_state)
+    main(args)

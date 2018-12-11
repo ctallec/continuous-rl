@@ -1,39 +1,30 @@
 """ Noise. """
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Dict, Any
 import numpy as np
 import torch
-import torch.nn as nn
-from abstract import Noise, Arrayable, ParametricFunction
-from config import NoiseConfig, ParameterNoiseConfig, ActionNoiseConfig
-from convert import th_to_arr
+from abstract import Noise, Arrayable, ParametricFunction, DecayFunction, Tensorable
+from convert import th_to_arr, check_tensor
 
 def setup_noise(
-        noise_config: NoiseConfig,
-        **kwargs) -> Noise:
-    assert isinstance(noise_config, (ParameterNoiseConfig, ActionNoiseConfig))
-    keywords_args = dict(sigma=noise_config.sigma, theta=noise_config.theta,
-                         dt=noise_config.dt, sigma_decay=noise_config.sigma_decay)
+        noise_type: str, sigma: float, theta: float, dt: float,
+        sigma_decay: DecayFunction, **kwargs) -> Noise:
+    keywords_args = dict(sigma=sigma, theta=theta, dt=dt, sigma_decay=sigma_decay)
 
-    if isinstance(noise_config, ParameterNoiseConfig):
-        assert kwargs['network'] is not None
-        keywords_args['network'] = kwargs['network']
+    if noise_type == 'parameter':
         return ParameterNoise(**keywords_args) # type: ignore
-    if isinstance(noise_config, ActionNoiseConfig):
-        assert kwargs['action_shape'] is not None
-        keywords_args['action_shape'] = kwargs['action_shape']
+    elif noise_type == 'action':
         return ActionNoise(**keywords_args) # type: ignore
+    else:
+        raise ValueError("Incorrect noise type...")
 
 class ParameterNoise(Noise):
     """ Ornstein Ulhenbeck parameter noise. """
     def __init__(self,
-                 network: nn.Module,
                  theta: float,
                  sigma: float,
                  dt: float,
                  sigma_decay: Optional[Callable[[int], float]] = None) -> None:
-        self._p_noise = {
-            name: sigma / np.sqrt(2 * theta) * torch.randn_like(p, requires_grad=False)
-            for name, p in network.named_parameters() if 'ln' not in name}
+        self._p_noise: Dict[str, Any] = {}
         self._theta = theta
         self._sigma = sigma
         self._sigma_decay = sigma_decay
@@ -59,10 +50,18 @@ class ParameterNoise(Noise):
     def __iter__(self):
         return iter(self._p_noise)
 
+    def _init_noise(self, function: ParametricFunction):
+        self._p_noise = {
+            name: self._sigma / np.sqrt(2 * self._theta) * torch.randn_like(p, requires_grad=False)
+            for name, p in function.named_parameters() if 'ln' not in name}
+
     def perturb_output(
             self,
             *inputs: Arrayable,
             function: ParametricFunction):
+        if not self._p_noise:
+            self._init_noise(function)
+
         with torch.no_grad():
             for name, p in function.named_parameters():
                 if 'ln' not in name:
@@ -76,13 +75,11 @@ class ParameterNoise(Noise):
 class ActionNoise(Noise): # pylint: disable=too-few-public-methods
     """ Ornstein Ulhenbeck action noise. """
     def __init__(self, # pylint: disable=too-many-arguments
-                 action_shape: Tuple[int, int],
                  theta: float,
                  sigma: float,
                  dt: float,
                  sigma_decay: Optional[Callable[[int], float]] = None) -> None:
-        self.noise = sigma / np.sqrt(2 * theta) * \
-            torch.randn(action_shape, requires_grad=False)
+        self.noise = torch.empty(())
         self._theta = theta
         self._sigma = sigma
         self._sigma_decay = sigma_decay
@@ -103,12 +100,17 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
         self.noise = self.noise * (1 - self._theta * self._dt) + dBt
         self._count += 1
 
+    def _init_noise(self, template: Tensorable):
+        action_shape = check_tensor(template).size()
+        self.noise = self._sigma / np.sqrt(2 * self._theta) * \
+            torch.randn(action_shape, requires_grad=False).to(self._device)
+
     def perturb_output(
             self,
             *inputs: Arrayable,
             function: ParametricFunction):
-        if self._sigma == 0.:
-            with torch.no_grad():
-                return th_to_arr(function(*inputs))
         with torch.no_grad():
-            return th_to_arr(function(*inputs)[:self.noise.size(0)] + self.noise)
+            output = function(*inputs)
+            if not self.noise.shape:
+                self._init_noise(output)
+            return th_to_arr(output[:self.noise.size(0)] + self.noise)

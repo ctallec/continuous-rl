@@ -5,7 +5,6 @@ from envs.wrappers import TimeLimit
 import numpy as np
 from envs.pusher import DiscretePusherEnv, ContinuousPusherEnv
 from envs.hill import HillEnv
-from config import EnvConfig
 from envs.wrappers import WrapContinuousPendulum, WrapPendulum
 from envs.biped import WalkerHardcore
 
@@ -163,11 +162,8 @@ class CloudpickleWrapper: # pylint: disable=R0903
         import pickle
         self.x = pickle.loads(ob)
 
-def make_env(env_config: EnvConfig): # noqa: C901
+def make_env(env_id: str, dt: float, time_limit: float): # noqa: C901
     """ Make env. """
-    dt = env_config.dt
-    env_id = env_config.id
-    time_limit = env_config.time_limit
     # pendulum
     if env_id == 'pendulum':
         env = gym.make('Pendulum-v0').unwrapped

@@ -1,11 +1,12 @@
+from typing import Optional
 from memory.buffer import MemorySampler, PrioritizedMemorySampler
-from config import PolicyConfig
 
-def setup_memory(policy_config: PolicyConfig):
-    args = dict(batch_size=policy_config.batch_size,
-                size=policy_config.memory_size)
+def setup_memory(memory_size: int, alpha: Optional[float],
+                 beta: Optional[float], batch_size: int):
+    args = dict(batch_size=batch_size,
+                size=memory_size)
 
-    if policy_config.beta is not None:
+    if beta is not None:
         return PrioritizedMemorySampler(
-            alpha=policy_config.alpha, beta=policy_config.beta, **args)
+            alpha=alpha, beta=beta, **args)
     return MemorySampler(**args)
