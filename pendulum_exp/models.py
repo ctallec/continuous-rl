@@ -133,4 +133,11 @@ class MixtureNetwork(nn.Module, ParametricFunction):
         nb_mix = self._val_scale.shape[-1]
         val = val.view(batch_size, nb_mix, -1) * arr_to_th(self._val_scale, device)
         logpi = f.log_softmax(val.view(batch_size, nb_mix, -1) + arr_to_th(self._logpi_scale, device), dim=-2)
-        return (val * logpi.exp()).sum(dim=-1)
+        return (val * logpi.exp()).sum(dim=-2)
+
+    def input_shape(self) -> Shape:
+        return self._value_net.input_shape()
+
+    def output_shape(self) -> Shape:
+        o_s, = self._value_net.output_shape()
+        return (o_s // self._val_scale.shape[-1],)
