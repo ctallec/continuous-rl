@@ -568,13 +568,100 @@ correction that vanishes when $\Delta V-R$ is small.
 \section{A function that almost solves the Bellman equation can be very
 far from the true Bellman function}
 
-Combined with all these problems, is the problem that a Bellman solution on the
-support of $\rho$ may be very, very far from the global Bellman solution,
-even on the support of $\rho$ (take random walk on a circle, with $\rho$
-being everything but one point: then any linear function solves Bellman
-on the support of $\rho$).
+Combined with all these problems, is the problem that an approximate
+solution to the Bellman equation may be very, very far from the true
+Bellman solution.  This is an absolutely major problem off-policy.
 
-TODO seems to be much worse off-policy.
+In a finite MDP, the solution to the Bellman equation is unique. However,
+in infinite MDPs this is not the case at all. And even in finite MDPs,
+the non-uniqueness problem becomes an ill-conditioning problem: some
+functions are almost perfect solutions to the Bellman equation but can be
+arbitrarily far from the true value function.
+
+As an example, consider a one-dimensional problem with state $s\in \Z$.
+Assume the policy $\pi$ can only jump to a nearest neighbor or stay in
+place (with arbitrary probabilities). Then the Bellman equation on $V$
+is, at each state $s$, a linear equation involving $V(s)$, $V(s+1)$ and
+$V(s-1)$. It is easy to build many solutions by choosing arbitrary
+values for $V(0)$ and $V(1)$, and then just solving the Bellman equation
+in $V(s+1)$ for $s\geq 1$ and in $V(s-1)$ for $s\leq -1$.
+
+For instance, imagine that the policy is a nearest-neighbor random walk
+on $\Z$ (with probabilities $1/2$ to jump right or left), and that
+$\gamma=1$. Then any linear function $f$ satisfies $f=Pf$, therefore,
+linear functions lie in the kernel of the Bellman gap operator.
+Consequently, if $V$ solves the Bellman equation, then $V+f$ is another
+solution, for any linear function $f$.
+
+What happens with linear functions is that the system ``believes''
+there's a source of reward at infinity, and this belief cannot be
+falsified via the Bellman equation alone.
+
+(If the policy and environment are ergodic with invariant measure $\mu$,
+and if rewards lie in $L^2(\mu)$, then the true value function is the
+only solution of Bellman in $L^2(\mu)$, so penalizing the $L^2$-norm might
+help a bit. However, some simple examples below are immune to this solution.)
+
+Let us take another example. The state is $s\in \Z$. With nearest-neighbor transitions, the Bellman function of the optimal
+policy satisfies (with $\gamma=1$)
+\begin{equation}
+\label{eq:Vopt}
+V(s)=R(s)+\max_{s'\in \{s-1,s,s+1\}} V(s')
+\end{equation}
+
+For instance, if the reward is $0$ at $0$ and $-1$ everywhere else, the
+optimal policy moves towards $0$, and the value function is
+$V(s)=-\abs{s}$. However, it is easy to check that
+$V(s)=\abs{s}+\1_{s=0}$ also solves the Bellman equation. This solution
+believes in ``rewards at infinity''.
+
+This ``almost'' happens in a finite state space. For instance, take a
+state space $[-n;n]$ with reward $0$ at the boundaries $\pm n$, and
+reward $-1$
+everywhere else. The optimal policy goes to the nearest boundary point,
+and the value function is $V(s)=\abs{s}-n$, shaped like a ``V''.
+
+This solution is unique; however, there are near-solutions that violate
+the Bellman equation only at one or a few points. For instance, $-V$ is a
+solution everywhere except at $s=0$.
+
+In an off-policy situation where we sample transitions $(s,s')$ and apply
+TD at $(s,s')$, it would take a long time to realize that $-V$ is
+not the correct solution, and convergence to the true solution would be
+slow. This solution ``believes'' there is a good reward at $s=0$, and
+this belief is consistent as long as we do not actually reach $s=0$.
+
+This phenomenon is fully general and not specific to 1D problems; in any
+MDP one can build near-Bellman solutions
+that ``believe'' there is a reward at a state $s_0$ and solve Bellman
+exactly everywhere except at $s_0$. Off-policy these violations would not be
+detected. On-policy, the policy would move towards $s_0$ and detect the
+problem. I believe this is a serious limitation of off-policy approaches.
+
+Are these pseudo-solutions frequent, or does a good initialization move
+away from such solutions?
+The continuous-state limit is interesting for this.
+
+We can view $[-n;n]$ as a
+discretization of a problem with state $s\in [-1;1]$, where the state is
+discretized with step $\eps=1/n$. Then the continuous-state limit of the
+Bellman equation \eqref{eq:Vopt} for the optimal policy (with $\gamma=1$)
+is just
+\begin{equation}
+\abs{\partial V(s)/\partial s}=-R(s)
+\end{equation}
+(as one can see by expanding $V(s+\eps)$ and $V(s-\eps)$ in the equation
+$V(s)=R(s)\eps +\max \{V(s+\eps),V(s-\eps)\}$; for simplicity I have
+discarded the possibility to stay in place). [One gets a constraint that
+rewards are negative because in such a situation, the optimal policy
+moves to the state with highest reward, so with $\gamma=1$ the value
+function is well-defined only if one shifts the rewards by the maximum
+reward so that the maximum reward becomes $0$.]
+
+This equation is wildly underdetermined. For instance, if $V$ is a
+solution then $-V$ is also a solution...
+
+
 
 \section{Storing a summary of possible transitions?}
 
