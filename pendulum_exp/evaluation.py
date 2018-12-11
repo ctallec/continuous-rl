@@ -2,8 +2,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from abstract import Policy, Env
-from policies import ContinuousAdvantagePolicy
-from policies.mixture import ContinuousAdvantageMixturePolicy
 from envs.vecenv import SubprocVecEnv
 from envs.hill import HillEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv
@@ -23,22 +21,21 @@ def specific_evaluation(
         nb_pixels = 50
         state_space = np.linspace(-1.5, 1.5, nb_pixels)[:, np.newaxis]
 
-        vs = policy.value(state_space)
-        actions = policy.step(state_space).squeeze()
+        actions = policy._actor.act(state_space)
+        critics = policy._critic.critic(state_space, actions)
         plt.clf()
         plt.subplot(131)
-        plt.plot(state_space, vs)
+        plt.plot(state_space, th_to_arr(critics))
         plt.subplot(132)
-        plt.plot(state_space, actions)
+        plt.plot(state_space, th_to_arr(actions))
         if isinstance(env.envs[0].unwrapped, ContinuousPusherEnv): # type: ignore
-            assert isinstance(policy, ContinuousAdvantagePolicy)
             action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
             states, actions = np.meshgrid(state_space, action_space)
             states = states[..., np.newaxis]
             actions = actions[..., np.newaxis]
-            adv = policy.advantage(states, actions).squeeze()
+            critic = th_to_arr(policy._critic.critic(states, actions).squeeze())
             plt.subplot(133)
-            plt.imshow(adv)
+            plt.imshow(critic)
         plt.pause(.1)
     elif isinstance(env.envs[0].unwrapped, PendulumEnv): # type: ignore
         nb_pixels = 50
@@ -48,45 +45,36 @@ def specific_evaluation(
         state_space = np.stack([np.cos(theta), np.sin(theta), dtheta], axis=-1)
         target_shape = state_space.shape[:2]
 
-        vs = policy.value(state_space.reshape(-1, 3)).reshape(target_shape).squeeze()
-        actions = policy.step(state_space.reshape(-1, 3)).reshape(target_shape).squeeze()
+        actions = policy._actor.act(
+            state_space.reshape(-1, 3))
+        critics = policy._critic.critic(
+            state_space.reshape(-1, 3), actions).reshape(target_shape).squeeze()
+        actions = actions.reshape(target_shape).squeeze()
         plt.clf()
         plt.subplot(121)
-        plt.imshow(actions, origin='lower')
+        plt.imshow(th_to_arr(actions), origin='lower')
         plt.subplot(122)
-        plt.imshow(vs, origin='lower')
+        plt.imshow(th_to_arr(critics), origin='lower')
         plt.colorbar()
         plt.pause(.1)
     elif isinstance(env.envs[0].unwrapped, HillEnv):
         nb_pixels = 50
         state_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
 
-        mixture = isinstance(policy, ContinuousAdvantageMixturePolicy)
-        if mixture:
-            nb_plots = 4
-        else:
-            nb_plots = 3
-
-        vs = policy.value(state_space)
-        actions = policy.step(state_space).squeeze()
+        actions = policy._actor.act(state_space)
+        critics = policy._critic.critic(state_space, actions).squeeze()
 
         plt.clf()
-        plt.subplot(1, nb_plots, 1)
-        plt.plot(state_space, vs)
-        plt.subplot(1, nb_plots, 2)
-        plt.plot(state_space, actions)
+        plt.subplot(1, 3, 1)
+        plt.plot(state_space, th_to_arr(critics))
+        plt.subplot(1, 3, 2)
+        plt.plot(state_space, th_to_arr(actions))
         if isinstance(env.envs[0].unwrapped.action_space, Box): # type: ignore
             action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
             states, actions = np.meshgrid(state_space, action_space)
             states = states[..., np.newaxis]
             actions = actions[..., np.newaxis]
-            adv = policy.advantage(states, actions).squeeze()
-            if mixture:
-                _, _, logpi, _, _ = \
-                    policy.compute_mixture_advantages(states, actions)
-                pi = th_to_arr(logpi.exp())[..., 0]
-                plt.subplot(1, nb_plots, nb_plots)
-                plt.imshow(pi)
-            plt.subplot(1, nb_plots, 3)
-            plt.imshow(adv)
+            critics = policy._critic.critic(states, actions).squeeze()
+            plt.subplot(1, 3, 3)
+            plt.imshow(th_to_arr(critics))
         plt.pause(.1)
