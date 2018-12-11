@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from abstract import Policy, Env, Arrayable
 from interact import interact
-# from evaluation import specific_evaluation
+from evaluation import specific_evaluation
 from utils import compute_return
 from mylog import log, logto, log_video
 from parse import setup_args
@@ -54,7 +54,7 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy,
         if video:
             log_video("demo", epoch, np.stack(imgs, axis=0))
 
-    # specific_evaluation(epoch, log_gap, dt, env, policy)
+    specific_evaluation(epoch, log_gap, dt, env, policy)
     return R
 
 def main(args):
@@ -97,7 +97,7 @@ def main(args):
             eval_return=e % log_gap == log_gap - 1,
         )
         if new_R is not None:
-            policy.observe_evaluation(new_R)
+            # policy.observe_evaluation(new_R)
             if new_R > R:
                 info(f"Saving new policy with return {new_R}")
                 state_dict = policy.state_dict()

@@ -72,7 +72,7 @@ class AdvantageCritic(CompoundStateful, Critic):
 
         return critic_loss
 
-    def critic(self, obs: Arrayable, action: Tensorable) -> Tensor:
+    def critic(self, obs: Arrayable, action: Tensorable, future: bool=False) -> Tensor:
         if len(self._adv_function.input_shape()) == 2:
             adv = self._adv_function(obs, action).squeeze()
         else:
@@ -80,6 +80,9 @@ class AdvantageCritic(CompoundStateful, Critic):
             action = check_tensor(action, self._device).long()
             adv = adv_all.gather(1, action.view(-1, 1)).squeeze()
         return adv
+
+    def log(self):
+        pass
 
     @property
     def critic_function(self):

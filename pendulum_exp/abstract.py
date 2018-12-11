@@ -127,9 +127,14 @@ class Noise(Cudaable):
             function: ParametricFunction):
         pass
 
-class Actor(Stateful, Cudaable):
+class Loggable(ABC):
     @abstractmethod
-    def act(self, obs: Arrayable) -> Tensor:
+    def log(self):
+        raise NotImplementedError()
+
+class Actor(Stateful, Cudaable, Loggable):
+    @abstractmethod
+    def act(self, obs: Arrayable, future: bool=False) -> Tensor:
         raise NotImplementedError()
 
     @abstractmethod
@@ -140,7 +145,7 @@ class Actor(Stateful, Cudaable):
     def optimize(self, loss: Tensor):
         raise NotImplementedError()
 
-class Critic(Stateful, Cudaable):
+class Critic(Stateful, Cudaable, Loggable):
     @abstractmethod
     def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,
                  next_obs: Arrayable, max_next_action: Tensor, reward: Arrayable,
@@ -148,5 +153,5 @@ class Critic(Stateful, Cudaable):
         raise NotImplementedError()
 
     @abstractmethod
-    def critic(self, obs: Arrayable, max_action: Tensor) -> Tensor:
+    def critic(self, obs: Arrayable, action: Tensorable, future: bool=False) -> Tensor:
         raise NotImplementedError()

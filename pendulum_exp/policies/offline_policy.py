@@ -3,8 +3,9 @@ from abstract import Policy, Actor, Critic, Arrayable, StateDict, Cudaable
 from memory.utils import setup_memory
 from stateful import CompoundStateful
 from mylog import log
+from logging import info
 import numpy as np
-from convert import th_to_arr
+from convert import th_to_arr, arr_to_th
 
 class OfflinePolicy(CompoundStateful, Policy, Cudaable):
     def __init__(
@@ -78,31 +79,35 @@ class OfflinePolicy(CompoundStateful, Policy, Cudaable):
                     weights = weights * (1 - time_limit)
 
                 max_action = self._actor.act(obs)
-                max_next_action = self._actor.act(next_obs)
+                max_next_action = self._actor.act(next_obs, future=True)
 
                 critic_loss = self._critic.optimize(
                     obs, action, max_action,
                     next_obs, max_next_action, reward, done, time_limit, weights)
                 critic_value = self._critic.critic(
                     obs, max_action)
+
+                weights = arr_to_th(weights, device=critic_loss.device)
                 self._actor.optimize(-critic_value)
-                self._sampler.observe(critic_loss * weights)
+                self._sampler.observe(th_to_arr(critic_loss * weights))
 
                 cum_critic_loss += (critic_loss * weights).mean().item()
                 cum_critic_value += critic_value.mean().item()
 
+            info(f'At step {self._count}, critic loss: {cum_critic_loss / self._learn_per_step}')
+            info(f'At step {self._count}, critic value: {cum_critic_value / self._learn_per_step}')
             log("loss/critic", cum_critic_loss / self._learn_per_step, self._count)
             log("value/critic", cum_critic_value / self._learn_per_step, self._count)
             self._actor.log()
             self._critic.log()
 
     def state_dict(self) -> StateDict:
-        state = super(CompoundStateful, self).state_dict()
+        state = CompoundStateful.state_dict(self)
         state["learn_count"] = self._learn_count
         return state
 
     def load_state_dict(self, state_dict: StateDict):
-        state = super(CompoundStateful, self).load_state_dict(state_dict)
+        state = CompoundStateful.load_state_dict(self, state_dict)
         self._learn_count = state["learn_count"]
 
     def train(self):

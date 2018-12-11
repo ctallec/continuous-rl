@@ -12,7 +12,7 @@ class DiscreteActor(Actor):
         self._noise.step()
         return pre_action.argmax(axis=-1)
 
-    def act(self, obs: Arrayable) -> Tensor:
+    def act(self, obs: Arrayable, future=False) -> Tensor:
         pre_action = self._critic(obs)
         return pre_action.argmax(axis=-1)
 
@@ -28,6 +28,9 @@ class DiscreteActor(Actor):
     def to(self, device):
         self._noise = self._noise.to(device)
         return self
+
+    def log(self):
+        pass
 
     @staticmethod
     def configure(

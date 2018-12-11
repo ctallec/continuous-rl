@@ -1,9 +1,9 @@
 """ Noise. """
-from typing import Callable, Optional, Tuple, Dict, Any
+from typing import Callable, Optional, Dict, Any
 import numpy as np
 import torch
 from abstract import Noise, Arrayable, ParametricFunction, DecayFunction
-from convert import th_to_arr
+from convert import th_to_arr, check_array
 
 def setup_noise(
         noise_type: str, sigma: float, theta: float, dt: float,
@@ -13,8 +13,6 @@ def setup_noise(
     if noise_type == 'parameter':
         return ParameterNoise(**keywords_args) # type: ignore
     elif noise_type == 'action':
-        assert kwargs['action_shape'] is not None
-        keywords_args['action_shape'] = kwargs['action_shape']
         return ActionNoise(**keywords_args) # type: ignore
     else:
         raise ValueError("Incorrect noise type...")
@@ -77,13 +75,11 @@ class ParameterNoise(Noise):
 class ActionNoise(Noise): # pylint: disable=too-few-public-methods
     """ Ornstein Ulhenbeck action noise. """
     def __init__(self, # pylint: disable=too-many-arguments
-                 action_shape: Tuple[int, int],
                  theta: float,
                  sigma: float,
                  dt: float,
                  sigma_decay: Optional[Callable[[int], float]] = None) -> None:
-        self.noise = sigma / np.sqrt(2 * theta) * \
-            torch.randn(action_shape, requires_grad=False)
+        self.noise = torch.empty(())
         self._theta = theta
         self._sigma = sigma
         self._sigma_decay = sigma_decay
@@ -104,12 +100,17 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
         self.noise = self.noise * (1 - self._theta * self._dt) + dBt
         self._count += 1
 
+    def _init_noise(self, template: Arrayable):
+        action_shape = check_array(template).shape
+        self.noise = self._sigma / np.sqrt(2 * self._theta) * \
+            torch.randn(action_shape, requires_grad=False).to(self._device)
+
     def perturb_output(
             self,
             *inputs: Arrayable,
             function: ParametricFunction):
-        if self._sigma == 0.:
-            with torch.no_grad():
-                return th_to_arr(function(*inputs))
         with torch.no_grad():
-            return th_to_arr(function(*inputs)[:self.noise.size(0)] + self.noise)
+            output = check_array(th_to_arr(function(*inputs)))
+            if not self.noise.shape:
+                self._init_noise(output)
+            return th_to_arr(output[:self.noise.size(0)] + self.noise)
