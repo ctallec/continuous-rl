@@ -37,6 +37,11 @@ class MixtureAdvantageCritic(AdvantageCritic):
         logpi = f.log_softmax(logpi + arr_to_th(logpi_scale, self._device), dim=-1)
         return val, logpi
 
+    def to(self, device):
+        super().to(device)
+        self._mixture_function = self._mixture_function.to(device)
+        return self
+
     def compute_mixture_advantage(self, obs: Arrayable, action: Arrayable):
         if len(self._adv_function.input_shape()) == 2:
             adv_mu, adv_logpi = self._adv_function(obs, action), self._mixture_function(obs, action)

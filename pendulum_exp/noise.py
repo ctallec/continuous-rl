@@ -2,8 +2,8 @@
 from typing import Callable, Optional, Dict, Any
 import numpy as np
 import torch
-from abstract import Noise, Arrayable, ParametricFunction, DecayFunction
-from convert import th_to_arr, check_array
+from abstract import Noise, Arrayable, ParametricFunction, DecayFunction, Tensorable
+from convert import th_to_arr, check_tensor
 
 def setup_noise(
         noise_type: str, sigma: float, theta: float, dt: float,
@@ -100,8 +100,8 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
         self.noise = self.noise * (1 - self._theta * self._dt) + dBt
         self._count += 1
 
-    def _init_noise(self, template: Arrayable):
-        action_shape = check_array(template).shape
+    def _init_noise(self, template: Tensorable):
+        action_shape = check_tensor(template).size()
         self.noise = self._sigma / np.sqrt(2 * self._theta) * \
             torch.randn(action_shape, requires_grad=False).to(self._device)
 
@@ -110,7 +110,7 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
             *inputs: Arrayable,
             function: ParametricFunction):
         with torch.no_grad():
-            output = check_array(th_to_arr(function(*inputs)))
+            output = function(*inputs)
             if not self.noise.shape:
                 self._init_noise(output)
             return th_to_arr(output[:self.noise.size(0)] + self.noise)
