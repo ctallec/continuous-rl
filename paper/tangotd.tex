@@ -607,21 +607,23 @@ Let us assume that we have a model $\tilde P$ of the operator $P$. Thus
 we can sample $\transp{\tilde \Delta}\rho \Delta$ (just sample one
 transition $s\to s'$ from $\rho P$, and a second transition $s\to \tilde
 s'$ from the same $s$). We can also sample from $\transp{\tilde
-\Delta}\rho R$. Moreover, \emph{if rewards during $s\to s'$ are
-independent from $s'$}, we can sample from $\transp{\Delta}\rho R$. From
-now on, I will assume that the reward collected during a transition $s\to
-s'$ depends only on $s$. \footnote{This means the state $s$ is a
-sufficient statistic. If the reward depends only on $s'$ instead, we can
-just
-shift the rewards by one step and pretend they are collected at the next
-step; therefore we are back to a reward that depends only on $s$. The
-only case not covered is if the reward really depends on the pair
-$(s,s')$; in that case, the state $s'$ is not quite a sufficient
-statistic of the process.
+\Delta}\rho R$, by sampling a reward during $s\to s'$ from the true
+model, and a simulated second
+transition from $s$. Note that this does not use a model of rewards, only of
+transitions.
+\footnote{
+Moreover, \emph{if rewards during $s\to s'$ are
+independent from $s'$}, we can sample from $\transp{\Delta}\rho R$. 
+(This also covers the case where rewards depend only on $s'$, by shifting
+rewards by one step.) Not covered is the case where the rewards really
+depends on the pair
+$(s,s')$ (in that case, the state $s'$ is not quite a sufficient
+statistic of the process); then we could have a model $\tilde R$ of rewards and
+sample from $\transp{\Delta}\rho \tilde{R}$.
 
-In the latter case, one would also need a model $\tilde R$ of rewards,
-and then we could sample from $\transp{\tilde \Delta}\rho R$ and from
-$\transp{\Delta}\rho\tilde R$.}
+Anyway we will not assume any of this: just using
+$\transp{\tilde
+\Delta}\rho R$ serves our purpose.}
 
 
 Let us consider the norm
