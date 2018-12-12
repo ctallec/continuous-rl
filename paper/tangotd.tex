@@ -799,6 +799,13 @@ a TD-like algorithm, \emph{on-policy}.
 TODO: not the right representation, plus works only on-policy. Maybe learn a function $a(s,s')$ that
 returns the first action to be taken if we want to reach $s'$ from $s$?
 
+In the end we should perhaps just learn a representation of $\Delta^{-1}$
+in a hidden state that represents distributions on $s$ (trained to
+faithfully reproduce averages of functions). $\Delta^{-1}$ satisfies the
+two-sided equation $\Delta^{-1}=\Id+\Delta^{-1}P=\Id+P\Delta^{-1}$, so
+when observing a transition $s\to s'$ we both update the model of
+how to arrive at $s'$ and of what happens when starting at $s$.
+
 \paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
