@@ -7,7 +7,7 @@
 
 \begin{document}
 
-This contains: Section~\ref{sec:tdconv}: remarks on recovering the known convergence results
+These notes contain: Section~\ref{sec:tdconv}: remarks on recovering the known convergence results
 for TD in a single framework, plus ideas on systematic variants around
 two-timescale algorithms or improved ``almost-one-timescale'' algorithms.
 
@@ -713,6 +713,28 @@ namely, each transition is real or simulated with probability $1/2$.
 Intuitively this should keep reasonable properties of the true value
 function: even if the model $\tilde P$ diverges when iterated, the Markov chain $\tfrac12(\tilde
 P+P)$ will have a dynamics closer to the true environment.
+
+The fixed point $\hat V_1$ for variant 1 has less clear an
+interpretation. Defining the matrix $\eps$ via $\Delta \eqd(\Id+\eps\rho)\tilde \Delta$ where
+$\eps$ is some hopefully small model error, we find
+\begin{align}
+\hat V_2&=C^{-1}\transp{(\rho\tilde \Delta)}R
+\\&=\left(
+\Delta+\frac{(\transp{(\rho\tilde \Delta)})^{-1}\transp{\Delta} \rho \tilde
+\Delta-\Delta}{2}
+\right)^{-1}R
+\\&=\left(
+\Delta+\frac12(\transp{\eps}-\eps)\rho\tilde \Delta
+\right)^{-1}R
+\end{align}
+In particular, if $\eps$ is symmetric the error vanishes, but if $\eps$
+is antisymmetric we end up computing $\tilde \Delta^{-1}R$, namely the
+Bellman function of the model. Usually $\eps$ would be somewhere in
+between; I do not know if it is possible to force the model to favor
+symmetric values of $\eps$.
+
+In view of this, variant 2 seems more promising, although it relies on
+rewards depending only on $s$ or only on $s'$, not on the pair $(s,s')$.
 
 \section{A function that almost solves the Bellman equation can be very
 far from the true value function}
