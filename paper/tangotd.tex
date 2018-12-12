@@ -716,9 +716,9 @@ distribution of which states. This does not depend on a reward signal and
 can be learned in a non-supervised way by observing trajectories.
 Eligibility traces are an unbiased, rank-one approximation of this.
 
-Also, when observing a transition $s\to s'$, eligibility traces updates
-the info about how to reach $s'$, while TD updates the info about the
-reward when starting from $s$. I feel that somehow we have to use both:
+Also, when observing a transition $s\to s'$, eligibility traces update
+the info about how to reach $s'$, while TD(0) updates the info about the
+reward when starting from $s$. I feel that somehow we should use both:
 intuitively when solving a problem we work ``from both ends'', expanding
 both from the starting point and around the target.
 
