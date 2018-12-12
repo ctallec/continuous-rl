@@ -7,20 +7,26 @@
 
 \begin{document}
 
-This contains: Section 1: remarks on recovering the known convergence results
+This contains: Section~\ref{sec:tdconv}: remarks on recovering the known convergence results
 for TD in a single framework, plus ideas on systematic variants around
 two-timescale algorithms or improved ``almost-one-timescale'' algorithms.
 
-Section 2: the problem of the existence of near-solutions to the Bellman
+Section~\ref{sec:norms}: algorithms for convergence of the Bellman error
+in various norms. In particular, solving the double sampling problem by
+using a model for one of the samples, and a real transition for the other
+sample, has nice mathematical properties.
+
+Section~\ref{sec:quasibellman}: the problem of the existence of near-solutions to the Bellman
 equation that are very far from the true value function (I think this is
 quite serious off-policy).
 
-Section 3: Ideas on how, even if there's no reward signal, we should
+Section~\ref{sec:green}: Ideas on how, even if there's no reward signal, we should
 still learn how to navigate in the Markov chain and learn which
 actions/policy to use to go to which states. This extends eligibility
 traces in a systematic way.
 
 \section{Recovering known convergence results for TD, and a few ideas}
+\label{sec:tdconv}
 
 We consider the Bellman equation for a policy $\pi$ in a finite MDP with
 expected reward $R$ and transition probability matrix $P$ ($P$ includes $\pi$ and
@@ -481,7 +487,10 @@ and
 which in general is not positive (take $\rho$ concentrated on a single $s$, and a large value
 for $f(s')$).
 
-\paragraph{Minimizers of errors.} Rather than the fixed point of TD, one
+\section{Minimizing the error in some norm via TD}
+\label{sec:norms}
+
+Rather than the fixed point of TD, one
 can look for minimizers of the error in various norms.
 
 A local minimizer of the $L^2(\rho)$ error between $V$ and
@@ -579,7 +588,7 @@ transitions only for the correction? TODO: use the same trick on the
 right? No, because the $R$ term doesn't go away and I'd rather have a
 correction that vanishes when $\Delta V-R$ is small.
 
-\paragraph{Double sampling problem: using a model for one of the
+\paragraph{Double sampling: using a model for one of the
 samples.} Double sampling allows us to minimize the $L^2$ norm of the
 Bellman gap. This is only possible if we have model of the environment,
 that allows for sampling $s'$ given $s$ and $a$.
@@ -707,6 +716,7 @@ P+P)$ will have a dynamics closer to the true environment.
 
 \section{A function that almost solves the Bellman equation can be very
 far from the true value function}
+\label{sec:quasibellman}
 
 Combined with all these problems, is the problem that an approximate
 solution to the Bellman equation may be very, very far from the true
@@ -827,6 +837,7 @@ reaching a state where it becomes clear that this belief is unfounded, or
 until they reach infinity.
 
 \section{Storing a summary of possible transitions?}
+\label{sec:green}
 
 In this paragraph I'm trying to store a summary of ``which actions lead
 where'' in the long term. Indeed, the value function can be written as
