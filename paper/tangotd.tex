@@ -626,24 +626,16 @@ $\transp{\tilde
 \Delta}\rho R$ serves our purpose.}
 
 
-Let us consider the norm
+Therefore, by various combinations of actual and simulated transitions,
+we can easily compute samples of
 \begin{equation}
-\norm{\Delta V-R}^2_{P,\tilde P}\deq \transp{(\tfrac12 (\Delta+\tilde
-\Delta)
-V-R)}\rho(\tfrac12 (\Delta+\tilde \Delta)V-R)
+\tfrac12 \transp{\Phi}(\transp{\Delta}\rho \tilde \Delta+\transp{\tilde
+\Delta}\rho\Delta)V
+-
+\transp{\Phi}\transp{\tilde \Delta}
+\rho R
 \end{equation}
-which is the $L^2(\rho)$-norm of the Bellman gap of an environment
-$\frac12 (P+\tilde P)$ in which half of the transitions are real or
-simulated.
-
-The gradient of this norm is
-\begin{equation}
-\tfrac12 \transp{\Phi}\transp{(\Delta+\tilde
-\Delta)
-}\rho((\Delta+\tilde \Delta)V-R)
-\end{equation}
-
-We can easily compute
+(variant 1) and
 \begin{equation}
 \tfrac12 \transp{\Phi}\transp{\Delta}
 \rho(\tilde \Delta V-R)
@@ -651,6 +643,67 @@ We can easily compute
 \tfrac12 \transp{\Phi}\transp{\tilde \Delta}
 \rho(\Delta V-R)
 \end{equation}
+(variant 2, under the conditions of the footnote).
+Setting
+\begin{equation}
+C\deq \tfrac12 (\transp{\Delta}\rho \tilde \Delta+\transp{\tilde
+\Delta}\rho\Delta)
+\end{equation}
+variant 1 is the gradient of
+\begin{equation}
+\norm{V-C^{-1}\transp{\tilde\Delta}\rho R}^2_C
+\end{equation}
+while variant 2 is the gradient of
+\begin{equation}
+\norm{V-\frac12 C^{-1}(\transp{\tilde\Delta}+\transp{\Delta})\rho R}^2_C
+\end{equation}
+
+Therefore, if $C$ is definite positive, then variant 1 and variant 2 will converge to
+the best approximation (in the parametric family $V$) of
+\begin{equation}
+\hat V_1\deq C^{-1}\transp{\tilde\Delta}\rho R \qquad\text{and}\qquad \hat
+V_2\deq \frac12
+C^{-1}(\transp{\tilde\Delta}+\transp{\Delta})\rho R
+\end{equation}
+respectively.
+If $\tilde \Delta=\Delta$, then both $\hat V_1$ and $\hat V_2$
+are equal to the desired target
+$\Delta^{-1}R$.
+
+Let us study how these fixed points approximate the true target
+$\Delta^{-1}R$ when $\tilde \Delta \approx \Delta$. First,
+\begin{equation}
+C=\frac14 \transp{(\tilde \Delta+\Delta)}\rho(\tilde \Delta+\Delta)-\frac14
+\transp{(\tilde
+\Delta-\Delta)}\rho(\tilde
+\Delta-\Delta)
+\end{equation}
+Therefore, $C$ is definite positive provided
+\begin{equation}
+\transp{(\tilde
+\Delta-\Delta)}\rho(\tilde
+\Delta-\Delta)\prec \transp{(\tilde \Delta+\Delta)}\rho(\tilde \Delta+\Delta)
+\end{equation}
+which is the case when the model $\tilde \Delta$ is close enough
+to the true environment $\Delta$ (moreover the left-hand-side is at
+second order in the error). Therefore, convergence is guaranteed in a relatively large
+zone around $\Delta$. But the method will diverge if $\tilde \Delta$ is
+too far from $\Delta$—contrary to double sampling using the model twice,
+which always converges to the value function of the model.
+
+Next, since $C=\frac14 \transp{(\tilde \Delta+\Delta)}\rho(\tilde
+\Delta+\Delta)+O(\tilde\Delta-\Delta)^2$, the fixed point $\hat V_2$ for variant 2
+is
+\begin{equation}
+\hat V_2=\left(\frac{\tilde
+\Delta+\Delta}{2}\right)^{-1}R+O(\tilde\Delta-\Delta)^2
+\end{equation}
+namely, at first order, the fixed point of variant 2 is the value
+function of a Markov chain with transitions $\tfrac12(\tilde P+P)$,
+namely, each transition is real or simulated with probability $1/2$.
+Intuitively this should keep reasonable properties of the true value
+function: even if the model $\tilde P$ diverges when iterated, the Markov chain $\tfrac12(\tilde
+P+P)$ will have a dynamics closer to the true environment.
 
 \section{A function that almost solves the Bellman equation can be very
 far from the true value function}
