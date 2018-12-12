@@ -652,7 +652,10 @@ we can easily compute samples of
 \tfrac12 \transp{\Phi}\transp{\tilde \Delta}
 \rho(\Delta V-R)
 \end{equation}
-(variant 2, under the conditions of the footnote).
+(variant 2, under the conditions of the footnote). Variant 2 corresponds
+to fully symmetrizing the roles of the synthetic and real samples in
+two-sampling.
+
 Setting
 \begin{equation}
 C\deq \tfrac12 (\transp{\Delta}\rho \tilde \Delta+\transp{\tilde
@@ -715,8 +718,8 @@ function: even if the model $\tilde P$ diverges when iterated, the Markov chain 
 P+P)$ will have a dynamics closer to the true environment.
 
 The fixed point $\hat V_1$ for variant 1 has less clear an
-interpretation. Defining the matrix $\eps$ via $\Delta \eqd(\Id+\eps\rho)\tilde \Delta$ where
-$\eps$ is some hopefully small model error, we find
+interpretation. Define the matrix $\eps$ via $\Delta \eqd(\Id+\eps\rho)\tilde \Delta$ where
+$\eps$ is some hopefully small model error. Then
 \begin{align}
 \hat V_2&=C^{-1}\transp{(\rho\tilde \Delta)}R
 \\&=\left(
