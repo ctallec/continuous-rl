@@ -8,13 +8,17 @@
 \begin{document}
 
 This contains: Section 1: remarks on recovering the known convergence results
-for TD in a single framework, plus ideas on systematic variants. Section
-2: the problem of the existence of near-solutions to the Bellman equation
-that are very far from the true value function (I think this is quite
-serious off-policy). Section 3: Ideas on how, even if there's no reward
-signal, we should still learn how to navigate in the Markov chain and
-learn which actions/policy to use to go to which states (this extends
-eligibility traces in a systematic way).
+for TD in a single framework, plus ideas on systematic variants around
+two-timescale algorithms or improved ``almost-one-timescale'' algorithms.
+
+Section 2: the problem of the existence of near-solutions to the Bellman
+equation that are very far from the true value function (I think this is
+quite serious off-policy).
+
+Section 3: Ideas on how, even if there's no reward signal, we should
+still learn how to navigate in the Markov chain and learn which
+actions/policy to use to go to which states. This extends eligibility
+traces in a systematic way.
 
 \section{Recovering known convergence results for TD, and a few ideas}
 
@@ -698,7 +702,27 @@ until they reach infinity.
 
 \section{Storing a summary of possible transitions?}
 
-The derivative of the average reward with respect to the policy
+In this paragraph I'm trying to store a summary of ``which actions lead
+where'' in the long term. Indeed, the value function can be written as
+$\Delta^{-1}R$ where $R$ is the reward, and the derivative of the average
+reward wrt the policy parameters can be written, by the actor-critic
+formula, as $\transp{g}V=\transp{g}\Delta^{-1}R$ where $g$ contains the
+log-derivatives of the probabilities of actions leading to a given state
+(see below).
+The Bellman equation first computes $\Delta^{-1}R$. But we could also
+first compute $\transp{g}\Delta^{-1}$: this (large) object contains
+information about which policy parameters increase the stationary
+distribution of which states. This does not depend on a reward signal and
+can be learned in a non-supervised way by observing trajectories.
+Eligibility traces are an unbiased, rank-one approximation of this.
+
+Also, when observing a transition $s\to s'$, eligibility traces updates
+the info about how to reach $s'$, while TD updates the info about the
+reward when starting from $s$. I feel that somehow we have to use both:
+intuitively when solving a problem we work ``from both ends'', expanding
+both from the starting point and around the target.
+
+Precisely, the derivative of the average reward with respect to the policy
 parameters $\psi$ is equal to
 \begin{align}
 \partial_\psi \left(\E_\mu r\right)&=
