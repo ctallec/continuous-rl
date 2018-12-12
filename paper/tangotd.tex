@@ -579,6 +579,77 @@ transitions only for the correction? TODO: use the same trick on the
 right? No, because the $R$ term doesn't go away and I'd rather have a
 correction that vanishes when $\Delta V-R$ is small.
 
+\paragraph{Double sampling problem: using a model for one of the
+samples.} Double sampling allows us to minimize the $L^2$ norm of the
+Bellman gap. This is only possible if we have model of the environment,
+that allows for sampling $s'$ given $s$ and $a$.
+
+However, using Bellman on a model is dangerous because we compute the
+value function of the model, and even if the model is accurate for one
+step $s\to s'$, it may quickly diverge when iterated. Therefore its value
+function may be quite different from the true value function. The model
+needs to be accurate at time horizon $1/(1-\gamma)$.
+
+But in double-sampling, one could also use one real transition and one
+simulated transition. We show here that this is equivalent, at first order,
+to learning the value function of an environment in which every step is
+either a real or simulated step with probability $1/2$. This should be a
+bit more stable, as the real transitions may keep the model from
+hallucinating completely irrealistic trajectories.
+
+The $L^2(\rho)$ norm of the Bellman gap is $\transp{(\Delta
+V-R)}\rho(\Delta V-R)$. Its gradient with respect to $V$ is
+$2\transp{\Phi}\transp{\Delta}\rho (\Delta V-r)$. The presence of
+$\transp{\Delta}\rho\Delta$ indicates double sampling; this operator is
+not samplable.
+
+Let us assume that we have a model $\tilde P$ of the operator $P$. Thus
+we can sample $\transp{\tilde \Delta}\rho \Delta$ (just sample one
+transition $s\to s'$ from $\rho P$, and a second transition $s\to \tilde
+s'$ from the same $s$). We can also sample from $\transp{\tilde
+\Delta}\rho R$. Moreover, \emph{if rewards during $s\to s'$ are
+independent from $s'$}, we can sample from $\transp{\Delta}\rho R$. From
+now on, I will assume that the reward collected during a transition $s\to
+s'$ depends only on $s$. \footnote{This means the state $s$ is a
+sufficient statistic. If the reward depends only on $s'$ instead, we can
+just
+shift the rewards by one step and pretend they are collected at the next
+step; therefore we are back to a reward that depends only on $s$. The
+only case not covered is if the reward really depends on the pair
+$(s,s')$; in that case, the state $s'$ is not quite a sufficient
+statistic of the process.
+
+In the latter case, one would also need a model $\tilde R$ of rewards,
+and then we could sample from $\transp{\tilde \Delta}\rho R$ and from
+$\transp{\Delta}\rho\tilde R$.}
+
+
+Let us consider the norm
+\begin{equation}
+\norm{\Delta V-R}^2_{P,\tilde P}\deq \transp{(\tfrac12 (\Delta+\tilde
+\Delta)
+V-R)}\rho(\tfrac12 (\Delta+\tilde \Delta)V-R)
+\end{equation}
+which is the $L^2(\rho)$-norm of the Bellman gap of an environment
+$\frac12 (P+\tilde P)$ in which half of the transitions are real or
+simulated.
+
+The gradient of this norm is
+\begin{equation}
+\tfrac12 \transp{\Phi}\transp{(\Delta+\tilde
+\Delta)
+}\rho((\Delta+\tilde \Delta)V-R)
+\end{equation}
+
+We can easily compute
+\begin{equation}
+\tfrac12 \transp{\Phi}\transp{\Delta}
+\rho(\tilde \Delta V-R)
++
+\tfrac12 \transp{\Phi}\transp{\tilde \Delta}
+\rho(\Delta V-R)
+\end{equation}
+
 \section{A function that almost solves the Bellman equation can be very
 far from the true value function}
 
