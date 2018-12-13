@@ -987,8 +987,10 @@ equations
 \label{eq:greenbell}
 \Delta^{-1}=\Id + P \Delta^{-1},\qquad \Delta^{-1}=\Id + \Delta^{-1}P
 \end{equation}
-which represent that, when observing a transition $s\to s'$, we update
-both the ways to arrive at $s'$ and the ways to start at $s$.
+With these two equations, when observing a transition $s\to s'$, we update
+both the model of what happens when we start at $s$ (left equation,
+standard Bellman), and the model of how to arrive at $s'$ (right
+equation, rarely used as far as I know).
 
 ``Universal value function approximators'' (Schaul--Horgan--Gregor--Silver ICML 2015) do a bit of that, but only
 with the left (ordinary) Bellman equation. It amounts to solving a number
