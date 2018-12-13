@@ -990,7 +990,8 @@ equations
 With these two equations, when observing a transition $s\to s'$, we update
 both the model of what happens when we start at $s$ (left equation,
 standard Bellman), and the model of how to arrive at $s'$ (right
-equation, rarely used as far as I know).
+equation, rarely used as far as I know; somehow eligibility traces
+implement some stochastic form of it).
 
 The left Bellman equation on $\Delta^{-1}$ is equivalent to
 simultaneously solving the Bellman equation with all possible reward
