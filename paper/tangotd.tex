@@ -1084,6 +1084,11 @@ which is a very unlikely event. This amounts to training with white noise
 features. Formally it works thanks to the rare case $s_1=s_2$, but
 variance is just terrible.}
 
+Thus we may learn $\green$ via TD-like algorithms. We may even have
+double sampling that works, thanks to featurization (using test functions
+$\psi$), at least for the right equation. TODO should we featurize on the
+left as well?
+
 The value function is obtained with $\psi=R$, namely,
 \begin{equation}
 V(s_1)=\transp{\1_{s_1}}\Delta^{-1}R\approx
