@@ -1071,7 +1071,9 @@ $(P\psi)(s_2)=\E_{s'_2\sim P(s'_2|s_2)}\psi(s_2)$).
 parameterize $f$ and $\green$ by neural networks and train the
 parameters. This works off-policy: we have not used that $\rho$ is the
 invariant distribution, just some distribution on states we can sample
-from. Of course, we should apply this to relevant test functions $\psi$,
+from.
+
+Of course, we should apply this to relevant test functions $\psi$,
 such as the reward function or any useful (predictive) features, namely,
 any function we're interested in predicting the future values of. 
 If just using a
