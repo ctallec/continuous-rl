@@ -984,6 +984,7 @@ compact and useful representation of $\Delta^{-1}$? Ideally, such a
 representation should be learned from the \emph{two-sided} Bellman
 equations
 \begin{equation}
+\label{eq:greenbell}
 \Delta^{-1}=\Id + P \Delta^{-1},\qquad \Delta^{-1}=\Id + \Delta^{-1}P
 \end{equation}
 which represent that, when observing a transition $s\to s'$, we update
@@ -996,6 +997,7 @@ We propose to learn two functions $\green(s)$ and $f(s)$ from states into
 a state representation $E$, such that for any test function $\psi\from
 S\to \R$, for any $s_1\in S$,
 \begin{equation}
+\label{eq:greenrep}
 \E_{s_2\sim \rho}\,\green(s_1)\cdot
 f(s_2)\psi(s_2)\approx \transp{\1_{s_1}}\,\Delta^{-1} \psi
 \end{equation}
@@ -1017,6 +1019,67 @@ able to predict \emph{differences} $\psi(s_2)-\psi(s_2')$.}). In
 particular, $\E_{s_2\sim \rho}f(s_2)\psi(s_2)$ is supposed to represent
 the vector with components $\rho \psi(s_2)$. Then the scalar product in
 $E$ represents integration/summation with respect to $\rho$.
+
+Of course we cannot directly learn $\green$ from \eqref{eq:greenrep},
+since $\Delta^{-1}$ in the right-hand-side is exactly what we want to
+learn. But we can use the Bellman equations \eqref{eq:greenbell}; after
+applying \eqref{eq:greenbell} to an arbitrary state $s_1$ and test
+function $\psi$, and
+substituting the model $\green$ for $\Delta^{-1}$ via
+$\eqref{eq:greenrep}$, the left Bellman equation becomes
+\begin{gather}
+\transp{\1_{s_1}}\Delta^{-1}\psi=\transp{\1_{s_1}}\psi+\transp{\1_{s_1}}P\Delta^{-1}\psi
+\qquad \Longrightarrow
+\\
+\E_{s_2\sim \rho}\,\green(s_1)\cdot
+f(s_2)\psi(s_2)
+\approx \psi(s_1)+ \E_{s'\sim P(s'|s_1)}\E_{s_2\sim
+\rho}\,\green(s')\cdot
+f(s_2)\psi(s_2)
+\end{gather}
+and the right Bellman equation becomes
+\begin{gather}
+\transp{\1_{s_1}}\Delta^{-1}\psi=\transp{\1_{s_1}}\psi+\transp{\1_{s_1}}\Delta^{-1}P\psi
+\qquad \Longrightarrow
+\\
+\E_{s_2\sim \rho}\,\green(s_1)\cdot
+f(s_2)\psi(s_2)
+\approx \psi(s_1)+ \E_{s_2\sim \rho}\E_{s'_2\sim P(s'_2|s_2)}
+\,\green(s_1)\cdot
+f(s_2)\psi(s'_2)
+\end{gather}
+(indeed, 
+$P\psi$ is
+represented by $\E_{s_2\sim \rho} f(s_2)(P\psi)(s_2)$, and
+$(P\psi)(s_2)=\E_{s'_2\sim P(s'_2|s_2)}\psi(s_2)$).
+
+\emph{Both} these equations are samplable. Therefore, one may
+parameterize $f$ and $\green$ by neural networks and train the
+parameters. This works off-policy: we have not used that $\rho$ is the
+invariant distribution, just some distribution on states we can sample
+from.
+
+The value function is obtained with $\psi=R$, namely,
+\begin{equation}
+V(s_1)=\transp{\1_{s_1}}\Delta^{-1}R\approx
+\E_{s_2\sim \rho}\,\green(s_1)\cdot
+f(s_2)R(s_2)
+\end{equation}
+Of course it is not convenient to have to sample from $s_2$. Instead one
+might want to just learn the representation $f(R)$, defined by abuse of
+notation as
+\begin{equation}
+f(R)\deq \E_{s_2\sim \rho} \,f(s_2)R(s_2)
+\end{equation}
+(which can be computed online)
+and then
+\begin{equation}
+V(s_1)\approx \green(s_1)\cdot f(R)
+\end{equation}
+
+More generally, we can learn the representation of any function $\psi$.
+This could be useful if we want to train a few policy parameters to lead in
+certain directions/lead to states with certain features.
 
 \paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
