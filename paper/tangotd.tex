@@ -964,7 +964,14 @@ the equation $G=\Id+GP$ rewrites as $\mu
 (G\mu^{-1})\mu=\mu+\mu(G\mu^{-1})\mu P$ where everything is samplable.
 However I fear an implicit double sampling in there; probably
 featurize/dualize
-by asking that this is satisfied for any functions on the left and right.
+by asking that this is satisfied for any test functions on the left and right.
+
+Another way to exploit the equation on the right is to impose that $G$
+and $P$ commute (indeed $G=\sum P^t$). This commutation equation should
+transfer left-learning to right-learning. It can be written in samplable
+terms
+via $\mu(G\mu^{-1})(\mu P\psi)=(\mu P)(G \mu^{-1})(\mu
+\psi)$ for any feature $\psi$. This apparently avoids double sampling!
 }
 
 TODO: not the right representation, plus works only on-policy. Maybe learn a function $a(s,s')$ that
