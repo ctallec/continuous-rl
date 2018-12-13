@@ -959,7 +959,13 @@ a function of the state, corresponding to a feature in the network.} Then the re
 Bellman equation above should allows us to learn this model via
 a TD-like algorithm, \emph{on-policy}. TODO: HOW? not clear how to
 sample from $\phi P$ if $\phi$ is a function. Would need a model of
-reverse transitions?
+reverse transitions? \footnote{I think one has to learn $G\mu^{-1}$ and
+the equation $G=\Id+GP$ rewrites as $\mu
+(G\mu^{-1})\mu=\mu+\mu(G\mu^{-1})\mu P$ where everything is samplable.
+However I fear an implicit double sampling in there; probably
+featurize/dualize
+by asking that this is satisfied for any functions on the left and right.
+}
 
 TODO: not the right representation, plus works only on-policy. Maybe learn a function $a(s,s')$ that
 returns the first action to be taken if we want to reach $s'$ from $s$?
