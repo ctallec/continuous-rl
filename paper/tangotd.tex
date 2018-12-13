@@ -1149,11 +1149,15 @@ equations.
 
 $\green$ is basically a model of the world (summed over time). The
 difference with ordinary model-based is: $\green$ is trained as a fixed
-point, considering all timescales at once. In ordinary model-based, the
+point, considering all timescales at once. $\Delta^{-1}$ contains all
+paths of all lengths from $s$ to $s'$. In ordinary model-based, the
 model $\tilde P$ obviously commutes with its iterates ($\tilde P^t\tilde
 P=\tilde P\tilde P^t$), but does not provide an easy and accurate
 representation of the occupation measure $\tilde \Delta^{-1}=\sum_t \tilde P^t$. So even in
 the model-based case, the above might be useful.
+
+One may also compute something like $\Delta^{-1}_{s,a,s'}$ (paths that start
+at $s$ with action $a$ and arrive at $s'$). Unclear if more useful.
 
 Nico suggests the references around successor representation, proto-value
 functions, byt Marlos Machado.
