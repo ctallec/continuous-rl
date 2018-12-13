@@ -1131,8 +1131,10 @@ When sampling for the right Bellman equation, it is wasteful to sample a
 state $s_2$ and apply a test function $\psi$ if $\psi(s_2)$ is very
 small. Instead one may want to sample $s_2$ according to
 $\rho_\psi\deq \rho(s_2)\abs{\psi(s_2)}/\E_{\rho}\abs{\psi}$, in which case
-$\E_{s_2\sim \rho} f(s_2)\psi(s_2)$ becomes $\E_{s_2\sim \rho_\psi}
-f(s_2)(\E_{\rho}\abs{\psi})$. This may significantly reduce variance.
+$\E_{s_2\sim \rho} f(s_2)\psi(s_2)$ is equal to $\E_{s_2\sim \rho_\psi}
+f(s_2)(\E_{\rho}\abs{\psi})$. This will significantly reduce variance,
+especially for test functions $\psi$ that are concentrated aroudn a few
+points.
 
 The value function is obtained with $\psi=R$, namely,
 \begin{equation}
