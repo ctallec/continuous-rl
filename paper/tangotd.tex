@@ -1011,7 +1011,7 @@ S\to \R$, for any $s_1\in S$,
 f(s_2)\psi(s_2)\approx \transp{\1_{s_1}}\,\Delta^{-1} \psi
 \end{equation}
 
-If the state space is finite, a 
+If the state space is finite, an exact
 solution is indeed $E=\R^{\#S}$ with a one-hot representation for $f$,
 and the true matrix $\Delta^{-1}$ for $\green$, namely,
 \begin{equation}
@@ -1046,7 +1046,7 @@ $E$ represents integration/summation over the state space.
 
 Of course we cannot directly learn $\green$ from \eqref{eq:greenrep},
 since $\Delta^{-1}$ in the right-hand-side is exactly what we want to
-learn. But we can use the Bellman equations \eqref{eq:greenbell}; after
+learn. But $\Delta^{-1}$ is the unique solution to the Bellman equations \eqref{eq:greenbell}; after
 applying \eqref{eq:greenbell} to an arbitrary state $s_1$ and test
 function $\psi$, and
 substituting the model $\green$ for $\Delta^{-1}$ via
