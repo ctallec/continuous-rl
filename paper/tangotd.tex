@@ -956,8 +956,10 @@ G\approx \sum_i \psi_i \phi_i(s)
 \end{equation}
 where each $\psi_i$ is a policy parameter, and each $\phi_i$ is
 a function of the state, corresponding to a feature in the network.} Then the reverse
-Bellman equation above allows us to learn this model via
-a TD-like algorithm, \emph{on-policy}.
+Bellman equation above should allows us to learn this model via
+a TD-like algorithm, \emph{on-policy}. TODO: HOW? not clear how to
+sample from $\phi P$ if $\phi$ is a function. Would need a model of
+reverse transitions?
 
 TODO: not the right representation, plus works only on-policy. Maybe learn a function $a(s,s')$ that
 returns the first action to be taken if we want to reach $s'$ from $s$?
