@@ -990,8 +990,10 @@ equations
 which represent that, when observing a transition $s\to s'$, we update
 both the ways to arrive at $s'$ and the ways to start at $s$.
 
-``Universal value function approximators'' do a bit of that, but only
-with the left (ordinary) Bellman equation.
+``Universal value function approximators'' (Schaul--Horgan--Gregor--Silver ICML 2015) do a bit of that, but only
+with the left (ordinary) Bellman equation. It amounts to solving $\#S$
+independent Bellman equations, and relying on the generalization
+abilities of the network, but the right equation is not exploited at all.
 
 We propose to learn two functions $\green(s)$ and $f(s)$ from states into
 a state representation $E$, such that for any test function $\psi\from
@@ -1080,6 +1082,19 @@ V(s_1)\approx \green(s_1)\cdot f(R)
 More generally, we can learn the representation of any function $\psi$.
 This could be useful if we want to train a few policy parameters to lead in
 certain directions/lead to states with certain features.
+
+Another equation that might be enforced is commutation between
+$P$ and $\Delta^{-1}$; it is expressed similarly to the above, but I do
+not know if there's a gain. It might transfer left to right Bellman
+equations.
+
+$\green$ is basically a model of the world (summed over time). The
+difference with ordinary model-based is: $\green$ is trained as a fixed
+point, considering all timescales at once. In ordinary model-based, the
+model $\tilde P$ obviously commutes with its iterates ($\tilde P^t\tilde
+P=\tilde P\tilde P^t$), but does not provide an easy and accurate
+representation of the occupation measure $\tilde \Delta^{-1}=\sum_t \tilde P^t$. So even in
+the model-based case, the above might be useful.
 
 \paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
