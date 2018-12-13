@@ -991,8 +991,9 @@ which represent that, when observing a transition $s\to s'$, we update
 both the ways to arrive at $s'$ and the ways to start at $s$.
 
 ``Universal value function approximators'' (Schaul--Horgan--Gregor--Silver ICML 2015) do a bit of that, but only
-with the left (ordinary) Bellman equation. It amounts to solving $\#S$
-independent Bellman equations, and relying on the generalization
+with the left (ordinary) Bellman equation. It amounts to solving a number
+of
+ordinary Bellman equations with different reward functions, and relying on the generalization
 abilities of the network, but the right equation is not exploited at all.
 
 We propose to learn two functions $\green(s)$ and $f(s)$ from states into
@@ -1010,6 +1011,8 @@ solution is indeed $E=\R^{\#S}$ with
 f(s_2)=\1_{s_2},\qquad
 (\green(s_1))_{s_2}=(\Delta^{-1})_{s_1s_2}/\rho(s_2)
 \end{equation}
+but with infinite or continuous state spaces, we have to find a more
+compact representation.
 
 The reason for this form is the following: $E$ is supposed to represent
 distributions/functions over states. $f(s_2)$ is supposed to be
@@ -1017,7 +1020,8 @@ mapped to $\1_{s_2}$. $\green(s_1)$ is supposed to be mapped to the
 density wrt $\rho$ of the fundamental matrix at $s_1$ (the occupation
 distribution from $s_1$: $\transp{\1_{s_1}}\sum_t P^t$, where as usual I
 omit constants\footnote{To deal with constants, we probably have to be
-able to predict \emph{differences} $\psi(s_2)-\psi(s_2')$.}). In
+able to predict \emph{differences} $\psi(s_2)-\psi(s_2')$, or just use
+relative value functions and remove $\psi(s_0)$ for some $s_0$.}). In
 particular, $\E_{s_2\sim \rho}f(s_2)\psi(s_2)$ is supposed to represent
 the vector with components $\rho \psi(s_2)$. Then the scalar product in
 $E$ represents integration/summation with respect to $\rho$.
@@ -1039,7 +1043,9 @@ f(s_2)\psi(s_2)
 \rho}\,\green(s')\cdot
 f(s_2)\psi(s_2)
 \end{gather}
-and the right Bellman equation becomes
+because $\transp{\1_{s_1}}P=\E_{s'\sim P(s'|s_1)}\transp{\1_{s'}}\,$.
+Meanwhile,
+the right Bellman equation becomes
 \begin{gather}
 \transp{\1_{s_1}}\Delta^{-1}\psi=\transp{\1_{s_1}}\psi+\transp{\1_{s_1}}\Delta^{-1}P\psi
 \qquad \Longrightarrow
@@ -1059,7 +1065,16 @@ $(P\psi)(s_2)=\E_{s'_2\sim P(s'_2|s_2)}\psi(s_2)$).
 parameterize $f$ and $\green$ by neural networks and train the
 parameters. This works off-policy: we have not used that $\rho$ is the
 invariant distribution, just some distribution on states we can sample
-from.
+from. Of course, we should apply this to relevant test functions $\psi$,
+such as the reward function or any useful (predictive) features, namely,
+any function we're interested in predicting the future values of. 
+If just using a
+random function $\psi$, there is very little signal to train
+from. \footnote{An extreme case is to take a purely random $\psi$ at each
+training step; then $\psi(s_1)$ and $\psi(s_2)$ are independent unless $s_1=s_2$,
+which is a very unlikely event. This amounts to training with white noise
+features. Formally it works thanks to the rare case $s_1=s_2$, but
+variance is just terrible.}
 
 The value function is obtained with $\psi=R$, namely,
 \begin{equation}
