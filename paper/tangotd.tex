@@ -1041,8 +1041,15 @@ space and one may always make a change of basis in $E$. More precisely,
 if $B$ is any invertible linear map on $E$, then changing $f\gets Bf$,
 $\green\gets (\transp{B})^{-1}\green$ produces a new solution; indeed
 this preserves $\green\cdot f$. This may
-be useful to ``renormalize'' once in a while, eg setting $f$ to have
-unit covariance, which may help with numerical conditioning.} 
+be useful to ``renormalize'' once in a while to help with numerical
+conditioning: eg setting $f$ to have
+unit covariance, or $f$ and $\green$ to have the same covariance.
+
+Actually the most symmetric solution may be something like
+$f(s_2)=\Delta^{-1/2}\1_{s_2}/\rho(s_2)$ and
+$\green(s_1)=\transp{(\Delta^{-1/2})}\1_{s_1}$. This may be the fastest
+to reach, by splitting eigenvalues of $\Delta$ halfway between $f$ and
+$\green$.}
 But with infinite or continuous state spaces, we have to find a more
 compact representation.
 
@@ -1119,6 +1126,13 @@ Thus we may learn $\green$ via TD-like algorithms. We may even have
 double sampling that works, thanks to featurization (using test functions
 $\psi$), at least for the right equation. TODO should we featurize on the
 left as well? Or train only with the right equation?
+
+When sampling for the right Bellman equation, it is wasteful to sample a
+state $s_2$ and apply a test function $\psi$ if $\psi(s_2)$ is very
+small. Instead one may want to sample $s_2$ according to
+$\rho_\psi\deq \rho(s_2)\abs{\psi(s_2)}/\E_{\rho}\abs{\psi}$, in which case
+$\E_{s_2\sim \rho} f(s_2)\psi(s_2)$ becomes $\E_{s_2\sim \rho_\psi}
+f(s_2)(\E_{\rho}\abs{\psi})$. This may significantly reduce variance.
 
 The value function is obtained with $\psi=R$, namely,
 \begin{equation}
