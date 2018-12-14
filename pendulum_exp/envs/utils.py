@@ -201,6 +201,9 @@ def make_env(env_id: str, dt: float, time_limit: float): # noqa: C901
         dt = env.dt
         info('The timestep dt is {}'.format(dt))
         # env.model.opt.timestep = dt / env.frame_skip
+    elif env_id == 'dart_cheetah':
+        env = gym.make('DartHalfCheetah-v1').unwrapped
+        env.dart_world.dt = dt / env.frame_skip
     elif env_id == 'pusher':
         env = DiscretePusherEnv()
         env.dt = dt
