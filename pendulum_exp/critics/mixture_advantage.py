@@ -111,11 +111,14 @@ class MixtureAdvantageCritic(AdvantageCritic):
                 adv_logpi + torch.stack([max_adv_logpi[..., 1], max_adv_logpi[..., 0]], dim=-1)
             ], dim=-1)
 
-        gmm_sigma = torch.Tensor(
+        sigma_coef = 1 / np.sqrt(self._dt)
+        gmm_sigma = sigma_coef * torch.Tensor(
             [[np.sqrt(2), np.sqrt(2 * self._dt), np.sqrt(1 + self._dt), np.sqrt(1 + self._dt)]]
         ).to(self._device).unsqueeze(-1)
 
         adv_loss = gmm_loss(expected_adv, gmm_mu, gmm_sigma, gmm_logpi) + (max_adv ** 2)
+        # remove minimal constant from adv_loss
+        adv_loss = adv_loss - np.log(2 * np.pi) / 2 - np.log(2) / 2
         self._adv_optimizer.zero_grad()
         self._mixture_optimizer.zero_grad()
         adv_loss.mean().backward(retain_graph=True)

@@ -3,24 +3,31 @@
 \input{header.en.tex}
 
 \newcommand{\Dir}{\mathcal{D}}
-
+\newcommand{\green}{\mathcal{G}}
+\DeclareMathOperator{\sgn}{sgn}
 
 \begin{document}
 
-This contains: Section 1: remarks on recovering the known convergence results
+These notes contain: Section~\ref{sec:tdconv}: remarks on recovering the known convergence results
 for TD in a single framework, plus ideas on systematic variants around
 two-timescale algorithms or improved ``almost-one-timescale'' algorithms.
 
-Section 2: the problem of the existence of near-solutions to the Bellman
+Section~\ref{sec:norms}: algorithms for convergence of the Bellman error
+in various norms. In particular, solving the double sampling problem by
+using a model for one of the samples, and a real transition for the other
+sample, has nice mathematical properties.
+
+Section~\ref{sec:quasibellman}: the problem of the existence of near-solutions to the Bellman
 equation that are very far from the true value function (I think this is
 quite serious off-policy).
 
-Section 3: Ideas on how, even if there's no reward signal, we should
+Section~\ref{sec:green}: Ideas on how, even if there's no reward signal, we should
 still learn how to navigate in the Markov chain and learn which
 actions/policy to use to go to which states. This extends eligibility
 traces in a systematic way.
 
 \section{Recovering known convergence results for TD, and a few ideas}
+\label{sec:tdconv}
 
 We consider the Bellman equation for a policy $\pi$ in a finite MDP with
 expected reward $R$ and transition probability matrix $P$ ($P$ includes $\pi$ and
@@ -481,7 +488,10 @@ and
 which in general is not positive (take $\rho$ concentrated on a single $s$, and a large value
 for $f(s')$).
 
-\paragraph{Minimizers of errors.} Rather than the fixed point of TD, one
+\section{Minimizing the error in some norm via TD}
+\label{sec:norms}
+
+Rather than the fixed point of TD, one
 can look for minimizers of the error in various norms.
 
 A local minimizer of the $L^2(\rho)$ error between $V$ and
@@ -579,7 +589,7 @@ transitions only for the correction? TODO: use the same trick on the
 right? No, because the $R$ term doesn't go away and I'd rather have a
 correction that vanishes when $\Delta V-R$ is small.
 
-\paragraph{Double sampling problem: using a model for one of the
+\paragraph{Double sampling: using a model for one of the
 samples.} Double sampling allows us to minimize the $L^2$ norm of the
 Bellman gap. This is only possible if we have model of the environment,
 that allows for sampling $s'$ given $s$ and $a$.
@@ -643,7 +653,10 @@ we can easily compute samples of
 \tfrac12 \transp{\Phi}\transp{\tilde \Delta}
 \rho(\Delta V-R)
 \end{equation}
-(variant 2, under the conditions of the footnote).
+(variant 2, under the conditions of the footnote). Variant 2 corresponds
+to fully symmetrizing the roles of the synthetic and real samples in
+two-sampling.
+
 Setting
 \begin{equation}
 C\deq \tfrac12 (\transp{\Delta}\rho \tilde \Delta+\transp{\tilde
@@ -658,7 +671,7 @@ while variant 2 is the gradient of
 \norm{V-\frac12 C^{-1}(\transp{\tilde\Delta}+\transp{\Delta})\rho R}^2_C
 \end{equation}
 
-Therefore, if $C$ is definite positive, then variant 1 and variant 2 will converge to
+Therefore, if $C$ is positive definite, then variant 1 and variant 2 will converge to
 the best approximation (in the parametric family $V$) of
 \begin{equation}
 \hat V_1\deq C^{-1}\transp{\tilde\Delta}\rho R \qquad\text{and}\qquad \hat
@@ -678,15 +691,16 @@ C=\frac14 \transp{(\tilde \Delta+\Delta)}\rho(\tilde \Delta+\Delta)-\frac14
 \Delta-\Delta)}\rho(\tilde
 \Delta-\Delta)
 \end{equation}
-Therefore, $C$ is definite positive provided
+Therefore, $C$ is positive definite provided
 \begin{equation}
 \transp{(\tilde
 \Delta-\Delta)}\rho(\tilde
 \Delta-\Delta)\prec \transp{(\tilde \Delta+\Delta)}\rho(\tilde \Delta+\Delta)
 \end{equation}
 which is the case when the model $\tilde \Delta$ is close enough
-to the true environment $\Delta$ (moreover the left-hand-side is at
-second order in the error). Therefore, convergence is guaranteed in a relatively large
+to the true environment $\Delta$. (Moreover the left-hand-side is of
+second order in the error, while the right-hand-side is of order $0$,
+therefore this condition should be relatively easy to satisfy.) Therefore, convergence is guaranteed in a relatively large
 zone around $\Delta$. But the method will diverge if $\tilde \Delta$ is
 too far from $\Delta$—contrary to double sampling using the model twice,
 which always converges to the value function of the model.
@@ -705,8 +719,31 @@ Intuitively this should keep reasonable properties of the true value
 function: even if the model $\tilde P$ diverges when iterated, the Markov chain $\tfrac12(\tilde
 P+P)$ will have a dynamics closer to the true environment.
 
+The fixed point $\hat V_1$ for variant 1 has less clear an
+interpretation. Define the matrix $\eps$ via $\Delta \eqd(\Id+\eps\rho)\tilde \Delta$ where
+$\eps$ is some hopefully small model error. Then
+\begin{align}
+\hat V_2&=C^{-1}\transp{(\rho\tilde \Delta)}R
+\\&=\left(
+\Delta+\frac{(\transp{(\rho\tilde \Delta)})^{-1}\transp{\Delta} \rho \tilde
+\Delta-\Delta}{2}
+\right)^{-1}R
+\\&=\left(
+\Delta+\frac12(\transp{\eps}-\eps)\rho\tilde \Delta
+\right)^{-1}R
+\end{align}
+In particular, if $\eps$ is symmetric the error vanishes, but if $\eps$
+is antisymmetric we end up computing $\tilde \Delta^{-1}R$, namely the
+Bellman function of the model. Usually $\eps$ would be somewhere in
+between; I do not know if it is possible to force the model to favor
+symmetric values of $\eps$.
+
+In view of this, variant 2 seems more promising, although it relies on
+rewards depending only on $s$ or only on $s'$, not on the pair $(s,s')$.
+
 \section{A function that almost solves the Bellman equation can be very
 far from the true value function}
+\label{sec:quasibellman}
 
 Combined with all these problems, is the problem that an approximate
 solution to the Bellman equation may be very, very far from the true
@@ -827,6 +864,7 @@ reaching a state where it becomes clear that this belief is unfounded, or
 until they reach infinity.
 
 \section{Storing a summary of possible transitions?}
+\label{sec:green}
 
 In this paragraph I'm trying to store a summary of ``which actions lead
 where'' in the long term. Indeed, the value function can be written as
@@ -919,8 +957,23 @@ G\approx \sum_i \psi_i \phi_i(s)
 \end{equation}
 where each $\psi_i$ is a policy parameter, and each $\phi_i$ is
 a function of the state, corresponding to a feature in the network.} Then the reverse
-Bellman equation above allows us to learn this model via
-a TD-like algorithm, \emph{on-policy}.
+Bellman equation above should allows us to learn this model via
+a TD-like algorithm, \emph{on-policy}. TODO: HOW? not clear how to
+sample from $\phi P$ if $\phi$ is a function. Would need a model of
+reverse transitions? \footnote{I think one has to learn $G\mu^{-1}$ and
+the equation $G=\Id+GP$ rewrites as $\mu
+(G\mu^{-1})\mu=\mu+\mu(G\mu^{-1})\mu P$ where everything is samplable.
+However I fear an implicit double sampling in there; probably
+featurize/dualize
+by asking that this is satisfied for any test functions on the left and right.
+
+Another way to exploit the equation on the right is to impose that $G$
+and $P$ commute (indeed $G=\sum P^t$). This commutation equation should
+transfer left-learning to right-learning. It can be written in samplable
+terms
+via $\mu(G\mu^{-1})(\mu P\psi)=(\mu P)(G \mu^{-1})(\mu
+\psi)$ for any feature $\psi$. This apparently avoids double sampling!
+}
 
 TODO: not the right representation, plus works only on-policy. Maybe learn a function $a(s,s')$ that
 returns the first action to be taken if we want to reach $s'$ from $s$?
@@ -931,6 +984,200 @@ faithfully reproduce averages of functions). $\Delta^{-1}$ satisfies the
 two-sided equation $\Delta^{-1}=\Id+\Delta^{-1}P=\Id+P\Delta^{-1}$, so
 when observing a transition $s\to s'$ we both update the model of
 how to arrive at $s'$ and of what happens when starting at $s$.
+
+\paragraph{A learned representation for $\Delta^{-1}$.} $\Delta^{-1}$
+contains all the necessary information to do policy gradient or actor-critic with
+arbitrary reward functions, as seen above. Is it feasible to store a
+compact and useful representation of $\Delta^{-1}$? Ideally, such a
+representation should be learned from the \emph{two-sided} Bellman
+equations
+\begin{equation}
+\label{eq:greenbell}
+\Delta^{-1}=\Id + P \Delta^{-1},\qquad \Delta^{-1}=\Id + \Delta^{-1}P
+\end{equation}
+With these two equations, when observing a transition $s\to s'$, we update
+both the model of what happens when we start at $s$ (left equation,
+standard Bellman), and the model of how to arrive at $s'$ (right
+equation, rarely used as far as I know; somehow eligibility traces
+implement some stochastic form of it).
+
+More precisely, $\Delta^{-1}_{ss'}$ is the number of paths from $s$ to
+$s'$ weighted by their probabilities. When observing a transition $s_1\to
+s_2$, the left equation updates paths from $s_1$; the right equation
+updates paths to $s_2$. I believe both are important. The right equation
+does not exist when working with a single ``target'' reward function $R$.
+
+The left Bellman equation on $\Delta^{-1}$ is equivalent to
+simultaneously solving the Bellman equation with all possible reward
+functions, generated by $\1_{s'}$ for all possible target states $s'$.
+Using only the left Bellman equation treats all targets $s'$ as
+completely independent problems for learning.
+
+``Universal value function approximators'' (Schaul--Horgan--Gregor--Silver ICML 2015) do a bit of that, but only
+with the left (ordinary) Bellman equation. It amounts to solving a number
+of
+ordinary Bellman equations with different reward functions, and relying on the generalization
+abilities of the network, but the right equation is not exploited at all.
+
+We propose to learn two functions $\green(s)$ and $f(s)$ from states into
+a state representation $E$, such that for any test function $\psi\from
+S\to \R$, for any $s_1\in S$,
+\begin{equation}
+\label{eq:greenrep}
+\green(s_1)\cdot \E_{s_2\sim \rho}
+f(s_2)\psi(s_2)\approx \transp{\1_{s_1}}\,\Delta^{-1} \psi
+\end{equation}
+
+If the state space is finite, an exact
+solution is indeed $E=\R^{\#S}$ with a one-hot representation for $f$,
+and the true matrix $\Delta^{-1}$ for $\green$, namely,
+\begin{equation}
+f(s_2)=\1_{s_2}/\rho(s_2),\qquad
+(\green(s_1))_{s_2}=(\Delta^{-1})_{s_1s_2}
+\end{equation}
+or equivalently, $f(s_2)=\1_{s_2}$ and
+$(\green(s_1))_{s_2}=(\Delta^{-1})_{s_1s_2}/\rho(s_2)$. \footnote{The solution to
+such representation problems is never unique because $E$ is an arbitrary
+space and one may always make a change of basis in $E$. More precisely,
+if $B$ is any invertible linear map on $E$, then changing $f\gets Bf$,
+$\green\gets (\transp{B})^{-1}\green$ produces a new solution; indeed
+this preserves $\green\cdot f$. This may
+be useful to ``renormalize'' once in a while to help with numerical
+conditioning: eg setting $f$ to have
+unit covariance, or $f$ and $\green$ to have the same covariance.
+
+Actually the most symmetric solution may be something like
+$f(s_2)=\Delta^{-1/2}\1_{s_2}/\rho(s_2)$ and
+$\green(s_1)=\transp{(\Delta^{-1/2})}\1_{s_1}$. This may be the fastest
+to reach, by splitting eigenvalues of $\Delta$ halfway between $f$ and
+$\green$.}
+But with infinite or continuous state spaces, we have to find a more
+compact representation.
+
+The reason for this form is the following: $E$ is supposed to represent
+distributions or functions over states. $f$ is supposed to map $s_2$ to
+something like
+$\1_{s_2}$ (up to a factor $1/\rho$ to compensate for sampling
+probabilities). 
+In
+particular, $\E_{s_2\sim \rho}f(s_2)\psi(s_2)$ is supposed to represent
+the vector with components $\psi(s_2)$, namely, the function $\psi$. $\green$ is supposed to map each
+$s_1$ to the
+the occupation
+distribution of the random walk starting from $s_1$, namely,
+$\transp{\1_{s_1}}\sum_t P^t$, which is $\transp{\1_{s_1}}\,\Delta^{-1}$
+(as usual I
+omit constants\footnote{To deal with constants, we probably have to be
+able to predict \emph{differences} $\psi(s_2)-\psi(s_2')$, or just use
+relative value functions and remove $\psi(s_0)$ for some $s_0$.}). Then the scalar product in
+$E$ represents integration/summation over the state space.
+
+Of course we cannot directly learn $\green$ from \eqref{eq:greenrep},
+since $\Delta^{-1}$ in the right-hand-side is exactly what we want to
+learn. But $\Delta^{-1}$ is the unique solution to the Bellman equations \eqref{eq:greenbell}; after
+applying \eqref{eq:greenbell} to an arbitrary state $s_1$ and test
+function $\psi$, and
+substituting the model $\green$ for $\Delta^{-1}$ via
+$\eqref{eq:greenrep}$, the left Bellman equation becomes
+\begin{gather}
+\transp{\1_{s_1}}\,\Delta^{-1}\psi=\transp{\1_{s_1}}\,\psi+\transp{\1_{s_1}}\,P\Delta^{-1}\psi
+\qquad \Longrightarrow
+\\
+\green(s_1)\cdot\E_{s_2\sim \rho}
+f(s_2)\psi(s_2)
+\approx \psi(s_1)+ \E_{s'\sim P(s'|s_1)}\green(s')\cdot
+\E_{s_2\sim \rho}\,
+f(s_2)\psi(s_2)
+\end{gather}
+because $\transp{\1_{s_1}}\,P=\E_{s'\sim P(s'|s_1)}\transp{\1_{s'}}\,$.
+Meanwhile,
+the right Bellman equation becomes
+\begin{gather}
+\transp{\1_{s_1}}\,\Delta^{-1}\psi=\transp{\1_{s_1}}\,\psi+\transp{\1_{s_1}}\,\Delta^{-1}P\psi
+\qquad \Longrightarrow
+\\
+\green(s_1)\cdot\E_{s_2\sim \rho}
+f(s_2)\psi(s_2)
+\approx \psi(s_1)+ \green(s_1)\cdot\E_{s_2\sim \rho}\E_{s'_2\sim P(s'_2|s_2)}
+f(s_2)\psi(s'_2)
+\end{gather}
+(indeed, 
+$P\psi$ is
+represented by $\E_{s_2\sim \rho} f(s_2)(P\psi)(s_2)$, and
+$(P\psi)(s_2)=\E_{s'_2\sim P(s'_2|s_2)}\psi(s'_2)$).
+
+\emph{Both} these equations are samplable. Therefore, one may
+parameterize $f$ and $\green$ by neural networks and train the
+parameters. This works off-policy: we have not used that $\rho$ is the
+invariant distribution, just some distribution on states we can sample
+from.
+
+Of course, we should apply this to relevant test functions $\psi$,
+such as the reward function or any useful (predictive) features, namely,
+any function we're interested in predicting the future values of. 
+If just using a
+random function $\psi$, there is very little signal to train
+from. \footnote{An extreme case is to take a purely random $\psi$ at each
+training step; then $\psi(s_1)$ and $\psi(s_2)$ are independent unless $s_1=s_2$,
+which is a very unlikely event. This amounts to training with white noise
+features. Formally it works thanks to the rare case $s_1=s_2$, but
+variance is just terrible.}
+
+Thus we may learn $\green$ via TD-like algorithms. We may even have
+double sampling that works, thanks to featurization (using test functions
+$\psi$), at least for the right equation. TODO should we featurize on the
+left as well? Or train only with the right equation?
+
+When sampling for the right Bellman equation, it is wasteful to sample a
+state $s_2$ and apply a test function $\psi$ if $\psi(s_2)$ is very
+small. Instead one may want to sample $s_2$ according to
+$\rho_\psi\deq \rho(s_2)\abs{\psi(s_2)}/\E_{\rho}\abs{\psi}$, in which case
+$\E_{s_2\sim \rho} f(s_2)\psi(s_2)$ is equal to $(\E_{\rho}\abs{\psi})\E_{s_2\sim \rho_\psi}
+f(s_2)\sgn(\psi(s_2))$. This will significantly reduce variance,
+especially for test functions $\psi$ that are concentrated around a few
+points.
+
+The value function is obtained with $\psi=R$, namely,
+\begin{equation}
+V(s_1)=\transp{\1_{s_1}}\Delta^{-1}R\approx
+\green(s_1)\cdot\E_{s_2\sim \rho}
+f(s_2)R(s_2)
+\end{equation}
+Of course it is not convenient to have to sample from $s_2$. Instead one
+might want to just learn the representation $f(R)$, defined by abuse of
+notation as
+\begin{equation}
+f(R)\deq \E_{s_2\sim \rho} \,f(s_2)R(s_2)
+\end{equation}
+(which can be computed online)
+and then
+\begin{equation}
+V(s_1)\approx \green(s_1)\cdot f(R)
+\end{equation}
+
+More generally, we can learn the representation of any function $\psi$.
+This could be useful if we want to train a few policy parameters to lead in
+certain directions/lead to states with certain features.
+
+Another equation that might be enforced is commutation between
+$P$ and $\Delta^{-1}$; it is expressed similarly to the above, but I do
+not know if there's a gain. It might transfer left to right Bellman
+equations.
+
+$\green$ is basically a model of the world (summed over time). The
+difference with ordinary model-based is: $\green$ is trained as a fixed
+point, considering all timescales at once. $\Delta^{-1}$ contains all
+paths of all lengths from $s$ to $s'$. In ordinary model-based, the
+model $\tilde P$ obviously commutes with its iterates ($\tilde P^t\tilde
+P=\tilde P\tilde P^t$), but does not provide an easy and accurate
+representation of the occupation measure $\tilde \Delta^{-1}=\sum_t \tilde P^t$. So even in
+the model-based case, the above might be useful.
+
+One may also compute something like $\Delta^{-1}_{s,a,s'}$ (paths that start
+at $s$ with action $a$ and arrive at $s'$). Unclear if more useful.
+
+Nico suggests the references around successor representation, proto-value
+functions, byt Marlos Machado.
 
 \paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
