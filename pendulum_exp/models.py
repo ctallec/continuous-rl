@@ -80,13 +80,13 @@ class CustomBN(nn.Module):
         batch_size = t_input.size(0)
 
         # log
-        count = int(self._count.item())
-        if (count // batch_size) % 100 == 99:
-            log(self._prefix + 'count', count, count)
-            log(self._prefix + 'min_mean', self._mean.abs().min(), count) # type: ignore
-            log(self._prefix + 'max_mean', self._mean.abs().max(), count) # type: ignore
-            log(self._prefix + 'min_sq_mean', self._squared_mean.min(), count) # type: ignore
-            log(self._prefix + 'max_sq_mean', self._squared_mean.max(), count) # type: ignore
+        # count = int(self._count.item())
+        # if (count // batch_size) % 100 == 99:
+        #     log(self._prefix + 'count', count, count)
+        #     log(self._prefix + 'min_mean', self._mean.abs().min(), count) # type: ignore
+        #     log(self._prefix + 'max_mean', self._mean.abs().max(), count) # type: ignore
+        #     log(self._prefix + 'min_sq_mean', self._squared_mean.min(), count) # type: ignore
+        #     log(self._prefix + 'max_sq_mean', self._squared_mean.max(), count) # type: ignore
         std = torch.sqrt(torch.clamp(self._squared_mean - self._mean ** 2, min=1e-2)) # type: ignore
         output = (t_input - self._mean) / std # type: ignore
         with torch.no_grad():

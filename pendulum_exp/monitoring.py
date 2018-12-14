@@ -70,6 +70,7 @@ if __name__ == '__main__':
             cmd = []
         cmd += ['python', 'eval.py', '--logdir', args.logdir, '--sigma_eval',
                 str(args.sigma_eval), '--overwrite']
+        print("Launching video rendering script: " + " ".join(cmd))
         call(' '.join(cmd), shell=True)
 
     if os.path.isfile(log_filename) and not args.nolog:
