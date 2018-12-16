@@ -27,7 +27,7 @@ def configure(args):
         action_space=eval_env.action_space, observation_space=eval_env.observation_space,
         nb_layers=args.nb_layers, hidden_size=args.hidden_size,
         normalize=args.normalize_state, weight_decay=args.weight_decay, noise=noise,
-        tau=args.tau
+        tau=args.tau, use_reference=not args.noreference
     )
 
     critic_cls = {
