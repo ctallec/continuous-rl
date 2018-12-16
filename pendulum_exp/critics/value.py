@@ -41,7 +41,7 @@ class ValueCritic(CompoundStateful, Critic):
         obs = check_array(obs)
         next_obs = check_array(next_obs)
         q = self.critic(obs, action)
-        q_next = self.critic(next_obs, max_next_action, target=True)
+        q_next = self.critic(next_obs, max_next_action, target=True) * (1 - done)
 
         expected_q = (reward * self._dt + self._gamma ** self._dt * q_next).detach()
         critic_loss = (q - expected_q) ** 2

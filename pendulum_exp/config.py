@@ -6,29 +6,29 @@ from actors import DelayedDiscreteActor, DelayedApproximateActor
 from critics import AdvantageCritic, ValueCritic, MixtureAdvantageCritic
 from critics import OrderAdvantageCritic
 from envs.utils import make_env
-from envs.vecenv import SubprocVecEnv
+from envs.vecenv import VEnv
 from noise import setup_noise
 
 def configure(args):
     env_fn = partial(make_env, env_id=args.env_id,
                      dt=args.dt, time_limit=args.time_limit)
 
-    env: Env = SubprocVecEnv([env_fn() for _ in range(args.nb_train_env)])
-    eval_env: Env = SubprocVecEnv([env_fn() for _ in range(args.nb_eval_env)])
+    env: Env = VEnv([env_fn() for _ in range(args.nb_train_env)])
+    eval_env: Env = VEnv([env_fn() for _ in range(args.nb_eval_env)])
 
     noise = setup_noise(
         noise_type=args.noise_type, sigma=args.sigma,
         theta=args.theta, dt=args.dt, sigma_decay=lambda _: 1.,
-        action_space=env.action_space)
+        action_space=eval_env.action_space)
 
     actor_type, critic_type = args.algo.split('_')
 
     kwargs = dict(
         dt=args.dt, gamma=args.gamma, lr=args.lr, optimizer=args.optimizer,
-        action_space=env.action_space, observation_space=env.observation_space,
+        action_space=eval_env.action_space, observation_space=eval_env.observation_space,
         nb_layers=args.nb_layers, hidden_size=args.hidden_size,
         normalize=args.normalize_state, weight_decay=args.weight_decay, noise=noise,
-        tau=args.tau
+        tau=args.tau, use_reference=not args.noreference
     )
 
     critic_cls = {

@@ -15,7 +15,6 @@ def specific_evaluation(
         dt: float,
         env: Env,
         policy: Policy):
-    assert isinstance(env, SubprocVecEnv), f"Incorrect environment type: {type(env)}, SubprocVecEnv expected." # type: ignore
 
     if isinstance(env.envs[0].unwrapped, AbstractPusher): # type: ignore
         nb_pixels = 50

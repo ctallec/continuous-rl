@@ -27,7 +27,7 @@ def train(nb_steps: int, env: Env, policy: Policy, start_obs: Arrayable):
 
 def evaluate(dt: float, epoch: int, env: Env, policy: Policy,
              time_limit: Optional[float] = None, eval_return: bool = False,
-             progress_bar: bool = False, video: bool = False):
+             progress_bar: bool = False, video: bool = False, no_log: bool=False):
     """ Evaluate. """
     log_gap = int(.1 / dt)
     policy.eval()
@@ -49,12 +49,13 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy,
         R = compute_return(np.stack(rewards, axis=0),
                            np.stack(dones, axis=0))
         info(f"At epoch {epoch}, return: {R}")
-        if not video:
+        if not no_log:
             log("Return", R, epoch) # don't log when outputing video
         if video:
             log_video("demo", epoch, np.stack(imgs, axis=0))
 
-    specific_evaluation(epoch, log_gap, dt, env, policy)
+    if not no_log:
+        specific_evaluation(epoch, log_gap, dt, env, policy)
     return R
 
 def main(args):

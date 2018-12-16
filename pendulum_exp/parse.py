@@ -34,6 +34,7 @@ def setup_args():
     parser.add_argument('--alpha', type=float, default=None)
     parser.add_argument('--beta', type=float, default=None)
     parser.add_argument('--tau', type=float, default=.99)
+    parser.add_argument('--noreference', action='store_true')
     parser.add_argument('--optimizer', type=str, choices=['sgd', 'rmsprop'],
                         default='sgd')
     parser.add_argument('--noreload', action='store_true')
@@ -43,6 +44,6 @@ def setup_args():
         'sigma_eval', 'sigma', 'theta', 'nb_train_env', 'nb_eval_env', 'memory_size',
         'learn_per_step', 'cyclic_expliration', 'normalize_state', 'lr', 'time_limit',
         'nb_policy_samples', 'policy_lr', 'alpha', 'beta', 'weight_decay', 'optimizer',
-        'tau'
+        'tau', 'noreference'
     ])
     return parser.parse_args()
