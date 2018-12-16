@@ -62,11 +62,11 @@ class MixtureAdvantageCritic(AdvantageCritic):
 
         return adv_mu, adv_logpi, adv
 
-    def critic(self, obs: Arrayable, action: Tensorable, target: bool=False) -> Tensor:
+    def critic(self, obs: Arrayable, action: Tensorable, target: bool = False) -> Tensor:
         _, _, adv = self.compute_mixture_advantage(obs, action)
         return adv
 
-    def critic_function(self, target: bool=False):
+    def critic_function(self, target: bool = False):
         return MixtureNetwork(self._adv_function, self._mixture_function,
                               [1, self._dt], [np.log(self._dt / (1 - self._dt)), 0])
 
@@ -87,8 +87,6 @@ class MixtureAdvantageCritic(AdvantageCritic):
         next_v = (1 - done) * (
             self._val_function(next_obs).squeeze() - self._dt * mean_v) - \
             done * self._gamma * mean_v / max(1 - self._gamma, 1e-5)
-        expected_adv = (reward * self._dt + self._gamma ** self._dt * next_v - v).detach()
-        expected_adv = expected_adv.unsqueeze(-1)
 
         obs = check_array(obs)
         batch_size = obs.shape[0]
@@ -98,27 +96,18 @@ class MixtureAdvantageCritic(AdvantageCritic):
         adv_mu, max_adv_mu = adv_mus[:batch_size], adv_mus[batch_size:]
         adv_logpi, max_adv_logpi = adv_logpis[:batch_size], adv_logpis[batch_size:]
         adv, max_adv = advs[:batch_size], advs[batch_size:]
+        expected_adv = (
+            reward * self._dt + self._gamma ** self._dt * next_v - v + max_adv).detach()
+        expected_adv = expected_adv.unsqueeze(-1)
 
-        gmm_mu = torch.cat(
-            [
-                adv_mu - max_adv_mu,
-                adv_mu - torch.stack([max_adv_mu[..., 1], max_adv_mu[..., 0]], dim=-1)
-            ], dim=-1).unsqueeze(-1)
-
-        gmm_logpi = torch.cat(
-            [
-                adv_logpi + max_adv_logpi,
-                adv_logpi + torch.stack([max_adv_logpi[..., 1], max_adv_logpi[..., 0]], dim=-1)
-            ], dim=-1)
-
-        sigma_coef = 1 / np.sqrt(self._dt)
-        gmm_sigma = sigma_coef * torch.Tensor(
-            [[np.sqrt(2), np.sqrt(2 * self._dt), np.sqrt(1 + self._dt), np.sqrt(1 + self._dt)]]
+        gmm_sigma = torch.Tensor(
+            [[np.sqrt(2), np.sqrt(2) * self._dt]]
         ).to(self._device).unsqueeze(-1)
 
-        adv_loss = gmm_loss(expected_adv, gmm_mu, gmm_sigma, gmm_logpi) + (max_adv ** 2)
+        adv_loss = gmm_loss(expected_adv, adv_mu.unsqueeze(-1), gmm_sigma, adv_logpi)
+        adv_loss = adv_loss + gmm_loss(torch.zeros_like(expected_adv), max_adv_mu.unsqueeze(-1), gmm_sigma, max_adv_logpi)
+
         # remove minimal constant from adv_loss
-        adv_loss = adv_loss - np.log(2 * np.pi) / 2 - np.log(2) / 2
         self._adv_optimizer.zero_grad()
         self._mixture_optimizer.zero_grad()
         adv_loss.mean().backward(retain_graph=True)
