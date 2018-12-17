@@ -65,8 +65,8 @@ class OrderAdvantageCritic(CompoundStateful, Critic):
 
         expected_q = (reward * self._dt + self._gamma ** self._dt * next_q).detach()
 
-        critic_loss = .5 * ((expected_q - q) / torch.pow(self._dt, (1 + sigma) / 2)) ** 2 + \
-            .5 * (max_adv / torch.pow(self._dt, (1 + max_sigma) / 2)) ** 2 + (sigma + max_sigma) * np.log(self._dt) / 2
+        critic_loss = .5 * ((expected_q - q) / (self._dt ** ((1 + sigma) / 2))) ** 2 + \
+            .5 * (max_adv / (self._dt ** ((1 + max_sigma) / 2))) ** 2 + (sigma + max_sigma) * np.log(self._dt) / 2
 
         self._val_optimizer.zero_grad()
         self._adv_optimizer.zero_grad()
@@ -86,7 +86,7 @@ class OrderAdvantageCritic(CompoundStateful, Critic):
         advs = adv_full[..., :2]
         sigma = torch.sigmoid(adv_full[..., 2] - 1)
         adv = (advs * torch.stack([sigma, 1 - sigma], dim=-1)).sum(dim=-1) * \
-            torch.pow(self._dt, sigma)
+            (self._dt ** sigma)
         return adv, sigma
 
     def critic(self, obs: Arrayable, action: Tensorable, target: bool = False) -> Tensor:
