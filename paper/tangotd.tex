@@ -1256,14 +1256,41 @@ might be an important point for the navigation problem.
 
 Namely, set
 \begin{equation}
-A=\transp{\green}F, \qquad \green=\sum_s \green(s)\1_s,\qquad F=\E_{s\sim
+A=\transp{\green}F, \qquad \green=\sum_s \green(s)\transp{\1_s},\qquad F=\E_{s\sim
 \rho}
-f(s)\1_s
+f(s)\transp{\1_s}
 \end{equation}
 which is the same representation as above, namely $A=\Delta^{-1}$ is
-equivalent to $\transp{\1_s}\green(s)\cdot \E_{s'\sim
+equivalent to $\green(s)\cdot \E_{s'\sim
 \rho} \psi(s')f(s')=\transp{\1_s}\Delta^{-1}\psi$ for all $s$ and test
-functions $\psi$.
+functions $\psi$. Then the Newton equation for $A$ reads
+\begin{equation}
+\transp{\green}F\gets (1+\eta)\transp{\green}F-\eta \transp{\green}F \E_{ss'} \frac{1}{\rho(s)}\1_s\transp{(\1_s-\gamma
+\1_{s'})} \transp{\green}F
+\end{equation}
+and since $F\1_s=\rho(s)f(s)$ and
+$\transp{\1_s}\transp{\green}=\transp{\green(s)}$, this simplifies to
+\begin{equation}
+\transp{\green}F\gets (1+\eta)\transp{\green}F-\eta
+\transp{\green} \E_{ss'} f(s)\transp{(\green(s)-\gamma
+\green(s'))}F
+\end{equation}
+and we propose to update separately for $\green$ given $f$ and $f$ given
+$\green$: the advantage being that for fixed $f$, we can obtain the
+update above by updating $\green$ via
+\begin{equation}
+\transp{\green}\gets (1+\eta)\transp{\green}-\eta
+\transp{\green} \E_{ss'} f(s)\transp{(\green(s)-\gamma
+\green(s'))}
+\end{equation}
+and likewise for $f$ given $\green$,
+\begin{equation}
+F\gets (1+\eta)F-\eta
+\E_{ss'} f(s)\transp{(\green(s)-\gamma
+\green(s'))}F
+\end{equation}
+both of which can be implemented via gradient descent on the parameters
+of $\green$ and $f$. There is no need to sample on test functions.
 
 \paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
