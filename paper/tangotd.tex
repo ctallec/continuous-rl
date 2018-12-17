@@ -1231,27 +1231,39 @@ produce new starting points or endpoints.)
 
 Here we do not have access to $\Delta$, but have access to transitions
 $s\to s'$, which are samples of
-$\rho\Delta$, namely, $\rho\Delta=\E_{s,s'} 1_s\transp{(\1_s-\gamma
+$\Delta$, namely, $\Delta=\sum_s\E_{s'\sim P(s'|s)} \1_s\transp{(\1_s-\gamma
 \1_{s'})}$. This corresponds to a stochastic version of the Newton
 method, with learning rate $\eta\ll 1$,
 \begin{equation}
-A\gets A+\eta A-\eta A 1_s\transp{(\1_s-\gamma \1_{s'})} A
+A\gets A+\eta A-\eta A \E_{ss'} \frac{1}{\rho(s)}\1_s\transp{(\1_s-\gamma \1_{s'})} A
 \end{equation}
 Indeed, in expectation over $s\to s'$ this corresponds to $A\gets A+\eta
-A-\eta A \rho\Delta A$, which converges to $A=\Delta^{-1}\rho^{-1}$. This
+A-\eta A \Delta A$, which converges to $A=\Delta^{-1}$. This
 also corresponds to the rank-one update formyla for matrix inversion,
 $(D+\eta u\transp{v})^{-1}=D^{-1}-\eta
 D^{-1}u\transp{v}D^{-1}+O(\eta^2)$. Namely,
-if we update our estimate of $\rho\Delta$ by
-$\rho\Delta\gets (1-\eta)\rho\Delta+\eta 1_s\transp{(\1_s-\gamma
+if we update our estimate of $\Delta$ by
+$\Delta\gets (1-\eta)\Delta+\eta \frac{1}{\rho(s)} \1_s\transp{(\1_s-\gamma
 \1_{s'})}$ when a transition $s\to s'$ is observed, then
-$(\rho\Delta)^{-1}$ gets updated as above.
+$\Delta^{-1}$ gets updated as above.
 
-With $A=\green\cdot \E_{\rho} f$ as above, everything is fully samplable.
+With $A=\green\cdot \E_{\rho} f$ as above, everything is fully samplable
+(thanks to the $\E_\rho$ which cancels the $1/\rho$ factors), see below.
 It is not clear to me how to mix the left, right and middle Bellman
 equations, but the correspondence with path combinatorics and the Newton
 method suggests this
 might be an important point for the navigation problem.
+
+Namely, set
+\begin{equation}
+A=\transp{\green}F, \qquad \green=\sum_s \green(s)\1_s,\qquad F=\E_{s\sim
+\rho}
+f(s)\1_s
+\end{equation}
+which is the same representation as above, namely $A=\Delta^{-1}$ is
+equivalent to $\transp{\1_s}\green(s)\cdot \E_{s'\sim
+\rho} \psi(s')f(s')=\transp{\1_s}\Delta^{-1}\psi$ for all $s$ and test
+functions $\psi$.
 
 \paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
