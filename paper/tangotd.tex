@@ -1290,7 +1290,15 @@ F\gets (1+\eta)F-\eta
 \green(s'))}F
 \end{equation}
 both of which can be implemented via gradient descent on the parameters
-of $\green$ and $f$. There is no need to sample on test functions.
+of $\green$ and $f$. (This double the learning rate $\eta$.)
+There is no need to sample on test functions.
+
+??Equivalent to solving for
+\begin{equation}
+\Id=\E_{ss'} f(s)\transp{(\green(s)-\gamma
+\green(s'))}
+\end{equation}
+?? which has plenty of problems
 
 \paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
