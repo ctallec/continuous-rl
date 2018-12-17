@@ -10,7 +10,7 @@ def gmm_loss(batch: Tensor,
              mus: Tensor,
              sigmas: Tensor,
              logpi: Tensor,
-             reduce: bool=True) -> Tensor: # pylint: disable=too-many-arguments
+             reduce: bool = True) -> Tensor: # pylint: disable=too-many-arguments
     """ Computes the gmm loss.
     Compute minus the log probability of batch under the GMM model described
     by mus, sigmas, pi. Precisely, with bs1, bs2, ... the sizes of the batch
@@ -78,7 +78,7 @@ class LogSoftmax(torch.nn.Module, ParametricFunction):
 def soft_update(net: ParametricFunction, target_net: ParametricFunction, tau: float):
     with torch.no_grad():
         for target_param, param in zip(target_net.parameters(), net.parameters()):
-            target_param.add_(tau, param - target_param)
+            target_param.add_(1 - tau, param - target_param)
 
 def hard_update(net: ParametricFunction, target_net: ParametricFunction, tau: float):
     with torch.no_grad():
