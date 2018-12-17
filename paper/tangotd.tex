@@ -1090,6 +1090,10 @@ f(s_2)\psi(s_2)
 f(s_2)\psi(s_2)
 \end{gather}
 because $\transp{\1_{s_1}}\,P=\E_{s'\sim P(s'|s_1)}\transp{\1_{s'}}\,$.
+For a fixed $f$, 
+this is basically a multiple Bellman equation on $\green$ with multiple
+rewards $\psi$, and features $f\psi$.
+
 Meanwhile,
 the right Bellman equation becomes
 \begin{gather}
@@ -1121,9 +1125,15 @@ from. \footnote{An extreme case is to take a purely random $\psi$ at each
 training step; then $\psi(s_1)$ and $\psi(s_2)$ are independent unless $s_1=s_2$,
 which is a very unlikely event. This amounts to training with white noise
 features. Formally it works thanks to the rare case $s_1=s_2$, but
-variance is just terrible.}
+variance is just terrible.} Even training only on $\psi=R$ should be
+interesting: the left Bellman equation just becomes a particular
+parameterization of the value function as $V(s_1)=\green(s_1)\cdot
+\E_{s_2} R(s_2)f(s_2)$, so if the left Bellman equation is used, this
+will approximate the true $V$.
 
-Thus we may learn $\green$ via TD-like algorithms. We may even have
+Thus we may learn $\green$ and $f$ via TD-like algorithms. (Does it make
+sense to use the left equation for $\green$ and the right equation for
+$f$?) We may even have
 double sampling that works, thanks to featurization (using test functions
 $\psi$), at least for the right equation. TODO should we featurize on the
 left as well? Or train only with the right equation?
