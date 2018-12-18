@@ -61,17 +61,17 @@ class OrderAdvantageCritic(CompoundStateful, Critic):
         adv, max_adv = advs[:bs], advs[bs:2 * bs]
         sigma, max_sigma = sigmas[:bs], sigmas[bs:2 * bs]
         max_next_adv = self.compute_advantages(next_obs, max_next_action, target=True)[0]
-        q = v + adv
-
         next_v = (1 - done) * (
-            self._target_val_function(next_obs).squeeze() - self._dt * mean_v) - \
+            self._target_val_function(next_obs).squeeze() - self._dt * self._gamma ** (1 - self._dt) * mean_v) - \
             done * self._gamma * mean_v / max(1 - self._gamma, 1e-5)
         next_q = next_v + (1 - done) * max_next_adv
 
-        expected_q = (reward * self._dt + self._gamma ** self._dt * next_q).detach()
+        expected_a = (reward * self._dt + self._gamma ** self._dt * next_q - v).detach()
+        expected_v = (reward * self._dt + self._gamma ** self._dt * next_q - adv).detach()
 
-        critic_loss = .5 * ((expected_q - q) / (self._dt ** sigma)) ** 2 + \
-            .5 * (max_adv / (self._dt ** max_sigma)) ** 2 + (sigma + max_sigma) * np.log(self._dt) / 2
+        critic_loss = .5 * ((expected_a - adv) / (self._dt ** (sigma / 2))) ** 2 + \
+            .5 * (max_adv / (self._dt ** (max_sigma / 2))) ** 2 + (sigma + max_sigma) * np.log(self._dt) / 2
+        critic_loss = critic_loss + .5 * (expected_v - v) ** 2
 
         self._val_optimizer.zero_grad()
         self._adv_optimizer.zero_grad()
