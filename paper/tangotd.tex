@@ -1090,6 +1090,10 @@ f(s_2)\psi(s_2)
 f(s_2)\psi(s_2)
 \end{gather}
 because $\transp{\1_{s_1}}\,P=\E_{s'\sim P(s'|s_1)}\transp{\1_{s'}}\,$.
+For a fixed $f$, 
+this is basically a multiple Bellman equation on $\green$ with multiple
+rewards $\psi$, and features $f\psi$.
+
 Meanwhile,
 the right Bellman equation becomes
 \begin{gather}
@@ -1104,7 +1108,9 @@ f(s_2)\psi(s'_2)
 (indeed, 
 $P\psi$ is
 represented by $\E_{s_2\sim \rho} f(s_2)(P\psi)(s_2)$, and
-$(P\psi)(s_2)=\E_{s'_2\sim P(s'_2|s_2)}\psi(s'_2)$).
+$(P\psi)(s_2)=\E_{s'_2\sim P(s'_2|s_2)}\psi(s'_2)$). If we view this as
+an equation on $f$ for fixed $\green$, this imposes a kind of spatial
+regularity of features $f$.
 
 \emph{Both} these equations are samplable. Therefore, one may
 parameterize $f$ and $\green$ by neural networks and train the
@@ -1121,9 +1127,15 @@ from. \footnote{An extreme case is to take a purely random $\psi$ at each
 training step; then $\psi(s_1)$ and $\psi(s_2)$ are independent unless $s_1=s_2$,
 which is a very unlikely event. This amounts to training with white noise
 features. Formally it works thanks to the rare case $s_1=s_2$, but
-variance is just terrible.}
+variance is just terrible.} Even training only on $\psi=R$ should be
+interesting: the left Bellman equation just becomes a particular
+parameterization of the value function as $V(s_1)=\green(s_1)\cdot
+\E_{s_2} R(s_2)f(s_2)$, so if the left Bellman equation is used, this
+will approximate the true $V$.
 
-Thus we may learn $\green$ via TD-like algorithms. We may even have
+Thus we may learn $\green$ and $f$ via TD-like algorithms. (Does it make
+sense to use the left equation for $\green$ and the right equation for
+$f$?) We may even have
 double sampling that works, thanks to featurization (using test functions
 $\psi$), at least for the right equation. TODO should we featurize on the
 left as well? Or train only with the right equation?
@@ -1180,7 +1192,113 @@ One may also compute something like $\Delta^{-1}_{s,a,s'}$ (paths that start
 at $s$ with action $a$ and arrive at $s'$). Unclear if more useful.
 
 Nico suggests the references around successor representation, proto-value
-functions, byt Marlos Machado.
+functions, by Marlos Machado.
+
+\paragraph{Enumerative combinatorics, the middle Bellman equation, and
+the Newton method for $\Delta^{-1}$.} As mentioned above, $(\Id-\gamma
+P)^{-1}$ counts the number of paths from state $s_1$ to $s_2$, weighted
+by their probability and $\gamma^\mathrm{length}$. When observing a new
+transition $s\to s'$, the left Bellman equation on $P$ produces new paths
+from $s$, by adding the edge $s\to s'$ to all paths from $s'$. Similarly
+the right Bellman equation produces new paths to $s'$.
+
+The Newton method for matrix inversion is a classical tool to compute
+$\Delta^{-1}$. It consists in iterating
+\begin{equation}
+A\gets 2A-A\Delta A
+\end{equation}
+It converges extremely fast if initialized reasonably close to $A^{-1}$ (namely if the spectral
+radius of $\Id-AX$ is less than $1$), but it can diverge if badly
+initialized. A suitable initialization is $A=\eps\transp{\Delta}$ for
+small enough $\eps$. For stochastic estimates $\tilde \Delta$ of $\Delta$ (as we have
+here through transitions), the stochastic update version with learning
+rate $\eta$ is
+\begin{equation}
+A\gets A+\eta A-\eta A\tilde \Delta A
+\end{equation}
+
+With $\Delta=\Id-\gamma P$, 
+this method corresponds to a ``middle'' Bellman equation
+\begin{equation}
+\Delta^{-1}\gets \Delta^{-1}+\eta\Delta^{-1}-\eta \Delta^{-2}+\eta \gamma \Delta^{-1}P\Delta^{-1}
+\end{equation}
+Importantly, when a new transition $s\to s'$ is observed from $P$, this equation
+produces new paths by connecting all paths that end at $s$ with all paths
+starting at $s'$, thus doubling path length (thanks to the $\Delta^{-1}$
+on the right and left of $P$). This doubling corresponds to the
+quadratic convergence of the Newton method. (However, this method does not
+produce new starting points or endpoints.)
+
+Here we do not have access to $\Delta$, but have access to transitions
+$s\to s'$, which are samples of
+$\Delta$, namely, $\Delta=\sum_s\E_{s'\sim P(s'|s)} \1_s\transp{(\1_s-\gamma
+\1_{s'})}$. This corresponds to a stochastic version of the Newton
+method, with learning rate $\eta\ll 1$,
+\begin{equation}
+A\gets A+\eta A-\eta A \E_{ss'} \frac{1}{\rho(s)}\1_s\transp{(\1_s-\gamma \1_{s'})} A
+\end{equation}
+Indeed, in expectation over $s\to s'$ this corresponds to $A\gets A+\eta
+A-\eta A \Delta A$, which converges to $A=\Delta^{-1}$. This
+also corresponds to the rank-one update formyla for matrix inversion,
+$(D+\eta u\transp{v})^{-1}=D^{-1}-\eta
+D^{-1}u\transp{v}D^{-1}+O(\eta^2)$. Namely,
+if we update our estimate of $\Delta$ by
+$\Delta\gets (1-\eta)\Delta+\eta \frac{1}{\rho(s)} \1_s\transp{(\1_s-\gamma
+\1_{s'})}$ when a transition $s\to s'$ is observed, then
+$\Delta^{-1}$ gets updated as above.
+
+With $A=\green\cdot \E_{\rho} f$ as above, everything is fully samplable
+(thanks to the $\E_\rho$ which cancels the $1/\rho$ factors), see below.
+It is not clear to me how to mix the left, right and middle Bellman
+equations, but the correspondence with path combinatorics and the Newton
+method suggests this
+might be an important point for the navigation problem.
+
+Namely, set
+\begin{equation}
+A=\transp{\green}F, \qquad \green=\sum_s \green(s)\transp{\1_s},\qquad F=\E_{s\sim
+\rho}
+f(s)\transp{\1_s}
+\end{equation}
+which is the same representation as above, namely $A=\Delta^{-1}$ is
+equivalent to $\green(s)\cdot \E_{s'\sim
+\rho} \psi(s')f(s')=\transp{\1_s}\Delta^{-1}\psi$ for all $s$ and test
+functions $\psi$. Then the Newton equation for $A$ reads
+\begin{equation}
+\transp{\green}F\gets (1+\eta)\transp{\green}F-\eta \transp{\green}F \E_{ss'} \frac{1}{\rho(s)}\1_s\transp{(\1_s-\gamma
+\1_{s'})} \transp{\green}F
+\end{equation}
+and since $F\1_s=\rho(s)f(s)$ and
+$\transp{\1_s}\transp{\green}=\transp{\green(s)}$, this simplifies to
+\begin{equation}
+\transp{\green}F\gets (1+\eta)\transp{\green}F-\eta
+\transp{\green} \E_{ss'} f(s)\transp{(\green(s)-\gamma
+\green(s'))}F
+\end{equation}
+and we propose to update separately for $\green$ given $f$ and $f$ given
+$\green$: the advantage being that for fixed $f$, we can obtain the
+update above by updating $\green$ via
+\begin{equation}
+\transp{\green}\gets (1+\eta)\transp{\green}-\eta
+\transp{\green} \E_{ss'} f(s)\transp{(\green(s)-\gamma
+\green(s'))}
+\end{equation}
+and likewise for $f$ given $\green$,
+\begin{equation}
+F\gets (1+\eta)F-\eta
+\E_{ss'} f(s)\transp{(\green(s)-\gamma
+\green(s'))}F
+\end{equation}
+both of which can be implemented via gradient descent on the parameters
+of $\green$ and $f$. (This double the learning rate $\eta$.)
+There is no need to sample on test functions.
+
+??Equivalent to solving for
+\begin{equation}
+\Id=\E_{ss'} f(s)\transp{(\green(s)-\gamma
+\green(s'))}
+\end{equation}
+?? which has plenty of problems... But not the same gradient descent.
 
 \paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally

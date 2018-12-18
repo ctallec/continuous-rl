@@ -1,8 +1,8 @@
 """Generalities for parametric policies."""
 from typing import Any
-from abstract import StateDict, Stateful
+from abstract import StateDict, Stateful, Cudaable
 
-class CompoundStateful:
+class CompoundStateful(Cudaable):
     def __init__(self):
         self._statefuls = {}
 
@@ -26,6 +26,11 @@ class CompoundStateful:
     def load_state_dict(self, state_dict: StateDict):
         for k in self._statefuls:
             self._statefuls[k].load_state_dict(state_dict[k])
+
+    def to(self, device):
+        for k in self._statefuls:
+            if isinstance(self._statefuls[k], Cudaable):
+                self._statefuls[k] = self._statefuls[k].to(device)
 
 
 Stateful.register(CompoundStateful)

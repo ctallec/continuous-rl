@@ -2,8 +2,9 @@ from torch import Tensor
 from abstract import Actor, ParametricFunction, Noise, Arrayable, StateDict
 
 class DiscreteActor(Actor):
-    def __init__(self, critic: ParametricFunction, noise: Noise) -> None:
+    def __init__(self, critic: ParametricFunction, target_critic: ParametricFunction, noise: Noise) -> None:
         self._critic = critic
+        self._target_critic = target_critic
         self._noise = noise
 
     def act_noisy(self, obs: Arrayable) -> Arrayable:
@@ -13,7 +14,8 @@ class DiscreteActor(Actor):
         return pre_action.argmax(axis=-1)
 
     def act(self, obs: Arrayable, target=False) -> Tensor:
-        pre_action = self._critic(obs)
+        critic = self._critic if not target else self._target_critic
+        pre_action = critic(obs)
         return pre_action.argmax(dim=-1)
 
     def optimize(self, loss: Tensor):
@@ -34,6 +36,7 @@ class DiscreteActor(Actor):
 
     @staticmethod
     def configure(
-            critic_function: ParametricFunction, noise: Noise, **kwargs
+            critic_function: ParametricFunction, target_critic_function: ParametricFunction,
+            noise: Noise, **kwargs
     ):
-        return DiscreteActor(critic_function, noise)
+        return DiscreteActor(critic_function, target_critic_function, noise)

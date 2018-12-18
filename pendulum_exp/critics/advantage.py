@@ -1,22 +1,25 @@
+import copy
 from abstract import Critic, Arrayable, ParametricFunction, Tensorable
 import torch
 from torch import Tensor
 import numpy as np
 from convert import arr_to_th, check_array, check_tensor
 from optimizer import setup_optimizer
-from gym import Space
 from gym.spaces import Box, Discrete
 from models import MLP, ContinuousAdvantageMLP, NormalizedMLP
 from stateful import CompoundStateful
+from nn import soft_update
 
 class AdvantageCritic(CompoundStateful, Critic):
     def __init__(self,
-                 dt: float, gamma: float, lr: float, optimizer: str,
+                 dt: float, gamma: float, lr: float, tau: float, optimizer: str,
                  val_function: ParametricFunction, adv_function: ParametricFunction) -> None:
         CompoundStateful.__init__(self)
         self._reference_obs: Tensor = None
         self._val_function = val_function
         self._adv_function = adv_function
+        self._target_val_function = copy.deepcopy(val_function)
+        self._target_adv_function = copy.deepcopy(adv_function)
 
         self._adv_optimizer = \
             setup_optimizer(self._adv_function.parameters(),
@@ -31,6 +34,7 @@ class AdvantageCritic(CompoundStateful, Critic):
 
         self._dt = dt
         self._gamma = gamma
+        self._tau = tau
 
         self._device = 'cpu'
 
@@ -49,7 +53,7 @@ class AdvantageCritic(CompoundStateful, Critic):
         reference_v = self._val_function(self._reference_obs).squeeze()
         mean_v = reference_v.mean()
         next_v = (1 - done) * (
-            self._val_function(next_obs).squeeze() - self._dt * mean_v) - \
+            self._target_val_function(next_obs).squeeze() - self._dt * self._gamma ** (1 - self._dt) * mean_v) - \
             done * self._gamma * mean_v / max(1 - self._gamma, 1e-5)
 
         obs = check_array(obs)
@@ -70,13 +74,17 @@ class AdvantageCritic(CompoundStateful, Critic):
         self._val_optimizer.step()
         self._adv_optimizer.step()
 
+        soft_update(self._adv_function, self._target_adv_function, self._tau)
+        soft_update(self._val_function, self._target_val_function, self._tau)
+
         return critic_loss
 
-    def critic(self, obs: Arrayable, action: Tensorable, target: bool=False) -> Tensor:
-        if len(self._adv_function.input_shape()) == 2:
-            adv = self._adv_function(obs, action).squeeze()
+    def critic(self, obs: Arrayable, action: Tensorable, target: bool = False) -> Tensor:
+        func = self._adv_function if not target else self._target_adv_function
+        if len(func.input_shape()) == 2:
+            adv = func(obs, action).squeeze()
         else:
-            adv_all = self._adv_function(obs)
+            adv_all = func(obs)
             action = check_tensor(action, self._device).long()
             adv = adv_all.gather(1, action.view(-1, 1)).squeeze()
         return adv
@@ -84,22 +92,22 @@ class AdvantageCritic(CompoundStateful, Critic):
     def log(self):
         pass
 
-    def critic_function(self, target: bool=False):
-        return self._adv_function
+    def critic_function(self, target: bool = False):
+        func = self._adv_function if not target else self._target_adv_funciton
+        return func
 
     def to(self, device):
-        self._val_function = self._val_function.to(device)
-        self._adv_function = self._adv_function.to(device)
+        CompoundStateful.to(self, device)
         self._device = device
         return self
 
     @staticmethod
-    def configure(dt: float, gamma: float, lr: float, optimizer: str,
-                  action_space: Space, observation_space: Space,
-                  nb_layers: int, hidden_size: int, normalize: bool, **kwargs):
+    def configure(**kwargs):
+        observation_space = kwargs['observation_space']
+        action_space = kwargs['action_space']
         assert isinstance(observation_space, Box)
         nb_state_feats = observation_space.shape[-1]
-        net_dict = dict(nb_layers=nb_layers, hidden_size=hidden_size)
+        net_dict = dict(nb_layers=kwargs['nb_layers'], hidden_size=kwargs['hidden_size'])
         val_function = MLP(nb_inputs=nb_state_feats, nb_outputs=1, **net_dict)
         if isinstance(action_space, Discrete):
             nb_actions = action_space.n
@@ -110,7 +118,8 @@ class AdvantageCritic(CompoundStateful, Critic):
             adv_function = ContinuousAdvantageMLP(
                 nb_outputs=1, nb_state_feats=nb_state_feats, nb_actions=nb_actions,
                 **net_dict)
-        if normalize:
+        if kwargs['normalize']:
             val_function = NormalizedMLP(val_function)
             adv_function = NormalizedMLP(adv_function)
-        return AdvantageCritic(dt, gamma, lr, optimizer, val_function, adv_function)
+        return AdvantageCritic(kwargs['dt'], kwargs['gamma'], kwargs['lr'], kwargs['tau'],
+                               kwargs['optimizer'], val_function, adv_function)

@@ -2,7 +2,6 @@ from functools import partial
 from policies.offline_policy import OfflinePolicy
 from abstract import Env
 from actors import DiscreteActor, SampledActor, ApproximateActor
-from actors import DelayedDiscreteActor, DelayedApproximateActor
 from critics import AdvantageCritic, ValueCritic, MixtureAdvantageCritic
 from critics import OrderAdvantageCritic
 from envs.utils import make_env
@@ -45,8 +44,6 @@ def configure(args):
     actor_cls = {
         "sampled": SampledActor,
         "approximate": ApproximateActor,
-        "delayed-approximate": DelayedApproximateActor,
-        "delayed-discrete": DelayedDiscreteActor,
         "discrete": DiscreteActor}[actor_type]
 
     actor = actor_cls.configure(**kwargs)
