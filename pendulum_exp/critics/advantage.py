@@ -49,7 +49,7 @@ class AdvantageCritic(CompoundStateful, Critic):
         reference_v = self._val_function(self._reference_obs).squeeze()
         mean_v = reference_v.mean()
         next_v = (1 - done) * (
-            self._val_function(next_obs).squeeze() - self._dt * mean_v) - \
+            self._val_function(next_obs).squeeze() - self._dt * self._gamma ** (1 - self._dt) * mean_v) - \
             done * self._gamma * mean_v / max(1 - self._gamma, 1e-5)
 
         obs = check_array(obs)
@@ -72,7 +72,7 @@ class AdvantageCritic(CompoundStateful, Critic):
 
         return critic_loss
 
-    def critic(self, obs: Arrayable, action: Tensorable, target: bool=False) -> Tensor:
+    def critic(self, obs: Arrayable, action: Tensorable, target: bool = False) -> Tensor:
         if len(self._adv_function.input_shape()) == 2:
             adv = self._adv_function(obs, action).squeeze()
         else:
@@ -84,7 +84,7 @@ class AdvantageCritic(CompoundStateful, Critic):
     def log(self):
         pass
 
-    def critic_function(self, target: bool=False):
+    def critic_function(self, target: bool = False):
         return self._adv_function
 
     def to(self, device):

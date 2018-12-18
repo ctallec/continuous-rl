@@ -4,7 +4,8 @@ from abstract import Env
 from actors import DiscreteActor, SampledActor, ApproximateActor
 from actors import DelayedDiscreteActor, DelayedApproximateActor
 from critics import AdvantageCritic, ValueCritic, MixtureAdvantageCritic
-from critics import OrderAdvantageCritic
+from critics import OrderAdvantageCritic, OrderValueCritic
+from critics import DelayedAdvantageCritic, DelayedOrderAdvantageCritic
 from envs.utils import make_env
 from envs.vecenv import VEnv
 from noise import setup_noise
@@ -35,7 +36,10 @@ def configure(args):
         "advantage": AdvantageCritic,
         "value": ValueCritic,
         "mixture-advantage": MixtureAdvantageCritic,
-        "order-advantage": OrderAdvantageCritic
+        "order-advantage": OrderAdvantageCritic,
+        "order-value": OrderValueCritic,
+        "delayed-advantage": DelayedAdvantageCritic,
+        "delayed-order": DelayedOrderAdvantageCritic
     }[critic_type]
 
     critic = critic_cls.configure(**kwargs)

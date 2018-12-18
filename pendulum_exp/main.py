@@ -27,7 +27,7 @@ def train(nb_steps: int, env: Env, policy: Policy, start_obs: Arrayable):
 
 def evaluate(dt: float, epoch: int, env: Env, policy: Policy,
              time_limit: Optional[float] = None, eval_return: bool = False,
-             progress_bar: bool = False, video: bool = False, no_log: bool=False):
+             progress_bar: bool = False, video: bool = False, no_log: bool = False):
     """ Evaluate. """
     log_gap = int(.1 / dt)
     policy.eval()
