@@ -1,25 +1,27 @@
+import copy
 from abstract import ParametricFunction, Arrayable, Tensorable
 from optimizer import setup_optimizer
 from torch import Tensor
 from convert import arr_to_th, check_array, check_tensor
 from critics.advantage import AdvantageCritic
 from nn import gmm_loss
-from gym import Space
 from gym.spaces import Box, Discrete
 from models import MLP, ContinuousAdvantageMLP, NormalizedMLP, MixtureNetwork
 import torch
 import torch.nn.functional as f
 import numpy as np
+from nn import soft_update
 
 
 class MixtureAdvantageCritic(AdvantageCritic):
     def __init__(self,
-                 dt: float, gamma: float, lr: float, optimizer: str,
+                 dt: float, gamma: float, lr: float, tau: float, optimizer: str,
                  val_function: ParametricFunction, adv_function: ParametricFunction,
                  mixture_function: ParametricFunction) -> None:
-        super().__init__(dt, gamma, lr, optimizer, val_function, adv_function)
+        super().__init__(dt, gamma, lr, tau, optimizer, val_function, adv_function)
 
         self._mixture_function = mixture_function
+        self._target_mixture_function = copy.deepcopy(self._mixture_function)
 
         self._val_optimizer = \
             setup_optimizer(self._val_function.parameters(),
@@ -42,11 +44,13 @@ class MixtureAdvantageCritic(AdvantageCritic):
         self._mixture_function = self._mixture_function.to(device)
         return self
 
-    def compute_mixture_advantage(self, obs: Arrayable, action: Arrayable):
-        if len(self._adv_function.input_shape()) == 2:
-            adv_mu, adv_logpi = self._adv_function(obs, action), self._mixture_function(obs, action)
+    def compute_mixture_advantage(self, obs: Arrayable, action: Arrayable, target: bool = False):
+        func = self._adv_function if not target else self._target_adv_function
+        mixture_func = self._mixture_function if not target else self._target_mixture_function
+        if len(func.input_shape()) == 2:
+            adv_mu, adv_logpi = func(obs, action), mixture_func(obs, action)
         else:
-            adv_all, logpi_all = self._adv_function(obs), self._mixture_function(obs)
+            adv_all, logpi_all = func(obs), mixture_func(obs)
             n_actions = adv_all.size(-1) // 2
             adv_all = adv_all.view(-1, 2, n_actions)
             logpi_all = adv_all.view(-1, 2, n_actions)
@@ -63,12 +67,13 @@ class MixtureAdvantageCritic(AdvantageCritic):
         return adv_mu, adv_logpi, adv
 
     def critic(self, obs: Arrayable, action: Tensorable, target: bool = False) -> Tensor:
-        _, _, adv = self.compute_mixture_advantage(obs, action)
+        _, _, adv = self.compute_mixture_advantage(obs, action, target=target)
         return adv
 
     def critic_function(self, target: bool = False):
-        return MixtureNetwork(self._adv_function, self._mixture_function,
-                              [1, self._dt], [np.log(self._dt / (1 - self._dt)), 0])
+        func = self._adv_function if not target else self._target_adv_function
+        mixture_func = self._mixture_function if not target else self._target_mixture_function
+        return MixtureNetwork(func, mixture_func, [1, self._dt], [np.log(self._dt / (1 - self._dt)), 0])
 
     def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,
                  next_obs: Arrayable, max_next_action: Tensor, reward: Arrayable,
@@ -85,7 +90,7 @@ class MixtureAdvantageCritic(AdvantageCritic):
         reference_v = self._val_function(self._reference_obs).squeeze()
         mean_v = reference_v.mean()
         next_v = (1 - done) * (
-            self._val_function(next_obs).squeeze() - self._dt * mean_v) - \
+            self._target_val_function(next_obs).squeeze() - self._dt * mean_v) - \
             done * self._gamma * mean_v / max(1 - self._gamma, 1e-5)
 
         obs = check_array(obs)
@@ -121,15 +126,19 @@ class MixtureAdvantageCritic(AdvantageCritic):
         value_loss.mean().backward(retain_graph=True)
         self._val_optimizer.step()
 
+        soft_update(self._adv_function, self._target_adv_function, self._tau)
+        soft_update(self._val_function, self._target_val_function, self._tau)
+        soft_update(self._mixture_function, self._target_mixture_function, self._tau)
+
         return adv_loss
 
     @staticmethod
-    def configure(dt: float, gamma: float, lr: float, optimizer: str,
-                  action_space: Space, observation_space: Space,
-                  nb_layers: int, hidden_size: int, normalize: bool, **kwargs):
+    def configure(**kwargs):
+        observation_space = kwargs['observation_space']
+        action_space = kwargs['action_space']
         assert isinstance(observation_space, Box)
         nb_state_feats = observation_space.shape[-1]
-        net_dict = dict(nb_layers=nb_layers, hidden_size=hidden_size)
+        net_dict = dict(nb_layers=kwargs['nb_layers'], hidden_size=kwargs['hidden_size'])
         val_function = MLP(nb_inputs=nb_state_feats, nb_outputs=1, **net_dict)
         if isinstance(action_space, Discrete):
             nb_actions = action_space.n
@@ -146,9 +155,9 @@ class MixtureAdvantageCritic(AdvantageCritic):
                 nb_outputs=2, nb_state_feats=nb_state_feats, nb_actions=nb_actions,
                 **net_dict)
 
-        if normalize:
+        if kwargs['normalize']:
             val_function = NormalizedMLP(val_function)
             adv_function = NormalizedMLP(adv_function)
             mixture_function = NormalizedMLP(mixture_function)
-        return MixtureAdvantageCritic(dt, gamma, lr, optimizer,
-                                      val_function, adv_function, mixture_function)
+        return MixtureAdvantageCritic(kwargs['dt'], kwargs['gamma'], kwargs['lr'], kwargs['tau'],
+                                      kwargs['optimizer'], val_function, adv_function, mixture_function)
