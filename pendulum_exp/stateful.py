@@ -31,6 +31,7 @@ class CompoundStateful(Cudaable):
         for k in self._statefuls:
             if isinstance(self._statefuls[k], Cudaable):
                 self._statefuls[k] = self._statefuls[k].to(device)
+        return self
 
 
 Stateful.register(CompoundStateful)

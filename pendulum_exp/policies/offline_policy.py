@@ -117,6 +117,4 @@ class OfflinePolicy(CompoundStateful, Policy, Cudaable):
         self._train = False
 
     def to(self, device):
-        self._actor = self._actor.to(device)
-        self._critic = self._critic.to(device)
-        return self
+        return CompoundStateful.to(self, device)

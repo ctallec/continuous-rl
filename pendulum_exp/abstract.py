@@ -25,7 +25,7 @@ class Cudaable(ABC):
     def to(self, device):
         raise NotImplementedError()
 
-class ParametricFunction(Stateful):
+class ParametricFunction(Stateful, Cudaable):
     """Wrap around a torch module."""
     @abstractmethod
     def __call__(self, *obs: Tensorable):
