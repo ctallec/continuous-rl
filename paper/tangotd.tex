@@ -1444,7 +1444,8 @@ sample a state $s_3$ in between on the trajectory from $s_1$, and (with
 the right $\gamma$ factors) we would get a term with $Z(s_1,s_2)$, a term
 with $Z(s_3,s_2)$ and a term with $Z(s'_3,s_2)$. This looks suspiciously
 like a large-scale Bellman from $s_1$... Variance could be higher since
-we don't use the model $Z$ and use sampling instead. To be tested. Write
+we don't use the model $Z$ and use sampling instead; plus, we lose any
+generalization introduced by $Z$. To be tested. Write
 carefully because $s'_3$ should be uncorrelated from $s_2$!! So not
 possible with a single
 trajectory?
