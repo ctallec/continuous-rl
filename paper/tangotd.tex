@@ -1412,7 +1412,12 @@ Z(s_1,s_3)Z(s'_3,s_2)
 \end{multline}
 which is perfectly samplable. We can simulate the assignment
 $Z(s_1,s_2)\gets...$ via gradient descent on the parameters of
-$Z(s_1,s_2)$. (Or via double sampling, which is not problematic here!?)
+$Z(s_1,s_2)$. \footnote{Should we adjust the size of the gradient descent
+to get the right change of $Z(s_1,s_2)$? If we just use SGD, since
+gradients may change from point to point, the speed may be different at
+various states and we depart from Newton. This is clear when $Z$ is very
+small: Newton grows exponentially while a standard gradient descent would
+make small steps.} (Or via double sampling, which is not problematic here!?)
 
 We should find a way to initialize $Z$ so that $Z\approx \Id$ at time
 $0$, namely $Z(s,s)=1/\rho(s)$, although starting with $Z(s,s)=1$ should be
@@ -1459,7 +1464,13 @@ On-policy, working with $\gamma\to 1$ is quite easy: indeed $Z(s_1,s_2)$ is
 a density with respect to $\mu(s_2)$ so that the asymptotics when
 $\gamma\to 1$ is $Z(s_1,s_2)=\frac{1}{1-\gamma}+Z_0(s_1,s_2)$, and we can
 directly learn $Z_0$ by inserting $\frac{1}{1-\gamma}+Z_0$ in the middle
-Bellman equation. TODO check for simplifications.
+Bellman equation. This yields (omitting the expectations)
+\begin{multline}
+Z_0(s_1,s_2)\gets (1+\eta)Z_0(s_1,s_2)-\eta
+Z_0(s_1,s_3)Z_0(s_3,s_2)+\\\eta\gamma Z_0(s_1,s_3)Z_0(s'_3,s_2)-\eta
+Z_0(s_1,s_3)+\frac{\eta}{1-\gamma}(\gamma Z_0(s'_3,s_2)-Z_0(s_3,s_2))
+\end{multline}
+TODO CHECK which we cannot directly apply with $\gamma=1$...
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
