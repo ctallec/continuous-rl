@@ -1345,6 +1345,20 @@ operator by
 \begin{equation}
 Z=\sum_{s_1,s_2}\rho(s_2)  Z(s_1,s_2)\1_{s_1}\transp{\1_{s_2}}
 \end{equation}
+and in particular the value function is
+\begin{equation}
+V(s_1)=\E_{s_2\sim \rho} Z(s_1,s_2) R(s_2)
+\end{equation}
+This representation of the value function does not allow for first
+computing $\E_{s_2} R(s_2)f(s_2)$ online, then taking a dot product with
+$\green$. Here we would have to learn an auxiliary network to imitate
+$\E_{s_2\sim \rho} Z(s_1,s_2) R(s_2)$ (but this is a supervised learning
+problem). Alternatively, policy gradient can just directly be obtained
+via
+\begin{equation}
+\partial \pi(a|s)\E_{s'|s,a} \E_{s_2\sim \rho} Z(s',s_2)R(s_2)
+\end{equation}
+(this works even if $\rho$ is \emph{not} the invariant distribution).
 
 The left Bellman equation is
 \begin{gather}
