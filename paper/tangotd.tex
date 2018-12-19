@@ -1454,6 +1454,12 @@ the trajectory, e.g., starting with $s_3$ uniform along the past
 trajectory, and moving back for $s_1$ and forward for $s_2$ (with factors
 $\gamma$). Looks a lot like eligibility traces?
 
+On-policy, working with $\gamma\to 1$ is quite easy: indeed $Z(s_1,s_2)$ is
+a density with respect to $\mu(s_2)$ so that the asymptotics when
+$\gamma\to 1$ is $Z(s_1,s_2)=\frac{1}{1-\gamma}+Z_0(s_1,s_2)$, and we can
+directly learn $Z_0$ by inserting $\frac{1}{1-\gamma}+Z_0$ in the middle
+Bellman equation. TODO check for simplifications.
+
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
