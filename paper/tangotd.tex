@@ -1401,8 +1401,8 @@ The Newton update/middle Bellman equation is
 \begin{equation}
 Z\gets (1+\eta)Z-\eta Z^2+\eta \gamma ZPZ
 \end{equation}
-which after applying to $\1_{s_1}$ on the left and $\1_{s_2}/\rho(s_2)$
-on the right yields
+which yields (after applying to $\1_{s_1}$ on the left and $\1_{s_2}/\rho(s_2)$
+on the right)
 \begin{multline}
 Z(s_1,s_2)\gets (1+\eta)Z(s_1,s_2)-\eta \E_{s_3\sim \rho}\,
 Z(s_1,s_3)Z(s_3,s_2)\,+\\\eta \gamma \E_{s_3\sim\rho,\, s'_3\sim
@@ -1433,6 +1433,13 @@ applying the equation to states that have nothing to do with
 $s_3$—although the $Z$ factors are different for the three terms...). But
 I don't know how to build an efficient sampler from $Z(s_3,\cdot)$.
 Something like Metropolis? but this function $Z$ is not constant...
+On-policy, sampling from $Z(\cdot,s_3)$ is easy: just sample one of the
+recent states with geometric rates $\gamma$. This should divide the
+equation by $Z(s_1,s_3)$ (up to some $\gamma$-dependent factor). I'm not
+sure what to do with the resulting $Z(s_1,s_2)$. On-policy, another
+option is to sample triplets $(s_1,s_3,s_2)$ that are some time apart on
+the trajectory, e.g., starting with $s_3$ uniform along the past
+trajectory, and moving back for $s_1$ and forward for $s_2$.
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
