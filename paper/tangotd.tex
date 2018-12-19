@@ -1341,8 +1341,7 @@ indeed belongs to this class then we will compute it correctly. (But this
 class does not change during training...)
 
 \paragraph{Better variant?}
-I think
-everything works equally well if we just learn a kernel $Z(s_1,s_2)$ such
+Everything works equally well if we just learn a kernel $Z(s_1,s_2)$ such
 that
 \begin{equation}
 \transp{\1_{s_1}}\Delta^{-1}\psi\approx \E_{s_2\sim \rho} \,Z(s_1,s_2)
@@ -1467,7 +1466,7 @@ directly learn $Z_0$ by inserting $\frac{1}{1-\gamma}+Z_0$ in the middle
 Bellman equation. This yields (omitting the expectations)
 \begin{multline}
 Z_0(s_1,s_2)\gets (1+\eta)Z_0(s_1,s_2)-\eta
-Z_0(s_1,s_3)Z_0(s_3,s_2)\,+\\\eta\gamma Z_0(s_1,s_3)Z_0(s'_3,s_2)-\eta
+Z_0(s_1,s_3)(Z_0(s_3,s_2)-\gamma Z_0(s'_3,s_2))\\-\eta
 Z_0(s_1,s_3)+\frac{\eta}{1-\gamma}(\gamma Z_0(s'_3,s_2)-Z_0(s_3,s_2))
 \end{multline}
 TODO CHECK which we cannot directly apply with $\gamma=1$...
@@ -1476,9 +1475,10 @@ $s'_3$ have the same law, so in expectation the last term is $-\eta
 \E_{s_3} Z_0(s_3,s_2)$. This yields the more symmetric
 \begin{multline}
 Z_0(s_1,s_2)\gets (1+\eta)Z_0(s_1,s_2)-\eta
-Z_0(s_1,s_3)Z_0(s_3,s_2)\,+\\\eta\gamma Z_0(s_1,s_3)Z_0(s'_3,s_2)-\eta
+Z_0(s_1,s_3)\left(Z_0(s_3,s_2)-\gamma Z_0(s'_3,s_2)\right)\\-\eta
 Z_0(s_1,s_3)-\eta Z_0(s_3,s_2)
 \end{multline}
+on-policy, for any $\gamma\leq 1$.
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
