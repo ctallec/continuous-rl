@@ -1410,7 +1410,8 @@ P(s'_3|s_3)}\,
 Z(s_1,s_3)Z(s'_3,s_2)
 \end{multline}
 which is perfectly samplable. We can simulate the assignment
-$Z(s_1,s_2)\gets...$ via gradient descent on the parameters of $Z$.
+$Z(s_1,s_2)\gets...$ via gradient descent on the parameters of
+$Z(s_1,s_2)$. (Or via double sampling, which is not problematic here?)
 
 We should find a way to initialize $Z$ so that $Z\approx \Id$ at time
 $0$, namely $Z(s,s)=1/\rho(s)$, although starting with $Z(s,s)=1$ should be
