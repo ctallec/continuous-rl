@@ -1357,7 +1357,7 @@ In particular the value function is
 \begin{equation}
 V(s_1)=\E_{s_2\sim \rho} Z(s_1,s_2) R(s_2)
 \end{equation}
-This representation of the value function does not allow for first
+Downside: this representation of the value function does not allow for first
 computing $\E_{s_2} R(s_2)f(s_2)$ online, then taking a dot product with
 $\green$. Here we would have to learn an auxiliary network to imitate
 $\E_{s_2\sim \rho} Z(s_1,s_2) R(s_2)$ (but this is a supervised learning
@@ -1397,7 +1397,7 @@ Z(s_1,s_2)\psi(s'_2)
 These equations impose a kind of smoothness on $Z$ with respect to the
 random walk $P$.
 
-The Newton update is
+The Newton update/middle Bellman equation is
 \begin{equation}
 Z\gets (1+\eta)Z-\eta Z^2+\eta \gamma ZPZ
 \end{equation}
