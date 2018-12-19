@@ -1420,8 +1420,10 @@ make small steps.} (Or via double sampling, which is not problematic here!?)
 
 We should find a way to initialize $Z$ so that $Z\approx \Id$ at time
 $0$, namely $Z(s,s)=1/\rho(s)$, although starting with $Z(s,s)=1$ should be
-quite fine. (Small initializations of $Z$ are safer.) $Z>0$ (unless we work with $\gamma=1$ and relative stuff
-TODO), so the parameterization could reflect that.
+quite fine. (Small initializations of $Z$ are safer.) $Z>0$ (unless we
+work with $\gamma=1$ and relative stuff), so the parameterization should
+reflect that. Indeed the Newton iteration is unstable with negative
+values.
 
 In the end this Newton equation alone might be sufficient to
 encompass the left and right Bellman. It does not rely on test functions,
@@ -1431,7 +1433,10 @@ Newton has a potential to be numerically less stable: first because of
 the $(1+\eta)$ factor which makes $Z$ quickly grow when it's small (until
 the $-Z^2$ kicks in), then because of the $-Z^2$ factors which can be
 problematic when $Z$ is large. Small enough learning rates should be
-stable.
+stable. (TODO NOT TRUE: even in 1d, Newton is unstable if initialized to
+a negative number, for any learning rate. Stable only in some
+neighborhood of the true solution, but then, the stochastic noise might
+produce divergence...)
 
 Ideally, given the transition $s_3\to s'_3$, I'd like to sample $s_1$ and
 $s_2$ proportionally to $Z$ (would cancel the $Z$ factors, and avoid
@@ -1479,6 +1484,10 @@ Z_0(s_1,s_3)\left(Z_0(s_3,s_2)-\gamma Z_0(s'_3,s_2)\right)\\-\eta
 Z_0(s_1,s_3)-\eta Z_0(s_3,s_2)
 \end{multline}
 on-policy, for any $\gamma\leq 1$.
+
+[TODO: Since the standard iteration is unstable for $Z<0$, this means the
+iteration on $Z_0$ will be unstable for $Z_0<-\frac{1}{1-\gamma}$.
+Use that somehow: clip at that value?]
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
