@@ -1330,7 +1330,15 @@ creates starting points and the right Bellman equation creates endpoints
 when observing a new transition $s\to s'$. This introduces spatial
 smoothness over the image and kernel.
 
-I still don't know how to rightly combine these three equations.
+I still don't know how to rightly combine these three equations. I'm not
+even sure this kernel/image thing is actually an issue: if $f$ and
+$\green$ are represented as neural networks with some input features,
+the kernel of $f$ is actually the set of functions/distributions on
+states which have the same average features, and the image of
+$\transp{\green}$ is the set of functions that can be represented as sums
+$V(s)=\sum_i \alpha_i\green_i(s)$ over the components of $\green$: if $V$
+indeed belongs to this class then we will compute it correctly. (But this
+class does not change during training...)
 
 \paragraph{Variant.}
 I think
