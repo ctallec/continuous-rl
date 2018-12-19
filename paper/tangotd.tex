@@ -1436,10 +1436,11 @@ Something like Metropolis? but this function $Z$ is not constant...
 On-policy, sampling from $Z(\cdot,s_3)$ is easy: just sample one of the
 recent states with geometric rates $\gamma$. This should divide the
 equation by $Z(s_1,s_3)$ (up to some $\gamma$-dependent factor). I'm not
-sure what to do with the resulting $Z(s_1,s_2)$. On-policy, another
+sure what to do with the resulting $Z(s_1,s_2)/Z(s_1,s_3)$. On-policy, another
 option is to sample triplets $(s_1,s_3,s_2)$ that are some time apart on
 the trajectory, e.g., starting with $s_3$ uniform along the past
-trajectory, and moving back for $s_1$ and forward for $s_2$.
+trajectory, and moving back for $s_1$ and forward for $s_2$ (with factors
+$\gamma$). Looks a lot like eligibility traces?
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
