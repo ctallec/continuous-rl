@@ -1361,7 +1361,8 @@ Downside: this representation of the value function does not allow for first
 computing a representation of $R$ as $\E_{s_2} R(s_2)f(s_2)$ online, then taking a dot product with
 $\green$. Here we would have to learn an auxiliary network to imitate
 $\E_{s_2\sim \rho} Z(s_1,s_2) R(s_2)$ (but this is a supervised learning
-problem). Alternatively, policy gradient can just directly be obtained
+problem; still, it looks suspiciously like $TD(1)$ except maybe for the
+$O(1/(1-\gamma))$ variance). Alternatively, policy gradient can just directly be obtained
 via
 \begin{equation}
 \partial \pi(a|s)\E_{s'|s,a} \E_{s_2\sim \rho} \, Z(s',s_2)R(s_2)
