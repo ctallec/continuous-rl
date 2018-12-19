@@ -1340,7 +1340,7 @@ $V(s)=\sum_i \alpha_i\green_i(s)$ over the components of $\green$: if $V$
 indeed belongs to this class then we will compute it correctly. (But this
 class does not change during training...)
 
-\paragraph{Variant.}
+\paragraph{Better variant?}
 I think
 everything works equally well if we just learn a kernel $Z(s_1,s_2)$ such
 that
@@ -1401,7 +1401,8 @@ The Newton update is
 \begin{equation}
 Z\gets (1+\eta)Z-\eta Z^2+\eta \gamma ZPZ
 \end{equation}
-which after applying to $\1_{s_1}$ on the left yields
+which after applying to $\1_{s_1}$ on the left and $\1_{s_2}/\rho(s_2)$
+on the right yields
 \begin{multline}
 Z(s_1,s_2)\gets (1+\eta)Z(s_1,s_2)-\eta \E_{s_3\sim \rho}
 Z(s_1,s_3)Z(s_3,s_2)\,+\\\eta \gamma \E_{s_3\sim\rho, s'_3\sim P(s'_3|s_3)}
@@ -1413,7 +1414,7 @@ enough). In the end this Newton equation alone might be sufficient to
 encompass the left and right Bellman. It does not rely on test functions,
 but the smoothing is implicit via the model used for $Z(s_1,s_2)$.
 
-\paragraph{Learning to navigate.} Define a function $V(s,s')$ that
+\paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
 satisfies the Bellman equation
