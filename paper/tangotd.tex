@@ -1353,7 +1353,7 @@ operator by
 \begin{equation}
 Z=\sum_{s_1,s_2}\rho(s_2)  Z(s_1,s_2)\1_{s_1}\transp{\1_{s_2}}
 \end{equation}
-and in particular the value function is
+In particular the value function is
 \begin{equation}
 V(s_1)=\E_{s_2\sim \rho} Z(s_1,s_2) R(s_2)
 \end{equation}
@@ -1366,7 +1366,11 @@ via
 \begin{equation}
 \partial \pi(a|s)\E_{s'|s,a} \E_{s_2\sim \rho} Z(s',s_2)R(s_2)
 \end{equation}
-(this works even if $\rho$ is \emph{not} the invariant distribution).
+(this works even if $\rho$ is \emph{not} the invariant distribution). We
+can apply this each time a new reward is observed at some point $s_2$. We
+can even set another arbitrary distribution on $s_1$: this policy
+gradient will maximize
+the reward obtained from a starting point from that distribution.
 
 The left Bellman equation is
 \begin{gather}
