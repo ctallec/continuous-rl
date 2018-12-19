@@ -1467,10 +1467,18 @@ directly learn $Z_0$ by inserting $\frac{1}{1-\gamma}+Z_0$ in the middle
 Bellman equation. This yields (omitting the expectations)
 \begin{multline}
 Z_0(s_1,s_2)\gets (1+\eta)Z_0(s_1,s_2)-\eta
-Z_0(s_1,s_3)Z_0(s_3,s_2)+\\\eta\gamma Z_0(s_1,s_3)Z_0(s'_3,s_2)-\eta
+Z_0(s_1,s_3)Z_0(s_3,s_2)\,+\\\eta\gamma Z_0(s_1,s_3)Z_0(s'_3,s_2)-\eta
 Z_0(s_1,s_3)+\frac{\eta}{1-\gamma}(\gamma Z_0(s'_3,s_2)-Z_0(s_3,s_2))
 \end{multline}
 TODO CHECK which we cannot directly apply with $\gamma=1$...
+However ON-POLICY $s_3$ and
+$s'_3$ have the same law, so in expectation the last term is $-\eta
+\E_{s_3} Z_0(s_3,s_2)$. This yields the more symmetric
+\begin{multline}
+Z_0(s_1,s_2)\gets (1+\eta)Z_0(s_1,s_2)-\eta
+Z_0(s_1,s_3)Z_0(s_3,s_2)\,+\\\eta\gamma Z_0(s_1,s_3)Z_0(s'_3,s_2)-\eta
+Z_0(s_1,s_3)-\eta Z_0(s_3,s_2)
+\end{multline}
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
