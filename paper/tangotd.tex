@@ -1414,7 +1414,7 @@ $Z(s_1,s_2)\gets...$ via gradient descent on the parameters of $Z$.
 
 We should find a way to initialize $Z$ so that $Z\approx \Id$ at time
 $0$, namely $Z(s,s)=1/\rho(s)$, although starting with $Z(s,s)=1$ should be
-quite fine. $Z>0$ (unless we work with $\gamma=1$ and relative stuff
+quite fine. (Small initializations of $Z$ are safer.) $Z>0$ (unless we work with $\gamma=1$ and relative stuff
 TODO), so the parameterization could reflect that.
 
 In the end this Newton equation alone might be sufficient to
@@ -1426,6 +1426,12 @@ the $(1+\eta)$ factor which makes $Z$ quickly grow when it's small (until
 the $-Z^2$ kicks in), then because of the $-Z^2$ factors which can be
 problematic when $Z$ is large. Small enough learning rates should be
 stable.
+
+Ideally, given the transition $s_3\to s'_3$, I'd like to sample $s_1$ and
+$s_2$ proportionally to $Z$ (would cancel the $Z$ factors, and avoid
+applying the equation to states that have nothing to do with $s_3$). But
+I don't know how to build an efficient sampler from $Z(s_3,\cdot)$.
+Something like Metropolis? but this function $Z$ is not constant...
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
