@@ -1436,7 +1436,7 @@ problematic when $Z$ is large. Small enough learning rates should be
 stable. (TODO NOT TRUE: even in 1d, Newton is unstable if initialized to
 a negative number, for any learning rate. Stable only in some
 neighborhood of the true solution, but then, the stochastic noise might
-produce divergence...)
+produce divergence... this is potentially a serious issue)
 
 Ideally, given the transition $s_3\to s'_3$, I'd like to sample $s_1$ and
 $s_2$ proportionally to $Z$ (would cancel the $Z$ factors, and avoid
