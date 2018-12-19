@@ -1071,6 +1071,8 @@ omit constants\footnote{To deal with constants, we probably have to be
 able to predict \emph{differences} $\psi(s_2)-\psi(s_2')$, or just use
 relative value functions and remove $\psi(s_0)$ for some $s_0$.}). Then the scalar product in
 $E$ represents integration/summation over the state space.
+This representation keeps linearity of the map $R\mapsto V$, while
+allowing for a nonlinear $f$ and $\green$.
 
 Of course we cannot directly learn $\green$ from \eqref{eq:greenrep},
 since $\Delta^{-1}$ in the right-hand-side is exactly what we want to
@@ -1320,12 +1322,67 @@ possible quasi-inverses.
 
 Intuitively, the middle Bellman equation does not create new starting
 points or endpoints on paths, only works in the middle. (This corresponds
-to the fixed image and kernel.) Meanwhile the left Bellman equation
+to the fixed image and kernel.) [TODO: though if I start with $Z=\Id$ (a
+path from every state to itself) and apply Newton then I do create paths,
+so the meaning of this is unclear and initialization might be important.
+It might be important to initialize $F$ and $\green$ so that $Z\approx \Id$.] Meanwhile, the left Bellman equation
 creates starting points and the right Bellman equation creates endpoints
 when observing a new transition $s\to s'$. This introduces spatial
 smoothness over the image and kernel.
 
 I still don't know how to rightly combine these three equations.
+
+\paragraph{Variant.}
+I think
+everything works equally well if we just learn a kernel $Z(s_1,s_2)$ such
+that
+\begin{equation}
+\transp{\1_{s_1}}\Delta^{-1}\psi\approx \E_{s_2\sim \rho} Z(s_1,s_2)
+\psi(s_2)
+\end{equation}
+and this is still linear in $\psi$. This represents the inverse Laplace
+operator by
+\begin{equation}
+Z=\sum_{s_1,s_2}\rho(s_2)  Z(s_1,s_2)\1_{s_1}\transp{\1_{s_2}}
+\end{equation}
+
+The left Bellman equation is
+\begin{gather}
+\transp{\1_{s_1}}\,\Delta^{-1}\psi=\transp{\1_{s_1}}\,\psi+\transp{\1_{s_1}}\,P\Delta^{-1}\psi
+\qquad \Longrightarrow
+\\
+\E_{s_2\sim \rho}
+\,Z(s_1,s_2)\psi(s_2)
+\approx \psi(s_1)+ \E_{s'\sim P(s'|s_1)}
+\E_{s_2\sim \rho}\,
+Z(s',s_2)\psi(s_2)
+\end{gather}
+for any $s_1$ and $\psi$.
+The right Bellman equation becomes
+\begin{gather}
+\transp{\1_{s_1}}\,\Delta^{-1}\psi=\transp{\1_{s_1}}\,\psi+\transp{\1_{s_1}}\,\Delta^{-1}P\psi
+\qquad \Longrightarrow
+\\
+\E_{s_2\sim \rho}
+Z(s_1,s_2)\psi(s_2)
+\approx \psi(s_1)+ \E_{s_2\sim \rho}\E_{s'_2\sim P(s'_2|s_2)}
+Z(s_1,s_2)\psi(s'_2)
+\end{gather}
+These equations impose a kind of smoothness on $Z$ with respect to the
+random walk $P$.
+
+The Newton update is
+\begin{equation}
+Z\gets (1+\eta)Z-\eta Z^2+\eta \gamma ZPZ
+\end{equation}
+which after applying to $\1_{s_1}$ on the left yields
+\begin{multline}
+Z(s_1,s_2)\gets (1+\eta)Z(s_1,s_2)-\eta \E_{s_3\sim \rho}
+Z(s_1,s_3)Z(s_3,s_2)\,+\\\eta \gamma \E_{s_3\sim\rho, s'_3\sim P(s'_3|s_3)}
+Z(s_1,s_3)Z(s'_3,s_2)
+\end{multline}
+and we should find a way to initialize $Z$ so that $Z\approx \Id$ at time
+$0$.
 
 \paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
