@@ -1205,16 +1205,16 @@ the right Bellman equation produces new paths to $s'$.
 The Newton method for matrix inversion is a classical tool to compute
 $\Delta^{-1}$. It consists in iterating
 \begin{equation}
-A\gets 2A-A\Delta A
+Z\gets 2Z-Z\Delta Z
 \end{equation}
-It converges extremely fast if initialized reasonably close to $A^{-1}$ (namely if the spectral
-radius of $\Id-AX$ is less than $1$), but it can diverge if badly
-initialized. A suitable initialization is $A=\eps\transp{\Delta}$ for
+It converges extremely fast if initialized reasonably close to $Z^{-1}$ (namely if the spectral
+radius of $\Id-ZX$ is less than $1$), but it can diverge if badly
+initialized. A suitable initialization is $Z=\eps\transp{\Delta}$ for
 small enough $\eps$. For stochastic estimates $\tilde \Delta$ of $\Delta$ (as we have
 here through transitions), the stochastic update version with learning
 rate $\eta$ is
 \begin{equation}
-A\gets A+\eta A-\eta A\tilde \Delta A
+Z\gets Z+\eta Z-\eta Z\tilde \Delta Z
 \end{equation}
 
 With $\Delta=\Id-\gamma P$, 
@@ -1235,10 +1235,10 @@ $\Delta$, namely, $\Delta=\sum_s\E_{s'\sim P(s'|s)} \1_s\transp{(\1_s-\gamma
 \1_{s'})}$. This corresponds to a stochastic version of the Newton
 method, with learning rate $\eta\ll 1$,
 \begin{equation}
-A\gets A+\eta A-\eta A \E_{ss'} \frac{1}{\rho(s)}\1_s\transp{(\1_s-\gamma \1_{s'})} A
+Z\gets Z+\eta Z-\eta Z \E_{ss'} \frac{1}{\rho(s)}\1_s\transp{(\1_s-\gamma \1_{s'})} Z
 \end{equation}
-Indeed, in expectation over $s\to s'$ this corresponds to $A\gets A+\eta
-A-\eta A \Delta A$, which converges to $A=\Delta^{-1}$. This
+Indeed, in expectation over $s\to s'$ this corresponds to $Z\gets Z+\eta
+Z-\eta Z \Delta Z$, which converges to $Z=\Delta^{-1}$. This
 also corresponds to the rank-one update formyla for matrix inversion,
 $(D+\eta u\transp{v})^{-1}=D^{-1}-\eta
 D^{-1}u\transp{v}D^{-1}+O(\eta^2)$. Namely,
@@ -1247,7 +1247,7 @@ $\Delta\gets (1-\eta)\Delta+\eta \frac{1}{\rho(s)} \1_s\transp{(\1_s-\gamma
 \1_{s'})}$ when a transition $s\to s'$ is observed, then
 $\Delta^{-1}$ gets updated as above.
 
-With $A=\green\cdot \E_{\rho} f$ as above, everything is fully samplable
+With $Z=\green\cdot \E_{\rho} f$ as above, everything is fully samplable
 (thanks to the $\E_\rho$ which cancels the $1/\rho$ factors), see below.
 It is not clear to me how to mix the left, right and middle Bellman
 equations, but the correspondence with path combinatorics and the Newton
@@ -1256,14 +1256,14 @@ might be an important point for the navigation problem.
 
 Namely, set
 \begin{equation}
-A=\transp{\green}F, \qquad \green=\sum_s \green(s)\transp{\1_s},\qquad F=\E_{s\sim
+Z=\transp{\green}F, \qquad \green=\sum_s \green(s)\transp{\1_s},\qquad F=\E_{s\sim
 \rho}
 f(s)\transp{\1_s}
 \end{equation}
-which is the same representation as above, namely $A=\Delta^{-1}$ is
+which is the same representation as above, namely $Z=\Delta^{-1}$ is
 equivalent to $\green(s)\cdot \E_{s'\sim
 \rho} \psi(s')f(s')=\transp{\1_s}\Delta^{-1}\psi$ for all $s$ and test
-functions $\psi$. Then the Newton equation for $A$ reads
+functions $\psi$. Then the Newton equation for $Z$ reads
 \begin{equation}
 \transp{\green}F\gets (1+\eta)\transp{\green}F-\eta \transp{\green}F \E_{ss'} \frac{1}{\rho(s)}\1_s\transp{(\1_s-\gamma
 \1_{s'})} \transp{\green}F
@@ -1293,12 +1293,39 @@ both of which can be implemented via gradient descent on the parameters
 of $\green$ and $f$. (This double the learning rate $\eta$.)
 There is no need to sample on test functions.
 
-??Equivalent to solving for
-\begin{equation}
-\Id=\E_{ss'} f(s)\transp{(\green(s)-\gamma
-\green(s'))}
-\end{equation}
-?? which has plenty of problems... But not the same gradient descent.
+
+
+(Equivalent to solving for $ \Id=\E_{ss'} f(s)\transp{(\green(s)-\gamma
+\green(s'))}$, namely, $\Id=F\Delta\transp{\green}$ in the representation space $E$, but via a different gradient
+descent.)
+
+The Newton version should not be used alone. Indeed, with a matrix $Z$ of
+rank $r$, it just settles on some $r$-dimensional subspace and inverts 
+$\Delta^{-1}$ on that subspace. The subspace in question does not
+change at all along optimization. (This is because the equations on $F$
+and $\green$ leave $\Ker F$ and $\Img \transp{\green}$ invariant; more
+precisely, $\Delta Z=\Id$ on $\Img \transp{\green}$ and $\Img(\Delta
+Z-\Id)\subset\Ker F$)
+From a purely algebraic point of view,
+all these $r$-dimensional subspaces are equally important: there are as
+many quasi-inverses as such subspaces, and the subspace is fixed at the
+initialization of $F$ and $\green$. (For instance, if $r=1$ one can
+choose any vector for $\transp{\green}$, and choose for $F$ any linear
+form that evaluates to $1$ on $\Delta \transp{\green}$).
+
+On the other hand the left and right Bellman equations prioritize
+inverting $\Delta$ on test functions $\psi$. So this introduces
+(implicitly) a quantitative criterion that breaks symmetry between
+possible quasi-inverses.
+
+Intuitively, the middle Bellman equation does not create new starting
+points or endpoints on paths, only works in the middle. (This corresponds
+to the fixed image and kernel.) Meanwhile the left Bellman equation
+creates starting points and the right Bellman equation creates endpoints
+when observing a new transition $s\to s'$. This introduces spatial
+smoothness over the image and kernel.
+
+I still don't know how to rightly combine these three equations.
 
 \paragraph{Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
