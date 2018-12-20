@@ -1341,11 +1341,10 @@ indeed belongs to this class then we will compute it correctly. (But this
 class does not change during training...)
 
 \paragraph{Better variant?}
-I think
-everything works equally well if we just learn a kernel $Z(s_1,s_2)$ such
+Everything works equally well if we just learn a kernel $Z(s_1,s_2)$ such
 that
 \begin{equation}
-\transp{\1_{s_1}}\Delta^{-1}\psi\approx \E_{s_2\sim \rho} Z(s_1,s_2)
+\transp{\1_{s_1}}\Delta^{-1}\psi\approx \E_{s_2\sim \rho} \,Z(s_1,s_2)
 \psi(s_2)
 \end{equation}
 and this is still linear in $\psi$. This represents the inverse Laplace
@@ -1355,16 +1354,17 @@ Z=\sum_{s_1,s_2}\rho(s_2)  Z(s_1,s_2)\1_{s_1}\transp{\1_{s_2}}
 \end{equation}
 In particular the value function is
 \begin{equation}
-V(s_1)=\E_{s_2\sim \rho} Z(s_1,s_2) R(s_2)
+V(s_1)=\E_{s_2\sim \rho} \, Z(s_1,s_2) R(s_2)
 \end{equation}
-This representation of the value function does not allow for first
-computing $\E_{s_2} R(s_2)f(s_2)$ online, then taking a dot product with
+Downside: this representation of the value function does not allow for first
+computing a representation of $R$ as $\E_{s_2} R(s_2)f(s_2)$ online, then taking a dot product with
 $\green$. Here we would have to learn an auxiliary network to imitate
 $\E_{s_2\sim \rho} Z(s_1,s_2) R(s_2)$ (but this is a supervised learning
-problem). Alternatively, policy gradient can just directly be obtained
+problem; still, it looks suspiciously like $TD(1)$ except maybe for the
+$O(1/(1-\gamma))$ variance). Alternatively, policy gradient can just directly be obtained
 via
 \begin{equation}
-\partial \pi(a|s)\E_{s'|s,a} \E_{s_2\sim \rho} Z(s',s_2)R(s_2)
+\partial \pi(a|s)\E_{s'|s,a} \E_{s_2\sim \rho} \, Z(s',s_2)R(s_2)
 \end{equation}
 (this works even if $\rho$ is \emph{not} the invariant distribution). We
 can apply this each time a new reward is observed at some point $s_2$. We
@@ -1389,30 +1389,117 @@ The right Bellman equation becomes
 \transp{\1_{s_1}}\,\Delta^{-1}\psi=\transp{\1_{s_1}}\,\psi+\transp{\1_{s_1}}\,\Delta^{-1}P\psi
 \qquad \Longrightarrow
 \\
-\E_{s_2\sim \rho}
+\E_{s_2\sim \rho}\,
 Z(s_1,s_2)\psi(s_2)
-\approx \psi(s_1)+ \E_{s_2\sim \rho}\E_{s'_2\sim P(s'_2|s_2)}
+\approx \psi(s_1)+ \E_{s_2\sim \rho}\E_{s'_2\sim P(s'_2|s_2)}\,
 Z(s_1,s_2)\psi(s'_2)
 \end{gather}
 These equations impose a kind of smoothness on $Z$ with respect to the
 random walk $P$.
 
-The Newton update is
+The Newton update/middle Bellman equation is
 \begin{equation}
 Z\gets (1+\eta)Z-\eta Z^2+\eta \gamma ZPZ
 \end{equation}
-which after applying to $\1_{s_1}$ on the left and $\1_{s_2}/\rho(s_2)$
-on the right yields
+which yields (after applying to $\1_{s_1}$ on the left and $\1_{s_2}/\rho(s_2)$
+on the right)
 \begin{multline}
-Z(s_1,s_2)\gets (1+\eta)Z(s_1,s_2)-\eta \E_{s_3\sim \rho}
-Z(s_1,s_3)Z(s_3,s_2)\,+\\\eta \gamma \E_{s_3\sim\rho, s'_3\sim P(s'_3|s_3)}
+Z(s_1,s_2)\gets (1+\eta)Z(s_1,s_2)-\eta \E_{s_3\sim \rho}\,
+Z(s_1,s_3)Z(s_3,s_2)\,+\\\eta \gamma \E_{s_3\sim\rho,\, s'_3\sim
+P(s'_3|s_3)}\,
 Z(s_1,s_3)Z(s'_3,s_2)
 \end{multline}
-and we should find a way to initialize $Z$ so that $Z\approx \Id$ at time
-$0$ ($Z(s,s)=1/\rho(s)$, although starting with $Z(s,s)=1$ should be
-enough). In the end this Newton equation alone might be sufficient to
+which is perfectly samplable. We can simulate the assignment
+$Z(s_1,s_2)\gets...$ via gradient descent on the parameters of
+$Z(s_1,s_2)$. \footnote{Should we adjust the size of the gradient descent
+to get the right change of $Z(s_1,s_2)$? If we just use SGD, since
+gradients may change from point to point, the speed may be different at
+various states and we depart from Newton. This is clear when $Z$ is very
+small: Newton grows exponentially while a standard gradient descent would
+make small steps.} (Or via double sampling, which is not problematic here!?)
+
+Initialization: A first idea would be to start with paths from $s$ to
+$s$, namely, initialize
+$Z$ so that $Z\approx \Id$ at time
+$0$, namely $Z(s,s)=1/\rho(s)$, although starting with $Z(s,s)=1$ should be
+quite fine. (Small initializations of $Z$ are safer.) $Z>0$ (unless we
+work with $\gamma=1$ and relative stuff), so the parameterization should
+reflect that. Indeed the Newton iteration is unstable with negative
+values.
+
+Another initialization might be $Z(s_1,s_2)\approx \frac{1}{1-\gamma}$
+for every pair $s_1,s_2$. Indeed, on-policy, $Z$ is the density with
+respect to the invariant distribution $\mu$, and for $\gamma$ close to
+$1$, $Z$ will be approximately $\frac{1}{1-\gamma}$ plus a smaller function (see
+below). Note that $Z(s_1,s_2)=\frac{1}{1-\gamma}$ is an exact solution of
+the middle Bellman equation (as is $Z=0$), but it is a repulsive fixed
+point, I think, so initializing to $\frac{1}{1-\gamma}$ plus noise should
+converge to the true solution. Initializing there should have the
+advantage of starting close to reasonable values.
+
+In the end this Newton equation alone might be sufficient to
 encompass the left and right Bellman. It does not rely on test functions,
 but the smoothing is implicit via the model used for $Z(s_1,s_2)$.
+
+Newton has a potential to be numerically less stable: first because of
+the $(1+\eta)$ factor which makes $Z$ quickly grow when it's small (until
+the $-Z^2$ kicks in), then because of the $-Z^2$ factors which can be
+problematic when $Z$ is large. Small enough learning rates should be
+stable. (TODO NOT TRUE: even in 1d, Newton is unstable if initialized to
+a negative number, for any learning rate. Stable only in some
+neighborhood of the true solution, but then, the stochastic noise might
+produce divergence... this is potentially a serious issue)
+
+Ideally, given the transition $s_3\to s'_3$, I'd like to sample $s_1$ and
+$s_2$ proportionally to $Z$ (would cancel the $Z$ factors, and avoid
+applying the equation to states that have nothing to do with
+$s_3$—although the $Z$ factors are different for the three terms...). But
+I don't know how to build an efficient sampler from $Z(s_3,\cdot)$.
+Something like Metropolis? but this function $Z$ is not constant...
+
+On-policy, sampling from $Z(\cdot,s_3)$ is easy: just sample one of the
+recent states with geometric rates $\gamma$. This should divide the
+right part of the equation by $Z(s_1,s_3)$ (up to some $\gamma$-dependent
+factor). Thus we would sample two states $s_1,s_2$ along the trajectory,
+sample a state $s_3$ in between on the trajectory from $s_1$, and (with
+the right $\gamma$ factors) we would get a term with $Z(s_1,s_2)$, a term
+with $Z(s_3,s_2)$ and a term with $Z(s'_3,s_2)$. This looks suspiciously
+like a large-scale Bellman from $s_1$... Variance could be higher since
+we don't use the model $Z$ and use sampling instead; plus, we lose any
+generalization introduced by $Z$. To be tested. Write
+carefully because $s'_3$ should be uncorrelated from $s_2$!! So not
+possible with a single
+trajectory?
+On-policy, another
+option is to sample triplets $(s_1,s_3,s_2)$ that are some time apart on
+the trajectory, e.g., starting with $s_3$ uniform along the past
+trajectory, and moving back for $s_1$ and forward for $s_2$ (with factors
+$\gamma$). Looks a lot like eligibility traces?
+
+On-policy, working with $\gamma\to 1$ is quite easy: indeed $Z(s_1,s_2)$ is
+a density with respect to $\mu(s_2)$ so that the asymptotics when
+$\gamma\to 1$ is $Z(s_1,s_2)=\frac{1}{1-\gamma}+Z_0(s_1,s_2)$, and we can
+directly learn $Z_0$ by inserting $\frac{1}{1-\gamma}+Z_0$ in the middle
+Bellman equation. This yields (omitting the expectations)
+\begin{multline}
+Z_0(s_1,s_2)\gets (1+\eta)Z_0(s_1,s_2)-\eta
+Z_0(s_1,s_3)(Z_0(s_3,s_2)-\gamma Z_0(s'_3,s_2))\\-\eta
+Z_0(s_1,s_3)+\frac{\eta}{1-\gamma}(\gamma Z_0(s'_3,s_2)-Z_0(s_3,s_2))
+\end{multline}
+TODO CHECK which we cannot directly apply with $\gamma=1$...
+However ON-POLICY $s_3$ and
+$s'_3$ have the same law, so in expectation the last term is $-\eta
+\E_{s_3} Z_0(s_3,s_2)$. This yields the more symmetric
+\begin{multline}
+Z_0(s_1,s_2)\gets (1+\eta)Z_0(s_1,s_2)-\eta
+Z_0(s_1,s_3)\left(Z_0(s_3,s_2)-\gamma Z_0(s'_3,s_2)\right)\\-\eta
+Z_0(s_1,s_3)-\eta Z_0(s_3,s_2)
+\end{multline}
+on-policy, for any $\gamma\leq 1$.
+
+[TODO: Since the standard iteration is unstable for $Z<0$, this means the
+iteration on $Z_0$ will be unstable for $Z_0<-\frac{1}{1-\gamma}$.
+Use that somehow: clip at that value?]
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
