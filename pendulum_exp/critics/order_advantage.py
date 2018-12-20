@@ -13,16 +13,24 @@ from nn import soft_update
 class OrderAdvantageCritic(CompoundStateful, Critic):
     def __init__(self,
                  dt: float, gamma: float, lr: float, tau: float, optimizer: str,
-                 val_function: ParametricFunction, adv_function: ParametricFunction) -> None:
+                 val_function: ParametricFunction, adv_function: ParametricFunction,
+                 sigma_function: ParametricFunction) -> None:
         CompoundStateful.__init__(self)
         self._reference_obs: Tensor = None
         self._val_function = val_function
         self._adv_function = adv_function
+        self._sigma_function = sigma_function
         self._target_val_function = copy.deepcopy(val_function)
         self._target_adv_function = copy.deepcopy(adv_function)
+        self._target_sigma_function = copy.deepcopy(sigma_function)
 
         self._adv_optimizer = \
             setup_optimizer(self._adv_function.parameters(),
+                            opt_name=optimizer, lr=lr, dt=dt,
+                            inverse_gradient_magnitude=1,
+                            weight_decay=0)
+        self._sigma_optimizer = \
+            setup_optimizer(self._sigma_function.parameters(),
                             opt_name=optimizer, lr=lr, dt=dt,
                             inverse_gradient_magnitude=1,
                             weight_decay=0)
@@ -37,6 +45,23 @@ class OrderAdvantageCritic(CompoundStateful, Critic):
         self._tau = tau
 
         self._device = 'cpu'
+
+    def compute_advantages(self, obs: Arrayable, action: Tensorable, target: bool = False):
+        func = self._adv_function if not target else self._target_adv_function
+        sigma_func = self._sigma_function if not target else self._target_sigma_function
+        if len(func.input_shape()) == 2:
+            advs = func(obs, action).squeeze()
+            sigma = sigma_func(obs, action).squeeze()
+        else:
+            advs = func(obs)
+            sigma = sigma_func(obs)
+            action = check_tensor(action, self._device).long()
+            advs = advs.gather(1, action.view(-1, 1)).squeeze()
+            sigma = sigma.gather(1, action.view(-1, 1)).squeeze()
+        sigma = torch.sigmoid(sigma).squeeze()
+        adv = (advs * torch.stack([sigma, 1 - sigma], dim=-1)).sum(dim=-1) * \
+            (self._dt ** sigma)
+        return adv, sigma
 
     def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,
                  next_obs: Arrayable, max_next_action: Tensor, reward: Arrayable,
@@ -73,30 +98,28 @@ class OrderAdvantageCritic(CompoundStateful, Critic):
             .5 * (max_adv / (self._dt ** (max_sigma / 2))) ** 2 + (sigma + max_sigma) * np.log(self._dt) / 2
         critic_loss = critic_loss + .5 * (expected_v - v) ** 2
 
+        # adv_p = [p.data.clone() for p in self._adv_function.parameters()]
+        # v_p = [p.data.clone() for p in self._val_function.parameters()]
         self._val_optimizer.zero_grad()
         self._adv_optimizer.zero_grad()
         critic_loss.mean().backward(retain_graph=True)
         self._val_optimizer.step()
         self._adv_optimizer.step()
+        # adv_p = [p - old_p for (p, old_p) in zip(self._adv_function.parameters(), adv_p)]
+        # v_p = [p - old_p for (p, old_p) in zip(self._val_function.parameters(), v_p)]
+        # all_p_norm = [p.norm().item() for p in adv_p] + [p.norm().item() for p in v_p]
+
+        # if self._dcount is None:
+        #     self._dcount = 0
+        # self._dcount += 1
+        # if self._dcount == int(5 / self._dt):
+        #     print(" ".join(map(str, all_p_norm)))
+        #     exit()
 
         soft_update(self._val_function, self._target_val_function, self._tau)
         soft_update(self._adv_function, self._target_adv_function, self._tau)
 
         return critic_loss
-
-    def compute_advantages(self, obs: Arrayable, action: Tensorable, target: bool = False) -> Tensor:
-        func = self._adv_function if not target else self._target_adv_function
-        if len(func.input_shape()) == 2:
-            adv_full = func(obs, action).squeeze()
-        else:
-            adv_all = func(obs)
-            action = check_tensor(action, self._device).long()
-            adv_full = adv_all.gather(1, action.view(-1, 1)).squeeze()
-        advs = adv_full[..., :2]
-        sigma = torch.sigmoid(adv_full[..., 2] - 1)
-        adv = (advs * torch.stack([sigma, 1 - sigma], dim=-1)).sum(dim=-1) * \
-            (self._dt ** sigma)
-        return adv, sigma
 
     def critic(self, obs: Arrayable, action: Tensorable, target: bool = False) -> Tensor:
         return self.compute_advantages(obs, action, target)[0]
@@ -105,6 +128,7 @@ class OrderAdvantageCritic(CompoundStateful, Critic):
         pass
 
     def critic_function(self, target: bool = False):
+        # TODO: this is incorrect at the moment
         func = self._adv_function if not target else self._target_adv_function
         return func
 
@@ -128,10 +152,14 @@ class OrderAdvantageCritic(CompoundStateful, Critic):
         elif isinstance(action_space, Box):
             nb_actions = action_space.shape[-1]
             adv_function = ContinuousAdvantageMLP(
-                nb_outputs=3, nb_state_feats=nb_state_feats, nb_actions=nb_actions,
+                nb_outputs=2, nb_state_feats=nb_state_feats, nb_actions=nb_actions,
+                **net_dict)
+            sigma_function = ContinuousAdvantageMLP(
+                nb_outputs=1, nb_state_feats=nb_state_feats, nb_actions=nb_actions,
                 **net_dict)
         if kwargs['normalize']:
             val_function = NormalizedMLP(val_function)
             adv_function = NormalizedMLP(adv_function)
+            sigma_function = NormalizedMLP(sigma_function)
         return OrderAdvantageCritic(kwargs['dt'], kwargs['gamma'], kwargs['lr'], kwargs['tau'],
-                                    kwargs['optimizer'], val_function, adv_function)
+                                    kwargs['optimizer'], val_function, adv_function, sigma_function)
