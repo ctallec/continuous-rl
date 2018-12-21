@@ -1353,7 +1353,15 @@ increase representational power. The equation
 $\Id=F\Delta\transp{\green}$ becomes $\delta_{\omega\omega'}=\E_{s\sim
 \rho, \,s'\sim P(s'|s)}
 f(s,\omega)(\green(s,\omega')-\green(s',\omega'))$ TODO CHECK, which is not easy to
-solve because of the singular $\delta_{\omega\omega'}$, but should be better with things on the right and left.
+solve because of the singular $\delta_{\omega\omega'}$, but should be
+better with things on the right and left. For instance, the Newton equation on
+$\transp{\green}$ is
+\begin{equation}
+\green(s_1,\omega)\gets
+(1+\eta)\green(s_1,\omega)-\eta\E_{s\to s'}\E_{\omega'}
+\green(s_1,\omega')f(s,\omega')(\green(s,\omega)-\gamma
+\green(s',\omega))
+\end{equation}
 
 \paragraph{Better variant?}
 Everything works equally well if we just learn a kernel $Z(s_1,s_2)$ such
