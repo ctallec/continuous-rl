@@ -1528,6 +1528,53 @@ on-policy, for any $\gamma\leq 1$.
 iteration on $Z_0$ will be unstable for $Z_0<-\frac{1}{1-\gamma}$.
 Use that somehow: clip at that value?]
 
+The Newton update $Z\gets 2Z-Z\Delta Z$ is stable provided it is
+initialized to some $Z$ such that $\Id-\Delta Z$
+has operator norm $< 1$. With $\Delta=\Id-\gamma P$, the initial value
+$Z=\Id$ satisfies this provided $\gamma<1$ (and probably $\gamma=1$ for
+the relative case). Here we use a stochastic update, which should follow
+the deterministic dynamics if the learning rate is small enough. However,
+in general we will not apply the update $Z\gets (1+\eta)Z-\eta Z\Delta
+Z$, even in expectation, because we will also sample $s_1$ and $s_2$.
+Sampling $s_1$ according to $\rho$ amounts to multiplying the update by
+$\rho$. This leaves the fixed point unchanged, but may change the
+stability TODO CHECK. Using a gradient descent on parameters will further
+introduce a preconditioner on the update. TODO CHECK.
+
+For discrete time but continuous state, the true $Z=\sum \gamma^t P^t$ is
+equal to $\Id$ plus a continuous component; the $\Id$ is singular, so
+learning $Z(s_1,s_2)$ using eg a neural network will be difficult around
+the diagonal (and the initialization will be difficult). We may directly
+write the dynamics on $Z-\Id$. (TODO not clear what this means in
+continuous time: not clear if $\Delta^{-1}-\Id$ is actually small; still,
+starting at $\Id$ is stable for Newton whatever $P$ is, so it should be
+stable in the limit.)
+
+Setting $Z=\Id+\zeta$ provides the update
+\begin{equation}
+\zeta\gets (1-\eta)\zeta+\eta\gamma P+\eta\gamma P\zeta
++\eta\gamma \zeta P-\eta\zeta(\Id-\gamma P)\zeta
+\end{equation}
+which we cannot quite sample (because of the $P$ term). But it mixes the
+left and right Bellman equations nicely. A way to sample it is to sample
+the left state $s_1$ according to $\rho$; this amounts to multiplying the
+update by $\rho$ (same fixed point, but maybe different dynamics TODO),
+and then $\rho P$ is samplable.
+
+The convergence of the update above to its fixed point $\gamma
+P(\Id-\gamma P)^{-1}$ can be studied by studying the
+remainder $r\deq \zeta-\gamma
+P(\Id-\gamma P)^{-1}$, whose dynamics is
+\begin{equation}
+r\gets (1-\eta) r-\eta r(\Id-\gamma P)r
+\end{equation}
+In particular, at first order for small $r$ this is just $r\gets
+(1-\eta)r$. This is contracting \emph{independently of the properties of
+$P$}, contrary to the Bellman equation. The stochastic
+Newton update with learning rate $\eta$ does not have quadratic
+convergence like the standard Newton method, but it still keeps better
+local convergence properties than Bellman. Is it worth the cost?
+
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
