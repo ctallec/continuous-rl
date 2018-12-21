@@ -1292,7 +1292,7 @@ F\gets (1+\eta)F-\eta
 \green(s'))}F
 \end{equation}
 both of which can be implemented via gradient descent on the parameters
-of $\green$ and $f$. (This double the learning rate $\eta$.)
+of $\green$ and $f$. (This doubles the learning rate $\eta$.)
 There is no need to sample on test functions.
 
 
@@ -1367,6 +1367,8 @@ operator by
 \begin{equation}
 Z=\sum_{s_1,s_2}\rho(s_2)  Z(s_1,s_2)\1_{s_1}\transp{\1_{s_2}}
 \end{equation}
+[TODO CHANGE NOTATION because currently the entries of $Z$ are not
+$Z(s_1,s_2)$ but $Z_{s_1s_2}=\rho(s_2)Z(s_1,s_2)$ which is confusing...]
 In particular the value function is
 \begin{equation}
 V(s_1)=\E_{s_2\sim \rho} \, Z(s_1,s_2) R(s_2)
