@@ -43,6 +43,29 @@ following orders of magnitudes for the gradients are obtained for $\phi^m$ and $
 	\delta_{\phi^M} \mathcal{L} \approx& \deltat.
 \end{align}
 The gradient with respect to $\theta$ could be problematic. When $\deltat$ is small, the recall term
-$\log{\deltat} \partial_\theta \sigma_\theta$ dominates, meaning that $\sigma wi
+$\log{\deltat} \partial_\theta \sigma_\theta$ dominates. This gradient is always of order $1$. A
+consequence is that we should avoid parameter sharing between $\theta$ and the other parameters, as
+the gradient on $\sigma$ would almost always dominate.
+
+\paragraph{An aside on the use of RMSProp}
+Empirically, RMSProp helps a lot in term of convergence speed. Special care should be put on the batch
+size when using RMSProp. Recall that RMSProp updates network parameters as
+\begin{align}
+	H &\leftarrow (1 - \alpha) H + \alpha \text{diag}(g \odot g)\\
+	\phi &\leftarrow \phi - \eta H^{-1/2} g
+\end{align}
+with $g = \partial_\phi \mathcal{L}$.
+
+With batch size $1$ or close to $1$, in
+the one dimensional case and in term of orders of magnitude, for both $\phi^M$
+and $\phi^m$, $g \approx B \deltat + (1 - B)$ with $B\sim \mathcal{B}(1 -
+\deltat)$ a bernoulli with $\mathbb{P}(B = 1) = 1 - \deltat$. If the
+expectation of $H$ reaches a stationnary regime, it is easily verifiable that
+$\mathbb{E} H \approx \deltat$, and consequently that learning rates are divided
+by $\sqrt{\deltat}$.
+
+With batch sizes of order $1 / \deltat$, as the variance of $g$ is no longer of order
+$\deltat$, but of order $\deltat^2$, learning rates are divided
+by $\deltat$, resulting in update steps that are effectively of order $\eta$.
 
 \end{document}
