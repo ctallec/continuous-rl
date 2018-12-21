@@ -1340,6 +1340,21 @@ $V(s)=\sum_i \alpha_i\green_i(s)$ over the components of $\green$: if $V$
 indeed belongs to this class then we will compute it correctly. (But this
 class does not change during training...)
 
+The above can be turned to an infinite-rank approximation by writing
+\begin{equation}
+\transp{1_{s_1}}Z\psi=\E_{s_2\sim \rho}\, \E_{\omega}\,
+\green(s_1,\omega)f(s_2,\omega)\psi(s_2)
+\end{equation}
+where integration is over $\omega$ in an arbitrary space (eg $\omega\in
+[0;1]$ or $\omega\in \R^d$ with Gaussian distribution). This amounts to
+sending each state to a function over $\omega$, and using the dot product
+from $L^2(\omega)$. This should solve some kernel/image issues and
+increase representational power. The equation
+$\Id=F\Delta\transp{\green}$ becomes $\delta_{\omega\omega'}=\E_{s\sim
+\rho, \,s'\sim P(s'|s)}
+f(s,\omega)(\green(s,\omega')-\green(s',\omega'))$ TODO CHECK, which is not easy to
+solve because of the singular $\delta_{\omega\omega'}$, but should be better with things on the right and left.
+
 \paragraph{Better variant?}
 Everything works equally well if we just learn a kernel $Z(s_1,s_2)$ such
 that
