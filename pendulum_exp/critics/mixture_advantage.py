@@ -8,7 +8,6 @@ from nn import gmm_loss
 from gym.spaces import Box, Discrete
 from models import MLP, ContinuousAdvantageMLP, NormalizedMLP, MixtureNetwork
 import torch
-import torch.nn.functional as f
 import numpy as np
 from nn import soft_update
 
@@ -30,13 +29,13 @@ class MixtureAdvantageCritic(AdvantageCritic):
                             weight_decay=0)
         self._mixture_optimizer = \
             setup_optimizer(self._mixture_function.parameters(),
-                            opt_name=optimizer, lr=lr, dt=dt,
+                            opt_name=optimizer, lr=lr, dt=dt * dt,
                             inverse_gradient_magnitude=1,
                             weight_decay=0)
 
     def scale(self, val: Tensor, logpi: Tensor, val_scale, logpi_scale) -> Tensor:
         val = val * arr_to_th(val_scale, self._device)
-        logpi = f.log_softmax(logpi + arr_to_th(logpi_scale, self._device), dim=-1)
+        logpi = logpi * arr_to_th(logpi_scale, self._device)
         return val, logpi
 
     def to(self, device):
@@ -60,7 +59,9 @@ class MixtureAdvantageCritic(AdvantageCritic):
 
         adv_mu, adv_logpi = self.scale(
             adv_mu, adv_logpi,
-            [[1, self._dt]], [[np.log(self._dt / (1 - self._dt)), 0]])
+            [[1, self._dt]], [[1 / self._dt]])
+        adv_logpi = 1 / (1 + (adv_logpi) ** 2)
+        adv_logpi = torch.cat([torch.log(adv_logpi), torch.log(1 - adv_logpi)], dim=-1)
 
         adv = (adv_mu * adv_logpi.exp()).sum(dim=-1)
 
@@ -73,7 +74,7 @@ class MixtureAdvantageCritic(AdvantageCritic):
     def critic_function(self, target: bool = False):
         func = self._adv_function if not target else self._target_adv_function
         mixture_func = self._mixture_function if not target else self._target_mixture_function
-        return MixtureNetwork(func, mixture_func, [1, self._dt], [np.log(self._dt / (1 - self._dt)), 0])
+        return MixtureNetwork(func, mixture_func, [1, self._dt], [1 / self._dt])
 
     def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,
                  next_obs: Arrayable, max_next_action: Tensor, reward: Arrayable,
@@ -90,7 +91,7 @@ class MixtureAdvantageCritic(AdvantageCritic):
         reference_v = self._val_function(self._reference_obs).squeeze()
         mean_v = reference_v.mean()
         next_v = (1 - done) * (
-            self._target_val_function(next_obs).squeeze() - self._dt * mean_v) - \
+            self._target_val_function(next_obs).squeeze() - self._gamma ** (1 - self._dt) * self._dt * mean_v) - \
             done * self._gamma * mean_v / max(1 - self._gamma, 1e-5)
 
         obs = check_array(obs)
@@ -109,8 +110,9 @@ class MixtureAdvantageCritic(AdvantageCritic):
             [[np.sqrt(2), np.sqrt(2) * self._dt]]
         ).to(self._device).unsqueeze(-1)
 
-        adv_loss = gmm_loss(expected_adv, adv_mu.unsqueeze(-1), gmm_sigma, adv_logpi)
-        adv_loss = adv_loss + gmm_loss(torch.zeros_like(expected_adv), max_adv_mu.unsqueeze(-1), gmm_sigma, max_adv_logpi)
+        adv_loss = gmm_loss(expected_adv, adv_mu.unsqueeze(-1), gmm_sigma, adv_logpi,
+                            correction_factor=1. / self._dt)
+        adv_loss = adv_loss + gmm_loss(torch.zeros_like(expected_adv), max_adv_mu.unsqueeze(-1), gmm_sigma, max_adv_logpi, correction_factor=1. / self._dt)
 
         # remove minimal constant from adv_loss
         self._adv_optimizer.zero_grad()
@@ -152,7 +154,7 @@ class MixtureAdvantageCritic(AdvantageCritic):
                 nb_outputs=2, nb_state_feats=nb_state_feats, nb_actions=nb_actions,
                 **net_dict)
             mixture_function = ContinuousAdvantageMLP(
-                nb_outputs=2, nb_state_feats=nb_state_feats, nb_actions=nb_actions,
+                nb_outputs=1, nb_state_feats=nb_state_feats, nb_actions=nb_actions,
                 **net_dict)
 
         if kwargs['normalize']:

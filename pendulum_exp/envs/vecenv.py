@@ -53,6 +53,8 @@ class SingleVecEnv(Env):
 
     def step(self, action):
         obs, rew, done, info = self._env.step(action[0])
+        if done:
+            obs = self.reset()[0]
         return obs[np.newaxis, ...], np.array([rew]), np.array([done]), \
             {k: np.array(i) for k, i in info.items()}
 

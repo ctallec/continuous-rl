@@ -22,7 +22,9 @@ class MLP(nn.Module, ParametricFunction):
                      (f'ln{i+1}', nn.LayerNorm(hidden_size)),
                      (f'relu{i+1}', nn.ReLU())] for i in range(nb_layers)]
         modules += [mod for mods in sub_core for mod in mods]
-        modules += [(f'fc{nb_layers+1}', nn.Linear(hidden_size, nb_outputs))]
+        last_layer = nn.Linear(hidden_size, nb_outputs)
+        last_layer.bias.data.zero_()
+        modules += [(f'fc{nb_layers+1}', last_layer)]
         self._core = nn.Sequential(OrderedDict(modules))
 
     def forward(self, *inputs: Tensorable):

@@ -1,5 +1,5 @@
 """Some nn utilities."""
-from typing import Tuple
+from typing import Tuple, Optional
 import torch
 from torch import Tensor
 import torch.nn.functional as f
@@ -10,6 +10,7 @@ def gmm_loss(batch: Tensor,
              mus: Tensor,
              sigmas: Tensor,
              logpi: Tensor,
+             correction_factor: Optional[float] = None,
              reduce: bool = True) -> Tensor: # pylint: disable=too-many-arguments
     """ Computes the gmm loss.
     Compute minus the log probability of batch under the GMM model described
@@ -37,6 +38,11 @@ def gmm_loss(batch: Tensor,
     g_log_probs = g_log_probs - max_log_probs
 
     g_probs = torch.exp(g_log_probs)
+    if correction_factor is not None:
+        mask = (g_probs[..., 0] == 1).float()
+        g_probs = torch.stack([
+            mask * g_probs[..., 0] * correction_factor + (1 - mask) * g_probs[..., 0],
+            g_probs[..., 1]], dim=1)
     probs = torch.sum(g_probs, dim=-1)
 
     log_prob = max_log_probs.squeeze() + torch.log(probs)

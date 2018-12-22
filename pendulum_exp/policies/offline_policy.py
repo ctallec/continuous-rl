@@ -27,6 +27,7 @@ class OfflinePolicy(CompoundStateful, Policy, Cudaable):
 
         # counter and parameters
         self._count = 0
+        self._warm_up = 10 # prevents learning from a near empty buffer
         self._steps_btw_train = steps_btw_train
         self._learn_per_step = learn_per_step
 
@@ -66,7 +67,7 @@ class OfflinePolicy(CompoundStateful, Policy, Cudaable):
             self.learn()
 
     def learn(self):
-        if self._count % self._steps_btw_train == self._steps_btw_train - 1:
+        if self._count % self._steps_btw_train == self._steps_btw_train - 1 and self._count > self._warm_up:
             cum_critic_loss = 0
             cum_critic_value = 0
 
