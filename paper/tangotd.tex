@@ -1292,7 +1292,7 @@ F\gets (1+\eta)F-\eta
 \green(s'))}F
 \end{equation}
 both of which can be implemented via gradient descent on the parameters
-of $\green$ and $f$. (This double the learning rate $\eta$.)
+of $\green$ and $f$. (This doubles the learning rate $\eta$.)
 There is no need to sample on test functions.
 
 
@@ -1340,6 +1340,29 @@ $V(s)=\sum_i \alpha_i\green_i(s)$ over the components of $\green$: if $V$
 indeed belongs to this class then we will compute it correctly. (But this
 class does not change during training...)
 
+The above can be turned to an infinite-rank approximation by writing
+\begin{equation}
+\transp{1_{s_1}}Z\psi=\E_{s_2\sim \rho}\, \E_{\omega}\,
+\green(s_1,\omega)f(s_2,\omega)\psi(s_2)
+\end{equation}
+where integration is over $\omega$ in an arbitrary space (eg $\omega\in
+[0;1]$ or $\omega\in \R^d$ with Gaussian distribution). This amounts to
+sending each state to a function over $\omega$, and using the dot product
+from $L^2(\omega)$. This should solve some kernel/image issues and
+increase representational power. The equation
+$\Id=F\Delta\transp{\green}$ becomes $\delta_{\omega\omega'}=\E_{s\sim
+\rho, \,s'\sim P(s'|s)}
+f(s,\omega)(\green(s,\omega')-\green(s',\omega'))$ TODO CHECK, which is not easy to
+solve because of the singular $\delta_{\omega\omega'}$, but should be
+better with things on the right and left. For instance, the Newton equation on
+$\transp{\green}$ is
+\begin{equation}
+\green(s_1,\omega)\gets
+(1+\eta)\green(s_1,\omega)-\eta\E_{s\to s'}\E_{\omega'}
+\green(s_1,\omega')f(s,\omega')(\green(s,\omega)-\gamma
+\green(s',\omega))
+\end{equation}
+
 \paragraph{Better variant?}
 Everything works equally well if we just learn a kernel $Z(s_1,s_2)$ such
 that
@@ -1352,6 +1375,8 @@ operator by
 \begin{equation}
 Z=\sum_{s_1,s_2}\rho(s_2)  Z(s_1,s_2)\1_{s_1}\transp{\1_{s_2}}
 \end{equation}
+[TODO CHANGE NOTATION because currently the entries of $Z$ are not
+$Z(s_1,s_2)$ but $Z_{s_1s_2}=\rho(s_2)Z(s_1,s_2)$ which is confusing...]
 In particular the value function is
 \begin{equation}
 V(s_1)=\E_{s_2\sim \rho} \, Z(s_1,s_2) R(s_2)
@@ -1416,7 +1441,9 @@ to get the right change of $Z(s_1,s_2)$? If we just use SGD, since
 gradients may change from point to point, the speed may be different at
 various states and we depart from Newton. This is clear when $Z$ is very
 small: Newton grows exponentially while a standard gradient descent would
-make small steps.} (Or via double sampling, which is not problematic here!?)
+make small steps.} (Or via double sampling, which is not problematic
+here!? but would converge to trivial solutions like $Z=0$ or
+$Z=1/(1-\gamma)$, which are repulsive with Newton.)
 
 Initialization: A first idea would be to start with paths from $s$ to
 $s$, namely, initialize
@@ -1500,6 +1527,53 @@ on-policy, for any $\gamma\leq 1$.
 [TODO: Since the standard iteration is unstable for $Z<0$, this means the
 iteration on $Z_0$ will be unstable for $Z_0<-\frac{1}{1-\gamma}$.
 Use that somehow: clip at that value?]
+
+The Newton update $Z\gets 2Z-Z\Delta Z$ is stable provided it is
+initialized to some $Z$ such that $\Id-\Delta Z$
+has operator norm $< 1$. With $\Delta=\Id-\gamma P$, the initial value
+$Z=\Id$ satisfies this provided $\gamma<1$ (and probably $\gamma=1$ for
+the relative case). Here we use a stochastic update, which should follow
+the deterministic dynamics if the learning rate is small enough. However,
+in general we will not apply the update $Z\gets (1+\eta)Z-\eta Z\Delta
+Z$, even in expectation, because we will also sample $s_1$ and $s_2$.
+Sampling $s_1$ according to $\rho$ amounts to multiplying the update by
+$\rho$. This leaves the fixed point unchanged, but may change the
+stability TODO CHECK. Using a gradient descent on parameters will further
+introduce a preconditioner on the update. TODO CHECK.
+
+For discrete time but continuous state, the true $Z=\sum \gamma^t P^t$ is
+equal to $\Id$ plus a continuous component; the $\Id$ is singular, so
+learning $Z(s_1,s_2)$ using eg a neural network will be difficult around
+the diagonal (and the initialization will be difficult). We may directly
+write the dynamics on $Z-\Id$. (TODO not clear what this means in
+continuous time: not clear if $\Delta^{-1}-\Id$ is actually small; still,
+starting at $\Id$ is stable for Newton whatever $P$ is, so it should be
+stable in the limit.)
+
+Setting $Z=\Id+\zeta$ provides the update
+\begin{equation}
+\zeta\gets (1-\eta)\zeta+\eta\gamma P+\eta\gamma P\zeta
++\eta\gamma \zeta P-\eta\zeta(\Id-\gamma P)\zeta
+\end{equation}
+which we cannot quite sample (because of the $P$ term). But it mixes the
+left and right Bellman equations nicely. A way to sample it is to sample
+the left state $s_1$ according to $\rho$; this amounts to multiplying the
+update by $\rho$ (same fixed point, but maybe different dynamics TODO),
+and then $\rho P$ is samplable.
+
+The convergence of the update above to its fixed point $\gamma
+P(\Id-\gamma P)^{-1}$ can be studied by studying the
+remainder $r\deq \zeta-\gamma
+P(\Id-\gamma P)^{-1}$, whose dynamics is
+\begin{equation}
+r\gets (1-\eta) r-\eta r(\Id-\gamma P)r
+\end{equation}
+In particular, at first order for small $r$ this is just $r\gets
+(1-\eta)r$. This is contracting \emph{independently of the properties of
+$P$}, contrary to the Bellman equation. The stochastic
+Newton update with learning rate $\eta$ does not have quadratic
+convergence like the standard Newton method, but it still keeps better
+local convergence properties than Bellman. Is it worth the cost?
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
