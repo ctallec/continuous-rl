@@ -2,9 +2,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from abstract import Policy, Env
-from envs.vecenv import SubprocVecEnv
 from envs.hill import HillEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv
+from critics import MixtureAdvantageCritic
 from convert import th_to_arr
 from gym.envs.classic_control import PendulumEnv
 from gym.spaces import Box
@@ -64,9 +64,9 @@ def specific_evaluation(
         critics = policy._critic.critic(state_space, actions).squeeze()
 
         plt.clf()
-        plt.subplot(1, 3, 1)
+        plt.subplot(1, 4, 1)
         plt.plot(state_space, th_to_arr(critics))
-        plt.subplot(1, 3, 2)
+        plt.subplot(1, 4, 2)
         plt.plot(state_space, th_to_arr(actions))
         if isinstance(env.envs[0].unwrapped.action_space, Box): # type: ignore
             action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
@@ -74,6 +74,10 @@ def specific_evaluation(
             states = states[..., np.newaxis]
             actions = actions[..., np.newaxis]
             critics = policy._critic.critic(states, actions).squeeze()
-            plt.subplot(1, 3, 3)
+            if isinstance(policy._critic, MixtureAdvantageCritic):
+                _, adv_logpi, _ = policy._critic.compute_mixture_advantage(states, actions)
+                plt.subplot(1, 4, 4)
+                plt.imshow(th_to_arr(adv_logpi[..., 0]))
+            plt.subplot(1, 4, 3)
             plt.imshow(th_to_arr(critics))
         plt.pause(.1)

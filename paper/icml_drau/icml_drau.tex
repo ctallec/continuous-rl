@@ -4,11 +4,13 @@
 
 % Recommended, but optional, packages for figures and better typesetting:
 \usepackage{amsmath, amssymb}
+\usepackage{mathtools}
 \usepackage{microtype}
 \usepackage{graphicx}
 \usepackage{subfigure}
 \usepackage{booktabs} % for professional tables
 \usepackage{xcolor}
+\usepackage{algorithmic}
 
 % hyperref makes hyperlinks in the resulting PDF.
 % If your build breaks (sometimes temporarily if a hyperlink spans a page)
@@ -94,82 +96,293 @@
 %\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \begin{abstract}
-
+	Despite remarkable successes, \emph{Deep Reinforcement learning} remains sensitive to
+	hyperparameterization, implementation details and small environment changes~(\citealt{drl_matter}, \citealt{drl_matter_bis}). 
+	Overcoming this sensitivity is key to making DRL applicable to real world problems.
+	In this paper, we study the sensitivity of Deep Reinforcement learning algorithms to
+	time discretization. More precisely, we show that approaches based on estimations of the
+	Q-function, e.g. \emph{Deep Q-learning}~\cite{dqn} and \emph{Deep deterministic policy gradient}~\cite{ddpg}
+	are sensitive to variations of time discretization. We further show that a simple reparameterization of the
+	Q-function as a sum of a state value term and a \emph{small} action dependent advantage term yields an algorithm
+	much more resilient to variations of time discretization.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
+In recent years, deep learning based approaches to reinforcement learning have
+thrived and provided impressive results in a variety of domains, achieving superhuman
+performances with no expert knowledge in perfect information zero-sum
+games~\cite{alphazero}, reaching level of top players in video
+games~(\citealt{openai_five}, \citealt{dqn}), or learning dexterous manipulation
+from scratch without demonstrations~\cite{hand_control}.
+
+In spite of those successes, \emph{Deep reinforcement learning} approaches are
+sensitive to a number of factors, including hyperparameterization,
+implementation details or small changes in the environment
+parameters~(\citealt{drl_matter}, \citealt{drl_matter_bis}). This sensitivity,
+along with sample inefficiency, prevents DRL from being applied in most real
+world settings. High sensitivity to environment parameters notably prevents
+transfering abilities from imperfect simulators to real world scenarios.
+
+In this paper we focus our attention on the sensitivity to time discretization
+of DRL approaches, i.e. what happens when an agent receives $50$ observations
+and is expected to take $50$ actions per second instead of $10$. One expects
+that decreasing time discretization, or equivalently shortening reaction time,
+should only improve agent performances. This is not what happens in practice
+for approaches based on estimation of state action value functions, e.g.
+\emph{Deep Q-learning} (DQN~\citep{dqn} and \emph{Deep deterministic policy
+gradient} (DDPG~\citep{ddpg}). This is shown experimentally in Sec.~\ref{sec:exp}.
+
+We relate this sensitivity to the fact that, as the discretization timestep
+decreases, the effect of individual actions on the total return decreases, and
+can vanish when the discretization timestep becomes infinitesimal. The natural
+framework to study this phenomenon is Continuous time reinforcement learning 
+(Sec.~\ref{sec:continous}). 
+
+To cope for this effect, we introduce a
+parameterization of the Q-function as a sum of a state value term and a
+\emph{small} action dependent advantage term (Sec.~\ref{subsec:reparam}). This
+reparameterized Q approximation can be trained with deep variants of Q-learning
+(Sec.~\ref{subsec:algorithm}).  To properly scale w.r.t. time discretization,
+particular attention has to be taken regarding both the exploration method, and
+the scaling of learning rates (Sec.~\ref{subsec:lr}, Sec.~\ref{subsec:explo}).
+The resulting algorithm is shown to provide near perfect invariance to time
+discretization on simple environments, and much better invariance properties
+than vanilla DQN or DDPG on more complex environments (Sec.~\ref{sec:exp}).
 
 \section{Related work}
 \label{sec:related}
-\cite{adv_upd}
-\cite{adv_learn}
-\cite{dueling_nets}
+Continuous and near continuous reinforcement learning, which is at the core of
+our approach has been thoroughly studied in the deterministic case
+in~\cite{adv_upd} or \cite{cont_rl}, but has not been applied in the context of
+deep reinforcement learning.
 
-\section{Continuous reinforcement learning and scaling problems}
+The approach presented in this paper is closely related to \cite{adv_upd} and
+\cite{cont_rl}. \cite{adv_upd} already separated the learning procedure of the
+value and advantage functions, and introduced proper scalings between the two
+components. We extend on \cite{adv_upd} in three directions. We provide a
+formal argument on why the advantage contribution of the Q-function is of order
+$\bigO(\deltat)$, irrelevant of the stochasticity of the environment, in a quite
+general framework. We show that, provided with well suited learning rates and
+exploration method, Advantage updating provide near invariance to change of time
+discretization. We show that Advantage updating is viable in the context of deep
+reinforcement learning, while not using the true gradient of the residual error.
+
+More recently, \cite{dueling_nets} also introduced a parameterization separating
+the value and the advantage components of the Q-function. We additionally
+introduce a natural scaling coeficient between the two, that strongly improves
+the time discretization invariance properties.
+
+\section{Continuous and near continuous time reinforcement learning}
 \label{sec:continous}
-In the following section, a restricted framework for near continuous
-time reinforcement learning is introduced, and the main challenges of this
-setup are explained. \RKC{This is not what we want to write: we want to explain
-why current reinforcement learning practices are ill suited for this framework}
+In this section, a continuous reinforcement learning framework is introduced,
+and it is shown that under this framework, the state-action value function does
+not depend on the action. We further show that in near continous domains, when
+the discretization timestep $\deltat$ is small, the difference in state-action
+value between two different actions in a fixed state is of order $\bigO(\deltat)$.
 
 \subsection{Framework}
+In what follows, $\dt$ denotes a truly infinitesimal time interval while $\deltat$
+denotes a small, but non infinitesimal time interval. Similarily, $\dbt$ denotes
+an infinitesimal (multi-dimensional) brownian step, while $\deltabt$ denotes its
+discretized equivalent. Informally, $\dbt$ is to be thought of as $\gauss(0, \sqrt{\dt}^2)$,
+and $\deltabt$ as $\gauss(0, \sqrt{\deltat}^2)$, where $\gauss(\mu, \sigma)$ denotes a gaussian
+random variable of mean $\mu$ and standard deviation (or covariance matrix in the multi-dimensional case)
+$\sigma$.
+
 Consider a fully observable \emph{Markov Decision Process} defined by the following
 transitions and rewards
 \begin{align}
-	s_{t + \deltat} &= s_t + F(s_t, a_t) \deltat + \Sigma(s_t, a_t) \deltabt\\
-	r_{t} &= \reward(s_t, a_t) \deltat + \Sigma_r(s_t, a_t) \deltabt^r
+	ds(s, a) &= F(s, a) dt + \Sigma(s, a) \dbt\\
+	dr(s, a) &= \reward(s, a) dt + \Sigma_r(s, a) \dbt.
 \end{align}
-where the $s$'s are $n$-dimensional vectors, $F(s_t, a_t)$ is a $n$-dimensional
-drift coeficient, $\Sigma(s_t, a_t)$ is a $n \times n$ diffusion matrix,
-$\deltat$ is a small but finite discretization step, and $\deltabt$ is a sample
-from $\gauss(0, \deltat I)$.
+The equation on $s$ is that of a diffusion process, with drift coeficient $F$
+and diffusion matrix $\Sigma$.  This framework is only moderately restrictive.
+For example, deterministic continuous control environments fall in this
+framework, with $\Sigma = 0$ and $\Sigma_r = 0$. Limitations of the framework
+are discussed in Sec.~\ref{sec:limitations}.
+This framework is naturally discretized to arbitrary $\deltat$ by replacing all
+$d$'s with $\delta$'s.
 
-This framework is quite general, and most discretized deterministic continuous
-control environments fall in this framework, with $\Sigma = 0$ and $\Sigma_r =
-0$, as well as many stochastic control environments.
-
-A deterministic policy $\pi$ is defined as a deterministic mapping from state
-space to action space\footnote{We restrict ourselves to deterministic policies.
-	In continuous time, defining stochastic policies with well defined
-	state-value function is non trivial. In the discrete case, the
-distribution of actions of a policy given a state only depends on the previous
-state, and not on previous actions. In continuous time, such policies are akin
-to white noise, and do not define stochastic processes.}.
+A continuous policy $\pi$ is defined as a deterministic mapping from states to
+actions.  In continuous time, defining stochastic policies with well defined
+state-value functions requires incorporating information from previous action into
+the state to obtain a temporally coherent policy. To avoid such inconvenience, the
+framework is restricted to deterministic policies. This is a mild constraint, as this
+only enforces determinism of the exploitation policy and not of exploration policies.
+In what follows, $\tau\sim\pi$ denotes a trajectory of states and actions sampled
+according to policy $\pi$, with $s_0$ sampled according to an arbitrary initial distribution
+on states $\rho_0$, and $dr_{t} = dr(s_t, a_t)$.
 
 Under a deterministic policy $\pi$, one can define the $\gamma$ discounted
 \emph{state value function} $V^\pi(s)$ and \emph{state action value function}
-$Q^\pi(s, a)$\footnote{
-	The values of $V^\pi$ and $Q^\pi$ are derived as discretization of e.g.
-	$V^\pi_\text{cont}(s) = \E\left[\int\limits_0^\infty \gamma^t \reward(s_t, \pi(s_t)) dt \mid s_0 = s\right]$.
-}as
+$Q^\pi(s, a)$ as
 \begin{align}
-	V^\pi(s) &= \E\left[
-		\sum\limits_{k=0}^\infty \gamma^{k\deltat}
-		r_{k \deltat} \mid s_0 = s
+	V^\pi(s) &= \E_{\tau\sim\pi}\left[
+		\int\limits_{t=0}^\infty \gamma^{t}
+		dr_{t} \mid s_0 = s
 	\right]\\
-	Q^\pi(s, a) &= \E\left[
+	Q^\pi(s, a) &= \E_{\tau\sim\pi}\left[
+		\int\limits_{t=0}^\infty \gamma^{t}
+		dr_{t} \mid s_0 = s, a_0 = a
+	\right]
+\end{align}
+which are naturally discretized as
+\begin{align}
+	V^\pi(s) &= \E_{\tau\sim\pi}\left[
 		\sum\limits_{k=0}^\infty \gamma^{k\deltat}
-		r_{k \deltat} \mid s_0 = s, a_0 = a
+		\delta r_{k\deltat} \mid s_0 = s
+	\right]\\
+	Q^\pi(s, a) &= \E_{\tau\sim\pi}\left[
+		\sum\limits_{k=0}^\infty \gamma^{k\deltat}
+		\delta r_{k\deltat} \mid s_0 = s, a_0 = a
 	\right].
 \end{align}
-Both $V^\pi$ and $Q^\pi$ verify Bellman equations, e.g.
+Both $V^\pi$ and $Q^\pi$ verify Bellman equations, informally
 \begin{align}
-	V^\pi(s) = \reward(s, \pi(s)) \deltat + \gamma^{\deltat} \E_{s_{t+\deltat}\mid s_t=s} V^\pi(s_{t+\deltat}).
+	V^\pi(s) &= \reward(s, \pi(s))\dt + \gamma^{\dt} \E_{ds \sim ds(s, \pi(s))} V^\pi(s + ds)\nonumber\\
+	Q^\pi(s, a) &= \reward(s, a)\dt + \gamma^{\dt} \E_{ds(s, a)} V^\pi(s + ds(s, a))
+	\label{eq:cont_bell}
+\end{align}
+which in continuous time translates, using Ito's lemma, into a Hamilton Jacobi equation
+\begin{align}
+	\reward + \partial_s V^\pi \cdot f + \frac{1}{2} \text{tr}\left(\Sigma^T\partial^2_{s^2} V^\pi\Sigma\right) = (1 - \gamma) V^\pi(s).
 \end{align}
 
-\subsection{Scaling problems}
+\subsection{Independence of $Q^\pi$ on $a$ in continuous time}
+Consider a discretization of Eq.~\eqref{eq:cont_bell} with time interval
+$\deltat \ll~1$, Ito's lemma yield
+\begin{align}
+	Q^\pi(s, a) &= \reward(s, a) \deltat + \gamma^{\deltat} \E_{\delta s \sim \delta s(s, a)}V^\pi(s + \delta s)\nonumber\\
+		    &= \reward(s, a) \deltat + \gamma^{\deltat} V^\pi(s) +
+		     \gamma^{\deltat} \partial_s V^\pi(s)f(s, a) \deltat\nonumber\\
+		    &+ \frac{1}{2}\text{tr}\left(\Sigma^T\partial^2_{s^2}V^\pi(s)\Sigma\right)\deltat + \bigO(\deltat^2)\nonumber\\
+		    &\xrightarrow[\deltat \to 0]{} V^\pi(s).
+		    \label{eq:Q_cont}
+\end{align}
+A consequence of Eq.~\eqref{eq:Q_cont} is that in exact continuous time,
+$Q^\pi$ does not bear any information on the hierarchy of actions, and
+thus cannot be used to select actions that yields higher future returns.
+
+As the difference between between $Q^\pi(s, a)$ and $V^\pi(s)$ is of order
+$\bigO(\deltat)$, it is natural to define a rescaled version of the advantage
+function, namely
+\begin{align}
+	A^\pi(s, a) &= \frac{Q^\pi(s,a) - V^\pi(s)}{\deltat}\\
+		    &= \reward(s, a) +
+		    \frac{\gamma^{\deltat} \E_{\delta s \sim \delta s(s, a)} V^\pi(s + \delta s) - V^\pi(s)}{\deltat}.
+    \label{eq:adv}
+\end{align}
+Contrary to the action state value function, the rescaled advantage function converges
+to an action dependent quantity when $\deltat$ goes to $0$
+\begin{align}
+	A^\pi(s, a) &\xrightarrow[\deltat \to 0]{} \reward(s, a) +
+	(\gamma - 1) V^\pi(s) + \partial_s V^\pi(s) f(s, a)\nonumber\\
+		    &+
+	\frac{\text{tr}\left(\Sigma^T(s, a)\partial^2_{s^2}V^\pi(s) \Sigma(s,a)\right)}{2},
+\end{align}
+and $Q^\pi$ can then be rewritten as
+\begin{equation}
+	Q^\pi(s, a) = V^\pi(s) + \deltat A^\pi(s, a).
+	\label{eq:reparam_q_pi}
+\end{equation}
+
+\section{Deep Advantage Updating}
+In continuous time, $Q^\pi$ is independant of actions and can thus not be used
+to select promising actions.  In near continuous time, $Q^\pi$ still depends on
+actions, and can still be used to choose promising actions under the current
+policy. However, when approximating $Q^\pi$, if the approximation error is much
+bigger than $\bigO(\deltat)$, approximation errors dominates, and the hierarchy
+of actions given by the approximation is likely to be erroneous.
+
+When the approximate Q-function is initialized, if the effect of actions on the
+Q-function is order of magnitudes higher than what it should be, approximating
+$Q^\pi$ is likely to be difficult. Besides, the error is likely to be further
+propagateed when the equation used to update our approximate $Q$ function
+relies on bootstraping, as is the case for usual temporal difference derived methods.
+
+\subsection{Reparameterizing $Q_\theta$}
+\label{subsec:reparam}
+To prevent overestimating the dependency on actions of the approximation of
+$Q^\pi$, $Q_\theta$, in an environment with time discretization $\deltat$,
+Eq.~\eqref{eq:reparam_q_pi} naturally yields the following reparameterization
+\begin{equation}
+	Q_\theta(s, a) = V_{\theta_1}(s) + \deltat A_{\theta_2}(s, a).
+\end{equation}
+To avoid cumbersome notations, in what follows, parameter indices are dropped.
+The insight behind this parameterization is that when $Q$ correctly
+approximates $Q^\pi$, $V$ should approximate the value function, while $A$
+should approximate the advantage function, as defined in Eq.~\eqref{eq:adv}.
 
 
-\section{Multi-chain continuous environments and biscale advantage}
-\label{sec:multi-chain}
+The proposed reparameterization does not, on its own, guarantee that
+when $Q$ correctly approximates $Q^\pi$, $A$ approximates $A^\pi$.  Indeed, for
+any given pair $V$, $A$, the transformed pair
+\begin{align}
+	\tilde{V}(s) &= V(s) - f(s)\\
+	\tilde{A}(s, a) &= A(s, a) + \frac{f(s)}{\deltat}
+\end{align}
+yields the exact same $Q$ function. Consequently, $Q$ can correctly approximate
+$Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
+To enforce, identifiability of $A$, one must enforce that 
+\begin{equation}
+	A(s, \pi(s)) = 0.
+\end{equation}
+With this additional constraint, if $Q^\pi = Q$,
+\begin{align}
+	A^\pi(s, a) &= \frac{Q^\pi(s,a) - V^\pi(s)}{\deltat}\\
+		    &= \frac{Q(s,a) - Q(s, \pi(s))}{\deltat}\\
+		    &= A(s, a).
+\end{align}
+In the spirit of~\cite{dueling_nets}, this condition is enforced by writing $A$ as
+\begin{equation}
+	A(s, a) = \bar{A}(s, a) - \bar{A}(s, \pi(s)).
+\end{equation}
 
-\section{Deep RelAtivistic Mixture of Advantage learning}
-\label{sec:algo}
+\subsection{Time invariant exploration}
+\label{subsec:explo}
+To obtain a time invariant reinforcement learning algorithm, a time invariant
+exploration scheme is required. 
+
+The exploration scheme used~\cite{ddpg}, which consists in adding an
+\emph{Orhnstein-Ullenbeck}~\cite{orn-ull} process to actions, is naturally time
+invariant in the sense that it is first defined as a time continuous stochastic
+process, and that discretization of this process are used in practice. Indeed,
+a continuous \emph{Orhnstein-Ullenbeck} process is defined as
+\begin{equation}
+	dx_t = - (x_t - \mu) \theta dt + \sigma \dbt
+\end{equation}
+and is naturally discretized by turning $d$'s into $\delta$'s, and using
+the same $\deltat$ for both the learning algorithm and the exploration scheme.
+Consequently, this exploration scheme can readily be used in continuous action
+environments.
+
+On the other hand, the usual exploration scheme used in discrete actions
+Q-learning, $\varepsilon$-greedy exploration~\cite{sutton} is not time
+invariant, in the sense that resulting state trajectories do not converge to a
+well defined stochastic process as $\deltat \rightarrow 0$.
+
+\subsection{Learning rates scalings}
+\label{subsec:lr}
+
+\subsection{Algorithms}
+\label{subsec:algorithm}
+We introduce two versions of \emph{Deep Advantage Updating} to cover both the
+continuous and discrete action cases. Both relies on applying either DDPG or DQN
+to the reparameterized Q-function and enforcing the identifiability of $A^\pi$ by
+making sure that $\max_a A^\pi(s, a) = 0$, either approximately or exactly for all
+states.
+\begin{algorithm}[ht]
+	\caption{Deep Advantage Updating (Discrete actions)}
+	\input{dauc.tex}
+\end{algorithm}
+
 
 \section{Experiments}
 \label{sec:exp}
 
+\section{Limitations}
+\label{sec:limitations}
 \section{Conclusion}
 \label{sec:concl}
 

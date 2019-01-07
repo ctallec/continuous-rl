@@ -41,32 +41,26 @@ class AdvantageCritic(CompoundStateful, Critic):
     def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,
                  next_obs: Arrayable, max_next_action: Tensor, reward: Arrayable,
                  done: Arrayable, time_limit: Arrayable, weights: Arrayable) -> Tensor:
-        if self._reference_obs is None:
-            self._reference_obs = arr_to_th(obs, self._device)
 
+        obs = check_array(obs)
+        batch_size = obs.shape[0]
         action = arr_to_th(action, self._device).type_as(max_action)
         reward = arr_to_th(reward, self._device)
         weights = arr_to_th(check_array(weights), self._device)
         done = arr_to_th(check_array(done).astype('float'), self._device)
 
         v = self._val_function(obs).squeeze()
-        reference_v = self._val_function(self._reference_obs).squeeze()
-        mean_v = reference_v.mean()
-        next_v = (1 - done) * (
-            self._target_val_function(next_obs).squeeze() - self._dt * self._gamma ** (1 - self._dt) * mean_v) - \
-            done * self._gamma * mean_v / max(1 - self._gamma, 1e-5)
-
-        obs = check_array(obs)
-        batch_size = obs.shape[0]
-        advs = self.critic(
+        next_v = (1 - done) * self._target_val_function(next_obs).squeeze()
+        pre_advs = self.critic(
             np.concatenate([obs, obs], axis=0),
             torch.cat([action, max_action], dim=0))
-        adv, max_adv = advs[:batch_size], advs[batch_size:]
+        pre_adv, pre_max_adv = pre_advs[:batch_size], pre_advs[batch_size:]
+        adv = pre_adv - pre_max_adv
+        q = v + adv
+        # next_adv = 0 by definition
+        expected_q = (reward * self._dt + self._gamma ** self._dt * next_v).detach()
 
-        expected_v = (reward * self._dt + self._gamma ** self._dt * next_v).detach()
-        bell_residual = (expected_v - v) / self._dt - adv + max_adv
-
-        critic_loss = (bell_residual ** 2) + (max_adv ** 2)
+        critic_loss = (q - expected_q) ** 2
 
         self._val_optimizer.zero_grad()
         self._adv_optimizer.zero_grad()
