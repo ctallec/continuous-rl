@@ -25,10 +25,8 @@ def specific_evaluation(
         plt.clf()
         plt.subplot(131)
         plt.plot(state_space, th_to_arr(values))
-        log_image('val', epoch, th_to_arr(values))
         plt.subplot(132)
         plt.plot(state_space, th_to_arr(actions))
-        log_image('act', epoch, th_to_arr(actions))
         if isinstance(env.envs[0].unwrapped, ContinuousPusherEnv): # type: ignore
             action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
             states, actions = np.meshgrid(state_space, action_space)
@@ -71,10 +69,8 @@ def specific_evaluation(
         plt.clf()
         plt.subplot(1, 3, 1)
         plt.plot(state_space, th_to_arr(values))
-        log_image('val', epoch, th_to_arr(values))
         plt.subplot(1, 3, 2)
         plt.plot(state_space, th_to_arr(actions))
-        log_image('act', epoch, th_to_arr(actions))
         if isinstance(env.envs[0].unwrapped.action_space, Box): # type: ignore
             action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
             states, actions = np.meshgrid(state_space, action_space)
