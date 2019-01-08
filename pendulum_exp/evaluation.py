@@ -7,6 +7,7 @@ from envs.pusher import AbstractPusher, ContinuousPusherEnv
 from convert import th_to_arr
 from gym.envs.classic_control import PendulumEnv
 from gym.spaces import Box
+from mylog import log_image
 
 def specific_evaluation(
         epoch: int,
@@ -24,8 +25,10 @@ def specific_evaluation(
         plt.clf()
         plt.subplot(131)
         plt.plot(state_space, th_to_arr(values))
+        log_image('val', epoch, th_to_arr(values))
         plt.subplot(132)
         plt.plot(state_space, th_to_arr(actions))
+        log_image('act', epoch, th_to_arr(actions))
         if isinstance(env.envs[0].unwrapped, ContinuousPusherEnv): # type: ignore
             action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
             states, actions = np.meshgrid(state_space, action_space)
@@ -34,6 +37,7 @@ def specific_evaluation(
             advantage = th_to_arr(policy.advantage(states, actions).squeeze())
             plt.subplot(133)
             plt.imshow(advantage)
+            log_image('adv', epoch, advantage)
         plt.pause(.1)
     elif isinstance(env.envs[0].unwrapped, PendulumEnv): # type: ignore
         nb_pixels = 50
@@ -51,8 +55,10 @@ def specific_evaluation(
         plt.clf()
         plt.subplot(121)
         plt.imshow(th_to_arr(actions), origin='lower')
+        log_image('act', epoch, th_to_arr(actions))
         plt.subplot(122)
         plt.imshow(th_to_arr(values), origin='lower')
+        log_image('val', epoch, th_to_arr(values))
         plt.colorbar()
         plt.pause(.1)
     elif isinstance(env.envs[0].unwrapped, HillEnv):
@@ -65,8 +71,10 @@ def specific_evaluation(
         plt.clf()
         plt.subplot(1, 3, 1)
         plt.plot(state_space, th_to_arr(values))
+        log_image('val', epoch, th_to_arr(values))
         plt.subplot(1, 3, 2)
         plt.plot(state_space, th_to_arr(actions))
+        log_image('act', epoch, th_to_arr(actions))
         if isinstance(env.envs[0].unwrapped.action_space, Box): # type: ignore
             action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
             states, actions = np.meshgrid(state_space, action_space)
@@ -75,4 +83,5 @@ def specific_evaluation(
             advantages = policy.advantage(states, actions).squeeze()
             plt.subplot(1, 3, 3)
             plt.imshow(th_to_arr(advantages))
+            log_image('adv', epoch, th_to_arr(advantages))
         plt.pause(.1)

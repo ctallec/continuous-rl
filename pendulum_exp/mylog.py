@@ -7,6 +7,7 @@ from os.path import join, exists, isfile, dirname
 from typing import Dict
 import pickle
 import numpy as np
+from scipy.misc import toimage
 
 from logging import info
 
@@ -108,6 +109,12 @@ class Logger:
             makedirs(video_dir)
         np.savez(join(video_dir, f"{tag}_{timestamp}.npz"), frames)
 
+    def log_image(self, tag: str, timestamp: int, image):
+        img_dir = join(self._dir, "imgs")
+        if not exists(img_dir):
+            makedirs(img_dir)
+        toimage(image).save(join(img_dir, f"{tag}_{timestamp}.png"))
+
     def set_dir(self, logdir: str, reload: bool = True):
         self._dir = logdir
         for writer in self._writers:
@@ -124,6 +131,10 @@ def log(key: str, value: float, timestamp: int):
 def log_video(tag: str, timestamp: int, frames):
     assert Logger.CURRENT is not None
     Logger.CURRENT.log_video(tag, timestamp, frames)
+
+def log_image(tag: str, timestamp: int, image):
+    assert Logger.CURRENT is not None
+    Logger.CURRENT.log_image(tag, timestamp, image)
 
 
 if Logger.CURRENT is None:
