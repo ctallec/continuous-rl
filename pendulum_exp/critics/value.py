@@ -81,8 +81,7 @@ class ValueCritic(CompoundStateful, Critic):
         return self._q_function
 
     def to(self, device):
-        self._q_function = self._q_function.to(device)
-        self._target_q_function = self._q_function.to(device)
+        CompoundStateful.to(self, device)
         self._device = device
         return self
 
