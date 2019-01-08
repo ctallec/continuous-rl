@@ -2,8 +2,7 @@ from functools import partial
 from policies.offline_policy import OfflinePolicy
 from abstract import Env
 from actors import DiscreteActor, SampledActor, ApproximateActor
-from critics import AdvantageCritic, ValueCritic, MixtureAdvantageCritic
-from critics import OrderAdvantageCritic
+from critics import AdvantageCritic, ValueCritic
 from envs.utils import make_env
 from envs.vecenv import VEnv
 from noise import setup_noise
@@ -33,8 +32,6 @@ def configure(args):
     critic_cls = {
         "advantage": AdvantageCritic,
         "value": ValueCritic,
-        "mixture-advantage": MixtureAdvantageCritic,
-        "order-advantage": OrderAdvantageCritic
     }[critic_type]
 
     critic = critic_cls.configure(**kwargs)

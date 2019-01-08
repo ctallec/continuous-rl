@@ -94,7 +94,7 @@ class AdvantageCritic(CompoundStateful, Critic):
         pass
 
     def critic_function(self, target: bool = False):
-        func = self._adv_function if not target else self._target_adv_funciton
+        func = self._adv_function if not target else self._target_adv_function
         return func
 
     def to(self, device):

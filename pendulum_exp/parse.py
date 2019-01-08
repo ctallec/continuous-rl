@@ -4,6 +4,7 @@ import argload
 
 def setup_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--eval_gap', type=float, default=.1)
     parser.add_argument('--algo', type=str, default='approximate_advantage')
     parser.add_argument('--dt', type=float, default=.05)
     parser.add_argument('--steps_btw_train', type=int, default=3)
@@ -44,6 +45,6 @@ def setup_args():
         'sigma_eval', 'sigma', 'theta', 'nb_train_env', 'nb_eval_env', 'memory_size',
         'learn_per_step', 'cyclic_expliration', 'normalize_state', 'lr', 'time_limit',
         'nb_policy_samples', 'policy_lr', 'alpha', 'beta', 'weight_decay', 'optimizer',
-        'tau', 'noreference'
+        'tau', 'noreference', 'eval_gap'
     ])
     return parser.parse_args()

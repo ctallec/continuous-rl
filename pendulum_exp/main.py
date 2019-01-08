@@ -25,11 +25,11 @@ def train(nb_steps: int, env: Env, policy: Policy, start_obs: Arrayable):
         obs, _, _ = interact(env, policy, obs)
     return obs
 
-def evaluate(dt: float, epoch: int, env: Env, policy: Policy,
+def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
              time_limit: Optional[float] = None, eval_return: bool = False,
              progress_bar: bool = False, video: bool = False, no_log: bool = False):
     """ Evaluate. """
-    log_gap = int(.1 / dt)
+    log_gap = int(eval_gap / dt)
     policy.eval()
 
     R = None
@@ -66,6 +66,7 @@ def main(args):
     nb_epochs = args.nb_epochs
     nb_steps = args.nb_steps
     time_limit = args.time_limit
+    eval_gap = args.eval_gap
 
     # device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -94,6 +95,7 @@ def main(args):
             dt,
             e, eval_env,
             policy,
+            eval_gap,
             time_limit,
             eval_return=e % log_gap == log_gap - 1,
         )

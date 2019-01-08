@@ -1,5 +1,5 @@
 from typing import Optional
-from abstract import Policy, Actor, Critic, Arrayable, StateDict, Cudaable
+from abstract import Policy, Actor, Critic, Arrayable, StateDict, Cudaable, Tensorable
 from memory.utils import setup_memory
 from stateful import CompoundStateful
 from mylog import log
@@ -126,3 +126,6 @@ class OfflinePolicy(CompoundStateful, Policy, Cudaable):
 
     def actions(self, obs: Arrayable) -> Tensor:
         return self._actor.act(obs)
+
+    def advantage(self, obs: Arrayable, action: Tensorable) -> Tensor:
+        return self._critic.advantage(obs, action, self._actor)
