@@ -83,6 +83,9 @@ class AdvantageCritic(CompoundStateful, Critic):
             adv = adv_all.gather(1, action.view(-1, 1)).squeeze()
         return adv
 
+    def value(self, obs: Arrayable) -> Tensor:
+        return self._val_function(obs).squeeze()
+
     def log(self):
         pass
 
