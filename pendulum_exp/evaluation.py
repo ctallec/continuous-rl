@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from abstract import Policy, Env
 from envs.hill import HillEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv
-from critics import MixtureAdvantageCritic
 from convert import th_to_arr
 from gym.envs.classic_control import PendulumEnv
 from gym.spaces import Box
@@ -20,11 +19,11 @@ def specific_evaluation(
         nb_pixels = 50
         state_space = np.linspace(-1.5, 1.5, nb_pixels)[:, np.newaxis]
 
-        actions = policy._actor.act(state_space)
-        critics = policy._critic.critic(state_space, actions)
+        actions = policy.actions(state_space)
+        values = policy.value(state_space)
         plt.clf()
         plt.subplot(131)
-        plt.plot(state_space, th_to_arr(critics))
+        plt.plot(state_space, th_to_arr(values))
         plt.subplot(132)
         plt.plot(state_space, th_to_arr(actions))
         if isinstance(env.envs[0].unwrapped, ContinuousPusherEnv): # type: ignore
@@ -32,9 +31,9 @@ def specific_evaluation(
             states, actions = np.meshgrid(state_space, action_space)
             states = states[..., np.newaxis]
             actions = actions[..., np.newaxis]
-            critic = th_to_arr(policy._critic.critic(states, actions).squeeze())
+            advantage = th_to_arr(policy.advantage(states, actions).squeeze())
             plt.subplot(133)
-            plt.imshow(critic)
+            plt.imshow(advantage)
         plt.pause(.1)
     elif isinstance(env.envs[0].unwrapped, PendulumEnv): # type: ignore
         nb_pixels = 50
@@ -44,40 +43,36 @@ def specific_evaluation(
         state_space = np.stack([np.cos(theta), np.sin(theta), dtheta], axis=-1)
         target_shape = state_space.shape[:2]
 
-        actions = policy._actor.act(
+        actions = policy.actions(
             state_space.reshape(-1, 3))
-        critics = policy._critic.critic(
-            state_space.reshape(-1, 3), actions).reshape(target_shape).squeeze()
+        values = policy.value(
+            state_space.reshape(-1, 3)).reshape(target_shape).squeeze()
         actions = actions.reshape(target_shape).squeeze()
         plt.clf()
         plt.subplot(121)
         plt.imshow(th_to_arr(actions), origin='lower')
         plt.subplot(122)
-        plt.imshow(th_to_arr(critics), origin='lower')
+        plt.imshow(th_to_arr(values), origin='lower')
         plt.colorbar()
         plt.pause(.1)
     elif isinstance(env.envs[0].unwrapped, HillEnv):
         nb_pixels = 50
         state_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
 
-        actions = policy._actor.act(state_space)
-        critics = policy._critic.critic(state_space, actions).squeeze()
+        actions = policy.actions(state_space)
+        values = policy.value(state_space).squeeze()
 
         plt.clf()
-        plt.subplot(1, 4, 1)
-        plt.plot(state_space, th_to_arr(critics))
-        plt.subplot(1, 4, 2)
+        plt.subplot(1, 3, 1)
+        plt.plot(state_space, th_to_arr(values))
+        plt.subplot(1, 3, 2)
         plt.plot(state_space, th_to_arr(actions))
         if isinstance(env.envs[0].unwrapped.action_space, Box): # type: ignore
             action_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
             states, actions = np.meshgrid(state_space, action_space)
             states = states[..., np.newaxis]
             actions = actions[..., np.newaxis]
-            critics = policy._critic.critic(states, actions).squeeze()
-            if isinstance(policy._critic, MixtureAdvantageCritic):
-                _, adv_logpi, _ = policy._critic.compute_mixture_advantage(states, actions)
-                plt.subplot(1, 4, 4)
-                plt.imshow(th_to_arr(adv_logpi[..., 0]))
-            plt.subplot(1, 4, 3)
-            plt.imshow(th_to_arr(critics))
+            advantages = policy.advantage(states, actions).squeeze()
+            plt.subplot(1, 3, 3)
+            plt.imshow(th_to_arr(advantages))
         plt.pause(.1)

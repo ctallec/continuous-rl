@@ -72,6 +72,19 @@ class Policy(Stateful):
                 time_limit: Optional[Arrayable]):
         pass
 
+    # Used for evaluation/logging
+    @abstractmethod
+    def value(self, obs: Arrayable) -> Tensor:
+        pass
+
+    @abstractmethod
+    def actions(self, obs: Arrayable) -> Tensor:
+        pass
+
+    @abstractmethod
+    def advantage(self, obs: Arrayable, action: Tensorable) -> Tensor:
+        pass
+
     @abstractmethod
     def learn(self):
         pass
@@ -134,7 +147,7 @@ class Loggable(ABC):
 
 class Actor(Stateful, Cudaable, Loggable):
     @abstractmethod
-    def act(self, obs: Arrayable, target: bool=False) -> Tensor:
+    def act(self, obs: Arrayable, target: bool = False) -> Tensor:
         raise NotImplementedError()
 
     @abstractmethod
@@ -153,5 +166,13 @@ class Critic(Stateful, Cudaable, Loggable):
         raise NotImplementedError()
 
     @abstractmethod
-    def critic(self, obs: Arrayable, action: Tensorable, target: bool=False) -> Tensor:
+    def critic(self, obs: Arrayable, action: Tensorable, target: bool = False) -> Tensor:
         raise NotImplementedError()
+
+    @abstractmethod
+    def value(self, obs: Arrayable, actor: Optional[Actor] = None) -> Tensor:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def advantage(self, obs: Arrayable, action: Tensorable, actor: Actor) -> Tensor:
+        pass

@@ -1,5 +1,6 @@
-from abstract import Critic, Arrayable, ParametricFunction, Tensorable
+from abstract import Critic, Arrayable, ParametricFunction, Tensorable, Actor
 from torch import Tensor
+from typing import Optional
 from convert import arr_to_th, check_array, check_tensor
 from optimizer import setup_optimizer
 from gym import Space
@@ -54,7 +55,7 @@ class ValueCritic(CompoundStateful, Critic):
 
         return critic_loss
 
-    def critic(self, obs: Arrayable, action: Tensorable, target: bool=False) -> Tensor:
+    def critic(self, obs: Arrayable, action: Tensorable, target: bool = False) -> Tensor:
         q_function = self._q_function if not target else self._target_q_function
         if len(q_function.input_shape()) == 2:
             q = q_function(obs, action).squeeze()
@@ -64,10 +65,17 @@ class ValueCritic(CompoundStateful, Critic):
             q = q_all.gather(1, action.view(-1, 1)).squeeze()
         return q
 
+    def value(self, obs: Arrayable, actor: Optional[Actor] = None) -> Tensor:
+        assert actor is not None
+        return self.critic(obs, actor.act(obs))
+
+    def advantage(self, obs: Arrayable, action: Tensorable, actor: Actor) -> Tensor:
+        return self.critic(obs, action) - self.value(obs, actor)
+
     def log(self):
         pass
 
-    def critic_function(self, target: bool=False):
+    def critic_function(self, target: bool = False):
         if target:
             return self._target_q_function
         return self._q_function

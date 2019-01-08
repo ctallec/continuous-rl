@@ -5,6 +5,7 @@ from stateful import CompoundStateful
 from mylog import log
 from logging import info
 import numpy as np
+from torch import Tensor
 from convert import th_to_arr, arr_to_th
 
 class OfflinePolicy(CompoundStateful, Policy, Cudaable):
@@ -119,3 +120,9 @@ class OfflinePolicy(CompoundStateful, Policy, Cudaable):
 
     def to(self, device):
         return CompoundStateful.to(self, device)
+
+    def value(self, obs: Arrayable) -> Tensor:
+        return self._critic.value(obs, self._actor)
+
+    def actions(self, obs: Arrayable) -> Tensor:
+        return self._actor.act(obs)

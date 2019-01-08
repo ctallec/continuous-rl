@@ -1,5 +1,6 @@
 import copy
-from abstract import Critic, Arrayable, ParametricFunction, Tensorable
+from abstract import Critic, Arrayable, ParametricFunction, Tensorable, Actor
+from typing import Optional
 import torch
 from torch import Tensor
 import numpy as np
@@ -83,8 +84,11 @@ class AdvantageCritic(CompoundStateful, Critic):
             adv = adv_all.gather(1, action.view(-1, 1)).squeeze()
         return adv
 
-    def value(self, obs: Arrayable) -> Tensor:
+    def value(self, obs: Arrayable, actor: Optional[Actor] = None) -> Tensor:
         return self._val_function(obs).squeeze()
+
+    def advantage(self, obs: Arrayable, action: Tensorable, actor: Actor) -> Tensor:
+        return self._adv_function(obs, action) - self._adv_function(obs, actor.act(obs))
 
     def log(self):
         pass
