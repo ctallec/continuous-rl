@@ -54,6 +54,22 @@ class ExperimentData:
 			if bool_function(setting.args):
 				run_list.extend(setting._experimentrunlist)
 		return ExperimentData(run_list)
+
+	def repr_rawlogs(self, key, nlastvalues):
+		deltakeys = self.deltakeys
+		print(f'{nlastvalues} last values of key {key} for all settings')
+		for setting in self._setting_list:
+			print(' ; '.join(f'{key}: {setting.args[key]}' for key in deltakeys))
+			timeseq = setting.timeseq(key)
+			if timeseq is None:
+				print('No logs')
+				print('----')
+				continue
+			idxs = sorted(list(timeseq.keys()))[-nlastvalues:]
+			for i in idxs:
+				print(f"{i}: {timeseq[i]}")
+			print('----')
+
 	
 
 class ExperimentSetting:
