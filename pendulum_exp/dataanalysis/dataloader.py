@@ -111,11 +111,15 @@ def loader_leonard(workdir, exp_name, start_date=None, stop_date=None):
 
 
 	list_exp_dates = [datetime.strptime(exp_dir, "%Y_%m_%d_%H_%M_%S") for exp_dir in os.listdir(exp_dir)]
-	if start_date is not None:
-		list_exp_dates = [d for d in list_exp_dates if start_date <= d]
-	if stop_date is not None:
-		list_exp_dates = [d for d in list_exp_dates if d < stop_date]
-	list_exp_dates = [d.strftime("%Y_%m_%d_%H_%M_%S/") for d in list_exp_dates]
+
+	if start_date == 'last':
+		list_exp_dates = [max(list_exp_dates)]
+	else:
+		if start_date is not None:
+			list_exp_dates = [d for d in list_exp_dates if start_date <= d]
+		if stop_date is not None:
+			list_exp_dates = [d for d in list_exp_dates if d < stop_date]
+		list_exp_dates = [d.strftime("%Y_%m_%d_%H_%M_%S/") for d in list_exp_dates]
 
 	argslogs_filelist = []
 
