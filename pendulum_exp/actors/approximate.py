@@ -6,6 +6,7 @@ from abstract import Actor, ParametricFunction, Noise, Arrayable
 from stateful import CompoundStateful
 from optimizer import setup_optimizer
 from nn import soft_update
+import numpy as np
 
 class ApproximateActor(CompoundStateful, Actor):
     def __init__(self, policy_function: ParametricFunction,
@@ -30,7 +31,8 @@ class ApproximateActor(CompoundStateful, Actor):
         action = self._noise.perturb_output(
             obs, function=self._policy_function)
         self._noise.step()
-        return action
+        # we clip actions here
+        return np.clip(action, -1, 1)
 
     def act(self, obs: Arrayable, target=False) -> Tensor:
         if target:
