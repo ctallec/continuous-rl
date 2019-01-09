@@ -5,7 +5,7 @@ import numpy as np
 from scipy.ndimage.filters import gaussian_filter1d
 
 
-from dataloader import loader_leonard, ExperimentData, ExperimentSetting, ExperimentRun
+from dataloader import loader_leonard, ExperimentData
 from datetime import datetime
 
 algolabeldict = {
@@ -44,6 +44,8 @@ def plot_learning_curves(expdata, key_list, namefile):
                 linewidth=1.
                 alpha = None
             timeseq = setting.timeseq(key)
+            if timeseq is None:
+                continue
 
             xdata = np.array([i for (i,v) in timeseq.items()])
             ydata = np.array([v for (i,v) in timeseq.items()])
@@ -70,8 +72,10 @@ def plot_learning_curves(expdata, key_list, namefile):
     plt.savefig(namefile+'.eps', format="eps")
     plt.savefig(namefile+'.png', format='png')
 
-start_date = datetime.strptime('2019_01_08_03_13_33', "%Y_%m_%d_%H_%M_%S")
-stop_date = datetime.strptime('2019_01_08_03_13_35', "%Y_%m_%d_%H_%M_%S")
+# start_date = datetime.strptime('2019_01_08_03_13_33', "%Y_%m_%d_%H_%M_%S")
+# stop_date = datetime.strptime('2019_01_08_03_13_35', "%Y_%m_%d_%H_%M_%S")
+start_date = 'last'
+stop_date = None
 runlist = loader_leonard('/private/home/leonardb/workdir', 'mujoco_continuous', 
     start_date=start_date, stop_date=stop_date)
 

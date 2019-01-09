@@ -69,6 +69,8 @@ class ExperimentSetting:
 
 	def timeseq(self, key):
 		## TODO
+		if key not in self._experimentrunlist[0].logs:
+			return None
 		return self._experimentrunlist[0].logs[key]
 
 
@@ -119,7 +121,7 @@ def loader_leonard(workdir, exp_name, start_date=None, stop_date=None):
 			list_exp_dates = [d for d in list_exp_dates if start_date <= d]
 		if stop_date is not None:
 			list_exp_dates = [d for d in list_exp_dates if d < stop_date]
-		list_exp_dates = [d.strftime("%Y_%m_%d_%H_%M_%S/") for d in list_exp_dates]
+	list_exp_dates = [d.strftime("%Y_%m_%d_%H_%M_%S/") for d in list_exp_dates]
 
 	argslogs_filelist = []
 
