@@ -113,4 +113,4 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
             output = function(*inputs)
             if not self.noise.shape:
                 self._init_noise(output)
-            return np.clip(th_to_arr(output[:self.noise.size(0)] + self.noise), -1, 1)
+            return th_to_arr(output[:self.noise.size(0)] + self.noise)
