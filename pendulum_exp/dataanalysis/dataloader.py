@@ -3,55 +3,74 @@ import pickle as pkl
 from datetime import datetime
 
 class ExperimentData:
-    def __init__(self, experimentrunlist):
-        # experimentrunlist = [ExperimentRun(args_file, logs_file) for args_file, logs_file in argslogs_filelist]
+	def __init__(self, experimentrunlist):
+		# experimentrunlist = [ExperimentRun(args_file, logs_file) for args_file, logs_file in argslogs_filelist]
 
-        setting_list = []
-        for run in experimentrunlist:
-            args = run.args
-            for setting in setting_list:
-                if setting.args == args:
-                    # setting.push(run) do nothing for now
-                    break
-            setting_list.append(ExperimentSetting([run]))
+		setting_list = []
+		for run in experimentrunlist:
+			args = run.args
+			for setting in setting_list:
+				if setting.args == args:
+					setting.push(run)
+					break
+			setting_list.append(ExperimentSetting([run]))
 
-        self._setting_list = setting_list
+		self._setting_list = setting_list
 
-    @property
-    def deltakeys(self):
-        if not hasattr(self, "_deltaargs"):
-            args_list = [setting.args for setting in self._setting_list]
 
-            expargsdict = {}
-            for args in args_list:
-                for k, v in args.items():
-                    if k not in expargsdict:
-                        expargsdict[k] = set()
-                    expargsdict[k].add(v)
+	@property
+	def deltakeys(self):
+		if not hasattr(self, "_deltaargs"):
+			args_list = [setting.args for setting in self._setting_list]
 
-            self._deltaargs = [k for k, vset in expargsdict.items() if len(vset) > 1]
-            self._sharedargs = dict((k, vset.pop()) for k, vset in expargsdict.items() if len(vset) == 1)
+			expargsdict = {}
+			for args in args_list:
+				for k, v in args.items():
+					if k not in expargsdict:
+						expargsdict[k] = set()
+					expargsdict[k].add(v)
 
-        return self._deltaargs
+			self._deltaargs = [k for k, vset in expargsdict.items() if len(vset) > 1]
+			self._sharedargs = dict((k, vset.pop()) for k, vset in expargsdict.items() if len(vset) == 1)
 
-    @property
-    def sharedargs(self):
-        if not hasattr(self, "_sharedargs"):
-            self.deltakeys
-        return self._sharedargs
+		return self._deltaargs
 
-    def deltaitems(self):
-        if not hasattr(self, "_deltaitems"):
-            self._deltaitems = [dict((k, setting.args[k]) for k in self.deltakeys) for setting in self._setting_list]
-        return self._deltaitems
+	@property
+	def sharedargs(self):
+		if not hasattr(self, "_sharedargs"):
+			self.deltakeys
+		return self._sharedargs
+	
 
-    def filter_settings(self, bool_function):
-        run_list = []
-        for setting in self._setting_list:
-            if bool_function(setting.args):
-                run_list.extend(setting._experimentrunlist)
-        return ExperimentData(run_list)
 
+	def deltaitems(self):
+		if not hasattr(self, "_deltaitems"):
+			self._deltaitems = [dict((k, setting.args[k]) for k in self.deltakeys) for setting in self._setting_list]
+		return self._deltaitems
+	
+	def filter_settings(self, bool_function):
+		run_list = []
+		for setting in self._setting_list:
+			if bool_function(setting.args):
+				run_list.extend(setting._experimentrunlist)
+		return ExperimentData(run_list)
+
+	def repr_rawlogs(self, key, nlastvalues):
+		deltakeys = self.deltakeys
+		print(f'{nlastvalues} last values of key {key} for all settings')
+		for setting in self._setting_list:
+			print(' ; '.join(f'{key}: {setting.args[key]}' for key in deltakeys))
+			timeseq = setting.timeseq(key)
+			if timeseq is None:
+				print('No logs')
+				print('----')
+				continue
+			idxs = sorted(list(timeseq.keys()))[-nlastvalues:]
+			for i in idxs:
+				print(f"{i}: {timeseq[i]}")
+			print('----')
+
+	
 class ExperimentSetting:
     def __init__(self, experimentrunlist):
         self.args = experimentrunlist[0].args
