@@ -1461,7 +1461,7 @@ $1$, $Z$ will be approximately $\frac{1}{1-\gamma}$ plus a smaller function (see
 below). Note that $Z(s_1,s_2)=\frac{1}{1-\gamma}$ is an exact solution of
 the middle Bellman equation (as is $Z=0$), but it is a repulsive fixed
 point, I think, so initializing to $\frac{1}{1-\gamma}$ plus noise should
-converge to the true solution. Initializing there should have the
+converge to the true solution [empirically I find this diverges]. Initializing there should have the
 advantage of starting close to reasonable values.
 
 In the end this Newton equation alone might be sufficient to
@@ -1574,6 +1574,16 @@ $P$}, contrary to the Bellman equation. The stochastic
 Newton update with learning rate $\eta$ does not have quadratic
 convergence like the standard Newton method, but it still keeps better
 local convergence properties than Bellman. Is it worth the cost?
+
+Normalization of $Z$. Since $Z=\sum \gamma^t P^t$, we have that
+$(1-\gamma)Z$ is a stochastic matrix (thanks Yann). This might help with
+normalization/detecting divergence. This translates as $\E_{s_2\sim \rho}
+Z(s_1,s_2)=\frac{1}{1-\gamma}$ which is testable/enforceable. However, I
+fear it might make the fixed point $Z(s_1,s_2)=\frac{1}{1-\gamma}$
+attractive instead of repulsive, and it might also perturb initialization
+(initializing $Z=\Id$ does not satisfy this normalization, so enforcing
+it too early is basically like initializing to
+$Z=\frac{1}{1-\gamma}\Id$ which empirically diverges).
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally

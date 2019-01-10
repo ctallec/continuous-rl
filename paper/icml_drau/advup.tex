@@ -2,48 +2,78 @@
 \section{Reinforcement learning with a continuous time limit}
 As seen in Sec.~\ref{sec:framework}, there is no continuous time limit to
 Q-learning. In continuous time, $Q^\pi$ is independant of actions and can thus
-not be used to select promising actions.  In near continuous time, $Q^\pi$
+not be used to select promising actions.  In near continuous time, $Q^\pi_\deltat$
 still depends on actions, and can still be used to choose promising actions
-under the current policy. However, when approximating $Q^\pi$, if the
+under the current policy. However, when approximating $Q^\pi_\deltat$, if the
 approximation error is much bigger than $\bigO(\deltat)$, approximation errors
 dominates, and the hierarchy of actions given by the approximation is likely to
-be erroneous.
-When the approximate Q-function is initialized, if the effect of actions on the
-Q-function is order of magnitudes higher than what it should be, approximating
-$Q^\pi$ is likely to be difficult. Besides, the error is likely to be further
-propagateed when the equation used to update our approximate $Q$ function
-relies on bootstraping, as is the case for usual temporal difference derived methods.
+be erroneous.  When the approximate Q-function is initialized, if the effect of
+actions on the Q-function is order of magnitudes higher than what it should be,
+approximating $Q^\pi_\deltat$ is likely to be difficult. Besides, the error is likely
+to be further propagated when the equation used to update our approximate $Q$
+function relies on bootstraping, as is the case for usual temporal difference
+derived methods.
 
-\subsection{Reparameterizing $Q_\theta$}
+In what follows, a discrete algorithm that has a well defined time continuous
+limit is defined. The algorithm relies on three elements, namely, defining and
+learning a quantity that contains some information on the hierarchy of actions
+while admitting a time continuous limit, defining exploration methods that
+admit a continuous time limit and defining learning rates that induce well
+behaved parameter trajectories when $\deltat$ goes to $0$.
+
+\subsection{Advantage Updating}
 \label{subsec:reparam}
-To prevent overestimating the dependency on actions of the approximation of
-$Q^\pi$, $Q_\theta$, in an environment with time discretization $\deltat$,
-Eq.~\eqref{eq:reparam_q_pi} naturally yields the following reparameterization
+To define an object which contains the same information on actions as
+$Q^\pi_\deltat$, but admits an action dependant continuous time limit, , it is
+natural to define
+\begin{align}
+	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat},
+    \label{eq:adv}
+\end{align}
+a rescaled version of the advantage function, as the difference between between
+$Q^\pi_\deltat(s, a)$ and $V^\pi\deltat(s)$ is of order $\bigO(\deltat)$.
+Contrary to the action state value function, the rescaled advantage function converges
+to an action dependent quantity when $\deltat$ goes to $0$
+\begin{align}
+	A^\pi_\deltat(s, a)=&\reward(s, a)+\frac{\gamma^{\deltat}\E_{\delta s \sim \delta s(s, a)}V^\pi_\deltat(s + \delta s)-V^\pi\deltat(s)}{\deltat}\nonumber\\
+	=&\reward(s, a)+(\gamma - 1) V^\pi(s)+\partial_s V^\pi(s)f(s, a)\nonumber\\
+         &+\frac{\text{tr}\left(\Sigma^T(s, a)\partial^2_{s^2}V^\pi(s) \Sigma(s,a)\right)}{2} + O(\deltat)\nonumber.
+\end{align}
+The discretized state action value function can then be rewritten as
+\begin{equation}
+	Q^\pi_\deltat(s, a) = V^\pi_\deltat(s) + \deltat A^\pi_\deltat(s, a).
+	\label{eq:reparam_q_pi}
+\end{equation}
+A natural way of approximating $V^\pi_\delta$ and $A^\pi_\deltat$ is to apply
+\emph{Sarsa} or Q-learning to a reparameterized Q-function approximator
 \begin{equation}
 	Q_\theta(s, a) = V_{\theta_1}(s) + \deltat A_{\theta_2}(s, a).
 \end{equation}
 To avoid cumbersome notations, in what follows, parameter indices are dropped.
-The insight behind this parameterization is that when $Q$ correctly
-approximates $Q^\pi$, $V$ should approximate the value function, while $A$
-should approximate the advantage function, as defined in Eq.~\eqref{eq:adv}.
+At initialization, if both $V_{\theta_1}$ and $A_{\theta_2}$ are initialized
+independantly of $\deltat$, this parameterization reasonably scales the
+contribution of actions relative to states in the value of $Q$.  
 
-
-The proposed reparameterization does not, on its own, guarantee that
-when $Q$ correctly approximates $Q^\pi$, $A$ approximates $A^\pi$.  Indeed, for
-any given pair $V$, $A$, the transformed pair
+However, the proposed reparameterization does not, on its own, guarantee that
+when $Q$ correctly approximates $Q^\pi_\deltat$, $A$ approximates $A^\pi_\deltat$.
+Indeed, for any given pair $V$, $A$,
 \begin{align}
 	\tilde{V}(s) &= V(s) - f(s)\\
 	\tilde{A}(s, a) &= A(s, a) + \frac{f(s)}{\deltat}
 \end{align}
 yields the exact same $Q$ function. Consequently, $Q$ can correctly approximate
 $Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
-To enforce, identifiability of $A$, one must enforce that 
+To enforce, identifiability of $A$, one must enforce the consistency equation
+\begin{equation}
+	Q^\pi_\deltat(s, \pi(s)) - V^\pi_\deltat(s) = 0
+\end{equation}
+on the approximate $A$ and $V$. This translates to
 \begin{equation}
 	A(s, \pi(s)) = 0.
 \end{equation}
-With this additional constraint, if $Q^\pi = Q$,
+With this additional constraint, if $Q^\pi_\deltat = Q$,
 \begin{align}
-	A^\pi(s, a) &= \frac{Q^\pi(s,a) - V^\pi(s)}{\deltat}\\
+	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat}\\
 		    &= \frac{Q(s,a) - Q(s, \pi(s))}{\deltat}\\
 		    &= A(s, a).
 \end{align}
