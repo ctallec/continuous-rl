@@ -1,0 +1,24 @@
+%! TEX root = icml_drau.tex
+\section{Related work}
+\label{sec:related}
+Continuous and near continuous reinforcement learning, which is at the core of
+our approach has been thoroughly studied in the deterministic case
+in~\cite{adv_upd} or \cite{cont_rl}, but has not been applied in the context of
+deep reinforcement learning.
+
+The approach presented in this paper is closely related to \cite{adv_upd} and
+\cite{cont_rl}. \cite{adv_upd} already separated the learning procedure of the
+value and advantage functions, and introduced proper scalings between the two
+components. We extend on \cite{adv_upd} in three directions. We provide a
+formal argument on why the advantage contribution of the Q-function is of order
+$\bigO(\deltat)$, irrelevant of the stochasticity of the environment, in a quite
+general framework. We show that, provided with well suited learning rates and
+exploration method, Advantage updating provide near invariance to change of time
+discretization. We show that Advantage updating is viable in the context of deep
+reinforcement learning, while not using the true gradient of the residual error.
+
+More recently, \cite{dueling_nets} also introduced a parameterization separating
+the value and the advantage components of the Q-function. We additionally
+introduce a natural scaling coeficient between the two, that strongly improves
+the time discretization invariance properties.
+
