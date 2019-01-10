@@ -373,14 +373,28 @@ values are also perturbed using a discretized Ornstein-Uhlenbeck noise.
 
 \subsection{Algorithms}
 \label{subsec:algorithm}
-We introduce two versions of \emph{Deep Advantage Updating} to cover both the
-continuous and discrete action cases. Both relies on applying either DDPG or DQN
-to the reparameterized Q-function and enforcing the identifiability of $A^\pi$ by
-making sure that $\max_a A^\pi(s, a) = 0$ for all states.
-
-Both of these algorithms are off policy, and work by trying to minimize the
-optimal bellman gap on the Q-function. Minimizing the optimal Bellman Gap in
-an off policy setup amounts to minimizing the quantity
+Two variants of \emph{Deep Advantage Updating} are derived to cover both the continuous
+and discrete action cases. They both rely on variants of Q-learning. More precisely,
+we learn $V$ and $A$ using approximate version of the following bellman equation
+\begin{align}
+	V^{\pi}(s) + A^{\pi}(s, a) &= \E_{\delta r \sim \delta r(s, a)}\delta r\nonumber\\ 
+				   &+ \gamma^{\deltat}  \E_{\delta s \sim \delta s(s, a)} V^{\pi}(s + \delta s)\label{eq:bellman_A}\\
+	A^{\pi}(s, \pi(s)) &= 0\label{eq:max_A}
+\end{align}
+for a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi(s, a')$.
+Eq.~\eqref{eq:max_A} is directly verified owing to the parameterization of $A$.
+To approximately verify~\eqref{eq:bellman_A}, the corresponding squared residual
+is minimized by an approximate gradient descent.
+The corresponding update equations when learning from incoming transitions of
+an exploratory trajectory are
+\begin{align}
+	\delta Q_t &= A(s_t, a_t) - \frac{\delta r_t + \gamma^{\deltat} V(s_{t+\deltat}) - V(s_t)}{\deltat}\\
+	\theta^1_{t+\deltat} &= \theta^1_t + \eta_1 \partial_{\theta^1} V(s_t) \delta Q_t\\
+	\theta^2_{t+\deltat} &= \theta^2_t + \eta_2 \partial_{\theta^2} A(s_t, a_t) \delta Q_t.
+	\label{eq:approx_bellman_A}
+\end{align}
+where $\eta$'s are learning rates. We are now left to derive appropriate learning rates
+to provide invariance to time discretization.
 \begin{algorithm}[ht]
 	\caption{Deep Advantage Updating (Discrete actions)}
 	\input{dauc.tex}
@@ -388,36 +402,25 @@ an off policy setup amounts to minimizing the quantity
 
 \subsection{Learning rates scalings}
 \label{subsec:lr}
-To provide invariance to change of time discretization, one also needs to make
-sure that learning is possible in finite macroscopic time \TODO{The difference between
-macroscopic and microscopic must be defined earlier}, and that learning
-will take approximately as much macroscopic time for a coarse discretization than
-for a fine grained discretization. These two requirements means that learning a
-meaningful approximation of the advantage function as defined in~\ref{eq:adv},
-i.e. an approximation that is correct at a precision independant of the time
-discretization, should be possible with a number of samples of order at most
-$\frac{1}{\deltat}$. If this requirement is not satisfied, as the
-discretization timestep decreases, the macroscopic time needed to acquire
-enough data samples to learn a meaningful advantage function increases, meaning
-that with a very fine grained discretization, it would take a nearly infinite
-time to learn something that is easily learnable in a coarse discretization. 
+A necessary condition to guarantee invariance to time discretization is that
+the trajectory of the parameters of our function approximators should remain
+well behaved when the discretization parameter $\deltat$ decreases. This notably
+means that optimization steps should not be too large, in which case parameter
+trajectories could diverge in a single gradient step, or two small, in which case
+the trajectories would converge to single points as $\deltat$ goes to $0$.
+This in turn imposes conditions on the scalings of the learning rates of invariant
+algorithms with respect to the discretization timestep.
 
-Let us provide an informal derivation, in an on policy policy evaluation setup,
-of the orders of magnitudes on the learning rates of both $A$ and $V$. An
-example problem showing that these orders of magnitudes are indeed best case
-scenarios if we want a general learning algorithm is given in the supplementary
-material.
-
-In an on policy policy evaluation setup, when $A$ and $V$ are learnt using
-approximate TD(0), the update rules on $\theta_1$ and $\theta_2$ for a given
-transition $(s, a, \delta r, s + \delta s)$ are
+If we optimize $\theta_1$ and $\theta_2$ according to Eq.~\eqref{eq:approx_bellman_A},
+both $\theta_1$ and $\theta_2$ verify update equations of the form
 \begin{align}
-	\theta_1 &\leftarrow \theta_1 + \eta (\delta r + \gamma^{\deltat} V(s + \delta s) - V(s)) \partial_{\theta_1} V(s)\\
-	\theta_2 &\leftarrow \theta_2 + \eta (\deltat A(s, a) - \left(\delta r + \gamma^{\deltat} V(s + \delta s) - V(s)\right)) \partial_{\theta_2} A(s)
+	\
+	\delta \theta^1_t = \eta_1 \partial_{\theta_1} V(s_t) (
 \end{align}
-
-
-
+To have parameter steps that do not grow larger or shrink to $0$ as $\deltat
+\leftarrow 0$, both $\delta \theta^1$ and $\delta \theta^2$ should verify
+stochastic differential equations, and notably have a deterministic component
+of order $\deltat$. If the deterministic component 
 \section{Experiments}
 \label{sec:exp}
 
