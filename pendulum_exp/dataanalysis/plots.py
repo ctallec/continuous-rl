@@ -1,19 +1,22 @@
+import argparse
 import matplotlib
 # matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import numpy as np 
+import numpy as np
 from scipy.ndimage.filters import gaussian_filter1d
+import getpass
 
 
 from dataloader import loader_leonard, ExperimentData
-from datetime import datetime
-
-algolabeldict = {
-    'discrete_value':"qlearning",
-    'discrete_advantage':"advup"
-}
 
 def plot_learning_curves(expdata, key_list, namefile):
+    algolabeldict = {
+        'discrete_value': "qlearning",
+        'discrete_advantage': "advup",
+        'approximate_value': "qlearning",
+        'approximate_advantage': "advup"
+    }
+
     mint, maxt = 0, 40
 
     nlines, ncol = len(key_list), 1
@@ -28,27 +31,27 @@ def plot_learning_curves(expdata, key_list, namefile):
     for key, ax in zip(key_list, axes.flat):
         ax.set_title(key)
 
-        for setting in sorted(expdata._setting_list, key=lambda s:s.args['dt']):
+        for setting in sorted(expdata._setting_list, key=lambda s: s.args['dt']):
             args = setting.args
             dt = args['dt']
             algo = args["algo"]
             label = f"{algolabeldict[algo]}; dt={dt:.1e}"
-            if algo == 'discrete_value':
+            if 'value' in algo:
                 linestyle = '--'
-                c=cm.to_rgba(np.log(dt))
-                linewidth=1.
-                alpha=None
-            elif algo == 'discrete_advantage':
+                c = cm.to_rgba(np.log(dt))
+                linewidth = 1.
+                alpha = None
+            elif 'advantage' in algo:
                 linestyle = '-'
-                c=cm.to_rgba(np.log(dt))
-                linewidth=1.
+                c = cm.to_rgba(np.log(dt))
+                linewidth = 1.
                 alpha = None
             timeseq = setting.timeseq(key)
             if timeseq is None:
                 continue
 
-            xdata = np.array([i for (i,v) in timeseq.items()])
-            ydata = np.array([v for (i,v) in timeseq.items()])
+            xdata = np.array([i for (i, v) in timeseq.items()])
+            ydata = np.array([v for (i, v) in timeseq.items()])
 
             x = np.arange(max(xdata)+1)
             yinterp = np.interp(x, xdata, ydata)
@@ -72,13 +75,27 @@ def plot_learning_curves(expdata, key_list, namefile):
     plt.savefig(namefile+'.eps', format="eps")
     plt.savefig(namefile+'.png', format='png')
 
-# start_date = datetime.strptime('2019_01_08_03_13_33', "%Y_%m_%d_%H_%M_%S")
-# stop_date = datetime.strptime('2019_01_08_03_13_35', "%Y_%m_%d_%H_%M_%S")
-start_date = 'last'
-stop_date = None
-runlist = loader_leonard('/private/home/leonardb/workdir', 'mujoco_continuous', 
-    start_date=start_date, stop_date=stop_date)
 
-expdata = ExperimentData(runlist)
+if __name__ == '__main__':
+    usr = getpass.getuser()
+    # start_date = datetime.strptime('2019_01_08_03_13_33', "%Y_%m_%d_%H_%M_%S")
+    # stop_date = datetime.strptime('2019_01_08_03_13_35', "%Y_%m_%d_%H_%M_%S")
+    start_date = 'last'
+    stop_date = None
+    if 'c' in usr:
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--logdir', type=str, required=True)
+        parser.add_argument('--exp_name', type=str, required=True)
+        args = parser.parse_args()
 
-plot_learning_curves(expdata, ['Return', 'Return'], 'out')
+        logdir = args.logdir
+        exp_name = args.exp_name
+    else:
+        logdir = '/private/home/leonardb/workdir'
+        exp_name = 'mujoco_continuous'
+    runlist = loader_leonard(logdir, exp_name,
+                             start_date=start_date, stop_date=stop_date)
+
+    expdata = ExperimentData(runlist)
+
+    plot_learning_curves(expdata, ['Return', 'Return'], 'out')
