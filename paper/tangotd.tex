@@ -1575,6 +1575,16 @@ Newton update with learning rate $\eta$ does not have quadratic
 convergence like the standard Newton method, but it still keeps better
 local convergence properties than Bellman. Is it worth the cost?
 
+Normalization of $Z$. Since $Z=\sum \gamma^t P^t$, we have that
+$(1-\gamma)Z$ is a stochastic matrix (thanks Yann). This might help with
+normalization/detecting divergence. This translates as $\E_{s_2\sim \rho}
+Z(s_1,s_2)=\frac{1}{1-\gamma}$ which is testable/enforceable. However, I
+fear it might make the fixed point $Z(s_1,s_2)=\frac{1}{1-\gamma}$
+attractive instead of repulsive, and it might also perturb initialization
+(initializing $Z=\Id$ does not satisfy this normalization, so enforcing
+it too early is basically like initializing to
+$Z(s_1,s_2)=\frac{1}{1-\gamma}$ which empirically diverges).
+
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
