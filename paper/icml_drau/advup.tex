@@ -1,11 +1,13 @@
-\section{Deep Advantage Updating}
-In continuous time, $Q^\pi$ is independant of actions and can thus not be used
-to select promising actions.  In near continuous time, $Q^\pi$ still depends on
-actions, and can still be used to choose promising actions under the current
-policy. However, when approximating $Q^\pi$, if the approximation error is much
-bigger than $\bigO(\deltat)$, approximation errors dominates, and the hierarchy
-of actions given by the approximation is likely to be erroneous.
-
+%! TEX root = icml_drau.tex
+\section{Reinforcement learning with a continuous time limit}
+As seen in Sec.~\ref{sec:framework}, there is no continuous time limit to
+Q-learning. In continuous time, $Q^\pi$ is independant of actions and can thus
+not be used to select promising actions.  In near continuous time, $Q^\pi$
+still depends on actions, and can still be used to choose promising actions
+under the current policy. However, when approximating $Q^\pi$, if the
+approximation error is much bigger than $\bigO(\deltat)$, approximation errors
+dominates, and the hierarchy of actions given by the approximation is likely to
+be erroneous.
 When the approximate Q-function is initialized, if the effect of actions on the
 Q-function is order of magnitudes higher than what it should be, approximating
 $Q^\pi$ is likely to be difficult. Besides, the error is likely to be further
