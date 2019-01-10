@@ -5,14 +5,42 @@
 % not depend on the action. We further show that in near continous domains, when
 % the discretization timestep $\deltat$ is small, the difference in state-action
 % value between two different actions in a fixed state is of order $\bigO(\deltat)$.
-TODO. Main ideas: near continuous time environments (control, mujoco, video games, ...)
-There is a time discretization $\deltat$ given by the problem. The uderlying process does not depend of $\deltat$. Need to see what is happening when changing $\deltat$. The problem is invariant to $\deltat$. The quantities we are looking at should be invariant to. The learning procedure should be invariant. Looking at the limits when $\deltat \rightarrow 0$. In simulated environments, changing $\deltat$ only means to change the FPS. In real environments, for example with robots, this could mean changing the quality of the sensors and motors.
+\TODO{. Main ideas: near continuous time environments (control, mujoco, video games, ...)
+There is a time discretization $\deltat$ given by the problem. The uderlying process does not depend of $\deltat$. Need to see what is happening when changing $\deltat$. The problem is invariant to $\deltat$. The quantities we are looking at should be invariant to. The learning procedure should be invariant. Looking at the limits when $\deltat \rightarrow 0$. In simulated environments, changing $\deltat$ only means to change the FPS. In real environments, for example with robots, this could mean changing the quality of the sensors and motors.}
 
 \subsection{Framework}
 
-Let assume that we have a Markov Decision Process (TODO:Cite?) $\langle {\cal S}, {\cal A}, T_{\deltat}, r, \gamma\rangle$. ${\cal S}$ is the state-space, which is supposed to be continuous (TODO:not the good formulation). The action space is TODO.
+Let assume that we have a Markov Decision Process \TODO{Cite?} $\langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat, \gamma_\deltat\rangle$. ${\cal S}$ is the state-space, which is supposed to be continuous \TODO{not the good formulation}. The action space is \TODO{todo}.
 
-We assume that the transition is continuous. This means that ... TODO. Discussion on the hypothesis, in which environments it is true. Is the condition $\forall \deltat, \forall s, \E[\|s_{k+1} - s_k \||s_k = s] \leq ?$. 
+We assume that the transition is continuous. This means that ... \TODO{todo}. Discussion on the hypothesis, in which environments it is true. Is the condition $\forall \deltat, \forall s, \E[\|s_{k+1} - s_k \||s_k = s] \leq ?$. 
+
+In many situations, we can assume that there is an uderlying process:
+\begin{equation}
+  \label{eq:diffusion}
+  ds = F(s, a) + \Sigma(s, a)\dbt
+\end{equation}
+$F$ is the physics, and $\dbt$ is the noise.
+
+There is convergence to the continuous process when $\deltat \rightarrow 0$.
+
+What we want is an algorithm invariant to $\deltat$, so we need to build a discrete algorithm such that when $\deltat \rightarrow 0$, the algorithm converge to a limit algorithm doing what we want.
+
+TODO: Explain $a_t = \pi(s_t)$ deterministic.
+
+\subsection{Return, $\gamma$ and Value function in near continuous time}
+\label{sec:ret-gamma-v}
+
+For a continuous MDP we define the return as:
+\begin{equation}
+  \label{eq:continuous-return}
+  R(\tau) = \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt
+\end{equation}
+
+The natural discretization of this, if we want to define a discretize return $R_\delta$ for each $\deltat$ is:
+\begin{equation}
+  \label{eq:discretized-return}
+  R_\deltat(\tau) = \sum_{k=0}^\infty\gamma^{k\deltat}r(s^\deltat_k, a^\deltat_k)\deltat
+\end{equation}
 
 In what follows, $\dt$ denotes a truly infinitesimal time interval while $\deltat$
 denotes a small, but non infinitesimal time interval. Similarily, $\dbt$ denotes
