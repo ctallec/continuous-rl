@@ -1,6 +1,7 @@
 """ Environment utilities """
 from abc import ABC, abstractmethod
 import gym
+
 from envs.wrappers import TimeLimit
 import numpy as np
 from envs.pusher import DiscretePusherEnv, ContinuousPusherEnv
@@ -190,16 +191,18 @@ def make_env(env_id: str, dt: float, time_limit: float): # noqa: C901
     elif env_id == 'bipedal_hardcore':
         env = WalkerHardcore(dt)
     elif env_id == 'half_cheetah':
-        # from gym.envs.mujoco import HalfCheetahEnv
-        env = gym.make('HalfCheetah-v2').unwrapped
-        dt = env.dt
-        info('The timestep dt is {}'.format(dt))
+        from gym.envs.mujoco import HalfCheetahEnv
+        # env = gym.make('HalfCheetah-v2').unwrapped
+        env = HalfCheetahEnv(dt)
+        assert dt == env.dt
         # env.model.opt.timestep = dt / env.frame_skip
     elif env_id == 'ant':
         # from gym.envs.mujoco import HalfCheetahEnv
-        env = gym.make('Ant-v2').unwrapped
-        dt = env.dt
-        info('The timestep dt is {}'.format(dt))
+        from gym.envs.mujoco.ant import AntEnv
+
+        env = AntEnv(dt)\
+        # env = gym.make('Ant-v2').unwrapped
+        assert env.dt == dt
         # env.model.opt.timestep = dt / env.frame_skip
     elif env_id == 'dart_cheetah':
         env = gym.make('DartHalfCheetah-v1').unwrapped
