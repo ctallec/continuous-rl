@@ -5,3 +5,4 @@ config_files
 monitor.py
 videos
 video
+logs_titanic

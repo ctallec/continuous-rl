@@ -1,21 +1,24 @@
+import argparse
 import matplotlib
 # matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import numpy as np 
+import numpy as np
 from scipy.ndimage.filters import gaussian_filter1d
+import getpass
 
 
 from dataloader import loader_leonard, ExperimentData
 from datetime import datetime
 
-algolabeldict = {
+
+def plot_learning_curves(expdata, key_list, namefile):
+    algolabeldict = {
     'discrete_value':"qlearning",
     'discrete_advantage':"advup",
     'approximate_advantage':'advup',
     'approximate_value':'ddpg',
-}
 
-def plot_learning_curves(expdata, key_list, namefile):
+
     mint, maxt = 0, 100
 
     nlines, ncol = len(key_list), 1
@@ -30,12 +33,12 @@ def plot_learning_curves(expdata, key_list, namefile):
     for key, ax in zip(key_list, axes.flat):
         ax.set_title(key)
 
-        for setting in sorted(expdata._setting_list, key=lambda s:s.args['dt']):
+        for setting in sorted(expdata._setting_list, key=lambda s: s.args['dt']):
             args = setting.args
             dt = args['dt']
             algo = args["algo"]
             label = f"{algolabeldict[algo]}; dt={dt:.0e}"
-            if algo == 'discrete_value' or algo == 'approximate_value':
+            if 'value' in algo:
                 linestyle = '--'
                 c=cm.to_rgba(np.log(dt))
                 linewidth=1.
@@ -45,10 +48,10 @@ def plot_learning_curves(expdata, key_list, namefile):
                     label += f';tau{tau}'
                     if tau != 0:
                         linestyle = ':'
-            elif algo == 'discrete_advantage' or algo == 'approximate_advantage':
+            elif 'advantage' in algo:
                 linestyle = '-'
-                c=cm.to_rgba(np.log(dt))
-                linewidth=1.
+                c = cm.to_rgba(np.log(dt))
+                linewidth = 1.
                 alpha = None
             else:
                 raise ValueError
@@ -56,8 +59,8 @@ def plot_learning_curves(expdata, key_list, namefile):
             if timeseq is None:
                 continue
 
-            xdata = np.array([i for (i,v) in timeseq.items()])
-            ydata = np.array([v for (i,v) in timeseq.items()])
+            xdata = np.array([i for (i, v) in timeseq.items()])
+            ydata = np.array([v for (i, v) in timeseq.items()])
 
             kernelsize = max(maxt/100, 0.3) / dt
             x = np.arange(max(xdata)+1)
