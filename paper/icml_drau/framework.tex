@@ -124,27 +124,3 @@ $\deltat \ll~1$, Ito's lemma yield
 A consequence of Eq.~\eqref{eq:Q_cont} is that in exact continuous time,
 $Q^\pi$ does not bear any information on the hierarchy of actions, and
 thus cannot be used to select actions that yields higher future returns.
-
-As the difference between between $Q^\pi(s, a)$ and $V^\pi(s)$ is of order
-$\bigO(\deltat)$, it is natural to define a rescaled version of the advantage
-function, namely
-\begin{align}
-	A^\pi(s, a) &= \frac{Q^\pi(s,a) - V^\pi(s)}{\deltat}\\
-		    &= \reward(s, a) +
-		    \frac{\gamma^{\deltat} \E_{\delta s \sim \delta s(s, a)} V^\pi(s + \delta s) - V^\pi(s)}{\deltat}.
-    \label{eq:adv}
-\end{align}
-Contrary to the action state value function, the rescaled advantage function converges
-to an action dependent quantity when $\deltat$ goes to $0$
-\begin{align}
-	A^\pi(s, a) &\xrightarrow[\deltat \to 0]{} \reward(s, a) +
-	(\gamma - 1) V^\pi(s) + \partial_s V^\pi(s) f(s, a)\nonumber\\
-		    &+
-	\frac{\text{tr}\left(\Sigma^T(s, a)\partial^2_{s^2}V^\pi(s) \Sigma(s,a)\right)}{2},
-\end{align}
-and $Q^\pi$ can then be rewritten as
-\begin{equation}
-	Q^\pi(s, a) = V^\pi(s) + \deltat A^\pi(s, a).
-	\label{eq:reparam_q_pi}
-\end{equation}
-
