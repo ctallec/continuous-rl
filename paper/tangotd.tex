@@ -1588,6 +1588,20 @@ attractive instead of repulsive, and it might also perturb initialization
 it too early is basically like initializing to
 $Z=\frac{1}{1-\gamma}\Id$ which empirically diverges).
 
+Convergence? The true Newton iteration $Z\gets 2Z-Z\Delta Z$ initialized
+with $Z=\Id$ converges, and so does the continuous-time version
+$Z'=Z-Z\Delta Z$. However, due to sampling of $s_1\sim \rho$, we will (in
+the tabular case) have something like $Z'=\rho(Z-Z\Delta Z)$ or (in the
+parametric case) $\theta'=\E_\rho (\partial_\theta Z.(Z-Z\Delta Z))$ and
+it is not obvious that those converge. (All the problems with TD appear
+here as well.) Assuming overparametrization and convergence of supervised
+learning for a parametric model $Z_\theta$, one might proceed by
+``semi-steps'' as follows: Start with a $\theta_0$, and take the full
+Newton step $2Z_{\theta_0}-Z_{\theta_0}\Delta Z_{\theta_0}$ as a
+supervised training target for $Z_\theta$; then it does not really matter
+what the sampling distribution for this supervised training is, as long
+as that sampling distribution covers everywhere.
+
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
