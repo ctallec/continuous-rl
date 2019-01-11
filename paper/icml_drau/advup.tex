@@ -36,7 +36,7 @@ Contrary to the action state value function, the rescaled advantage function con
 to an action dependent quantity when $\deltat$ goes to $0$
 \begin{align}
 	A^\pi_\deltat(s, a)=&\reward(s, a)+\frac{\gamma^{\deltat}\E_{\delta s \sim \delta s(s, a)}V^\pi_\deltat(s + \delta s)-V^\pi\deltat(s)}{\deltat}\nonumber\\
-	=&\reward(s, a)+(\gamma - 1) V^\pi(s)+\partial_s V^\pi(s)f(s, a)\nonumber\\
+	=&\reward(s, a)+\log(\gamma) V^\pi(s)+\partial_s V^\pi(s)f(s, a)\nonumber\\
          &+\frac{\text{tr}\left(\Sigma^T(s, a)\partial^2_{s^2}V^\pi(s) \Sigma(s,a)\right)}{2} + O(\deltat)\nonumber.
 \end{align}
 The discretized state action value function can then be rewritten as
@@ -47,10 +47,10 @@ The discretized state action value function can then be rewritten as
 A natural way of approximating $V^\pi_\delta$ and $A^\pi_\deltat$ is to apply
 \emph{Sarsa} or Q-learning to a reparameterized Q-function approximator
 \begin{equation}
-	Q_\theta(s, a) = V_{\theta_1}(s) + \deltat A_{\theta_2}(s, a).
+	Q_\Theta(s, a) = V_{\theta}(s) + \deltat A_{\psi}(s, a).
 \end{equation}
 To avoid cumbersome notations, in what follows, parameter indices are dropped.
-At initialization, if both $V_{\theta_1}$ and $A_{\theta_2}$ are initialized
+At initialization, if both $V_{\theta}$ and $A_{\psi}$ are initialized
 independantly of $\deltat$, this parameterization reasonably scales the
 contribution of actions relative to states in the value of $Q$.  
 
@@ -137,27 +137,27 @@ $k$. The resulting exploration scheme converges to a proper time continuous expl
 
 \subsection{Algorithms}
 \label{subsec:algorithm}
-To learn $V_{\theta_1}$ and $A_{\theta_2}$, variants of Q-learning for continuous~\cite{ddpg} and
-discrete~\cite{dqn} action spaces are used. In details, $V_{\theta_1}$ and $A_{\theta_2}$ are learnt
+To learn $V_{\theta}$ and $A_{\psi}$, variants of Q-learning for continuous~\cite{ddpg} and
+discrete~\cite{dqn} action spaces are used. In details, $V_{\theta}$ and $A_{\psi}$ are learnt
 using approximate version of the following bellman equation
 \begin{align}
-	V^{\pi}(s) + A^{\pi}(s, a) &= \E_{\delta r \sim \delta r(s, a)}\delta r\nonumber\\ 
-				   &+ \gamma^{\deltat}  \E_{\delta s \sim \delta s(s, a)} V^{\pi}(s + \delta s)\label{eq:bellman_A}\\
-	A^{\pi}(s, \pi(s)) &= 0\label{eq:max_A}
+	V^{\pi}_\deltat(s) + A^{\pi}_\deltat(s, a) &= \E_{\delta r \sim \delta r(s, a)}\delta r\nonumber\\ 
+				   &+ \gamma^{\deltat}  \E_{\delta s \sim \delta s(s, a)} V^{\pi}_\deltat(s + \delta s)\label{eq:bellman_A}\\
+	A^{\pi}_\deltat(s, \pi(s)) &= 0\label{eq:max_A}
 \end{align}
-for a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi(s, a')$,
+for a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi_\deltat(s, a')$,
 exactly implemented in the case of discrete actions, and approximated by a
 neural network $\pi_\phi(s)$, trained to maximize (an approximation of)
-$A^\pi(s, \pi_\phi(s))$ in the continuous case.  Eq.~\eqref{eq:max_A} is
-directly verified by $A_{\theta_1}$, owing to the reparameterization described
+$A^\pi_\deltat(s, \pi_\phi(s))$ in the continuous case.  Eq.~\eqref{eq:max_A} is
+directly verified by $A_{\theta}$, owing to the reparameterization described
 in~\ref{subsec:reparam}.  To approximately verify~\eqref{eq:bellman_A}, the
 corresponding squared residual is minimized by an approximate gradient descent.
 The corresponding update equations when learning from incoming transitions of
 an exploratory trajectory are
 \begin{align}
-	\delta Q_t &= A(s_t, a_t) - \frac{\delta r_t + \gamma^{\deltat} V(s_{t}+\delta s_{t}) - V(s_t)}{\deltat}\\
-	\theta^1_{t+\deltat} &= \theta^1_t + \eta_1 \partial_{\theta^1} V(s_t) \delta Q_t\\
-	\theta^2_{t+\deltat} &= \theta^2_t + \eta_2 \partial_{\theta^2} A(s_t, a_t) \delta Q_t.
+	\delta Q^k_\deltat &= A(s^k, a^k) - \frac{r^k \deltat + \gamma^{\deltat} V(s^{k}+\delta s^{k}) - V(s^k)}{\deltat}\\
+	\theta^{k+1}_\deltat &= \theta^k_\deltat + \eta^1_\deltat \partial_{\theta} V(s^k) \delta Q^k_\deltat\\
+	\psi^{k+1}_\deltat &= \psi^k_\deltat + \eta^2_\deltat \partial_{\psi} A(s^k, a^k) \delta Q^k_\deltat.
 	\label{eq:approx_bellman_A}
 \end{align}
 where $\eta$'s are learning rates. In practice, $A$ and $V$ are learned using
@@ -173,22 +173,33 @@ for the continuous actions algorithm is given in the supplementary material.
 
 \subsection{Learning rates scalings}
 \label{subsec:lr}
-A necessary condition to guarantee invariance to time discretization is that
-the trajectory of the parameters of our function approximators should remain
-well behaved when the discretization parameter $\deltat$ decreases. This notably
-means that optimization steps should not be too large, in which case parameter
-trajectories could diverge in a single gradient step, or two small, in which case
-the trajectories would converge to single points as $\deltat$ goes to $0$.
-This in turn imposes conditions on the scalings of the learning rates of invariant
-algorithms with respect to the discretization timestep.
+For the discrete algorithm to admit a continuous time limit, the trajectories
+of parameters must converge to well defined trajectories as $\deltat$ goes to
+$0$.  Intuitively, this means that optimization steps should not be too large,
+in which case parameter trajectories could diverge in a single gradient step,
+or too small, in which case the trajectories would converge to single points as
+$\deltat$ goes to $0$.  This in turn imposes conditions on the scalings of the
+learning rates of invariant algorithms with respect to the discretization
+timestep.
 
-If we optimize $\theta_1$ and $\theta_2$ according to Eq.~\eqref{eq:approx_bellman_A},
-both $\theta_1$ and $\theta_2$ verify update equations of the form
+The updates equations on $\theta$ and $\psi$ are described in
+Eq.~\eqref{eq:approx_bellman_A}.  To have parameter steps that do not grow
+larger or shrink to $0$ as $\deltat \leftarrow 0$, both $\delta \theta^1$ and
+$\delta \theta^2$ should verify stochastic differential equations, and notably
+have a deterministic component of order $\deltat$. As $\deltat$ goes to $0$,
+updates are rephrased as
 \begin{align}
-	\
-	\delta \theta^1_t = \eta_1 \partial_{\theta_1} V(s_t) (
+	\delta Q^k_\deltat &= A(s^k_\deltat, a^k_\deltat) - r^k_\deltat - \log(\gamma) V(s^k_\deltat) - \partial_s V(s^k_\deltat) \frac{\delta s^k_\deltat}{\deltat}\nonumber \\&- \frac{(\delta s^k_\deltat)^T \partial_{s^2}^2 V(s^k_\deltat) \delta s^k_\deltat}{2\deltat} + \smallo\left(\frac{\eta^1_\deltat}{\sqrt{\deltat}}\right)\\
+	\delta \theta^k_\deltat &= \eta^1_\deltat \partial_{\theta} V(s^k_\deltat) \delta Q^k_\deltat + \smallo\left(\frac{\eta^1_\deltat}{\sqrt{\deltat}}\right)\\
+	\delta \psi^k_\deltat &= \eta^2_\deltat \partial_{\psi} A(s^k_\deltat) \delta Q^k_\deltat + \smallo\left(\frac{\eta^2_\deltat}{\sqrt{\deltat}}\right).
 \end{align}
-To have parameter steps that do not grow larger or shrink to $0$ as $\deltat
-\leftarrow 0$, both $\delta \theta^1$ and $\delta \theta^2$ should verify
-stochastic differential equations, and notably have a deterministic component
-of order $\deltat$. If the deterministic component 
+For parameter updates to follow a stochastic differential equations, one must
+have $\eta^1_\deltat = \alpha^1 \deltat$ and $\eta^2_\deltat = \alpha^2
+\deltat$. With this choice of learning rates, the limit SDEs are
+\begin{align}
+	F &= A(s_t, a_t) - r_t - \log(\gamma) V(s_t) - \partial_s V(s_t) f(s_t, a_t)\nonumber\\
+	G &= - \partial_s V(s_t, a_t) \Sigma(s_t, a_t)\nonumber\\
+	d\theta_t &= (\alpha^1 F  + D \dbt)\partial_{\theta} V(s_t)\nonumber\\
+	d\psi_t &= (\alpha^2 F  + D \dbt)\partial_{\psi} A(s_t, a_t)\nonumber.
+\end{align}
+
