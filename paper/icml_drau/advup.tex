@@ -81,66 +81,94 @@ In the spirit of~\cite{dueling_nets}, this condition is enforced by writing $A$ 
 \begin{equation}
 	A(s, a) = \bar{A}(s, a) - \bar{A}(s, \pi(s)).
 \end{equation}
+With this parameterization, one can hope to learn an approximation of $A^\pi_\deltat$,
+from which a proper hiearchy of actions can be derived for any $\deltat$.
 
 \subsection{Time invariant exploration}
 \label{subsec:explo}
 To obtain a time invariant reinforcement learning algorithm, a time invariant
-exploration scheme is required. 
+exploration scheme is required. All the exploration schemes hereby considered
+generate sequences of actions as
+\begin{equation}
+	a^k_\deltat = \pi^\text{explore}_\deltat(s^k_\deltat, \nu^k_\deltat)
+\end{equation}
+with $(\nu^k_\deltat)_k$ a sequence of random variables, independant from the $a$'s and $s$'s.
+For instance, $\varepsilon$-greedy exploration naturally falls in this framework, with each $\nu^k_\deltat$
+being a pair composed of a bernoulli random variables $b^k_\deltat$ with probability of being $1$ equal to $\varepsilon$,
+and of a uniform categorical random variable $\xi^k_\deltat$ on actions. Exploratory actions are then selected as
+\begin{equation}
+	a^k_\deltat = (1 - b^k_\deltat) \text{argmax}_{a'} Q^\pi_\deltat(s, a') + b^k_\deltat \xi^k_\deltat.
+\end{equation}
+
+A sufficient condition for the exploratory policy to admit a time continuous
+limit is for $\pi^\text{explore}_\deltat$ to be a measurable function, and for
+$\nu_\deltat$ to admit one, i.e. that the sequence $\nu_\deltat$ converges to a
+well defined continuous stochastic process $\nu$ as $\deltat$ goes to $0$.
+\TODO{I'm convinced that this is true, reviewers might not be.}
 
 The exploration scheme used~\cite{ddpg}, which consists in adding an
-\emph{Ornstein-Uhlenbeck}~\cite{orn-uhl} process to actions, is naturally time
-invariant in the sense that it is first defined as a time continuous stochastic
-process, and that discretization of this process are used in practice. Indeed,
-a continuous Ornstein-Uhlenbeck process is defined as
+\emph{Ornstein-Uhlenbeck}~\cite{orn-uhl} process (OU process) to actions, is naturally time.
+invariant. It can be rewritten as
 \begin{equation}
-	dx_t = - (x_t - \mu) \theta dt + \sigma \dbt
+	a^k_\deltat = \pi(s^k_\deltat) + \nu^k_\deltat
+\end{equation}
+where $\nu^k_\deltat$ is the discretization of a time continuous \emph{Ornstein-Uhlenbeck}
+process, defined as
+\begin{equation}
+	d\nu_t = - \nu_t \theta dt + \sigma \dbt.
 	\label{eq:orn_uhl}
 \end{equation}
-and is naturally discretized by turning $d$'s into $\delta$'s, and using
-the same $\deltat$ for both the learning algorithm and the exploration scheme.
-Consequently, this exploration scheme can readily be used in continuous action
-environments.
 
-On the other hand, the usual exploration scheme used in discrete actions
-Q-learning, $\varepsilon$-greedy exploration~\cite{sutton} is not time
-invariant, in the sense that resulting state trajectories do not converge to a
-well defined stochastic process as $\deltat \rightarrow 0$. As $\dt$ goes to $0$,
-for any $\varepsilon$ independant of $\dt$, the behavior of state trajectories get
-closer to that of a white noise.
+On the other hand, the same argument cannot be applied to $\varepsilon$-greedy
+exploration, as the $\nu_\deltat$'s used to define it do not converge to a 
+well defined stochastic process, but to a white noise.\footnote{\TODO{$\varepsilon$-greedy
+		does not, in general, converges to a well defined exploration scheme in continuous time.
+		For instance, if actions directly affects position, $\varepsilon$-greedy results in white-noise
+trajectories in state space. Show this in more detail in appendix ?}}
 
 To obtain a temporally coherent exploration scheme in discrete action environment
-when using Q-learning we instead directly apply a discretization of a time continuous
-stochastic process to the output of the approximate Q-function, and select actions
-by maximizing the resulting perturbed Q-function. Typically, the approximate Q-function
-values are also perturbed using a discretized Ornstein-Uhlenbeck noise.
+$\nu_\deltat$ is chosen to be a discretization of a $|\mathcal{A}|$ dimensional
+continuous OU process, and set
+\begin{equation}
+	a^k_\deltat = \text{argmax}_{a'} \left(Q^\pi_\deltat(s, a') + \nu_\deltat^k[a']\right)
+\end{equation}
+where $\nu_\deltat^k[a']$ denotes the $a'$-th component of the discretized OU process at time
+$k$. The resulting exploration scheme converges to a proper time continuous exploration scheme.
 
 \subsection{Algorithms}
 \label{subsec:algorithm}
-Two variants of \emph{Deep Advantage Updating} are derived to cover both the continuous
-and discrete action cases. They both rely on variants of Q-learning. More precisely,
-we learn $V$ and $A$ using approximate version of the following bellman equation
+To learn $V_{\theta_1}$ and $A_{\theta_2}$, variants of Q-learning for continuous~\cite{ddpg} and
+discrete~\cite{dqn} action spaces are used. In details, $V_{\theta_1}$ and $A_{\theta_2}$ are learnt
+using approximate version of the following bellman equation
 \begin{align}
 	V^{\pi}(s) + A^{\pi}(s, a) &= \E_{\delta r \sim \delta r(s, a)}\delta r\nonumber\\ 
 				   &+ \gamma^{\deltat}  \E_{\delta s \sim \delta s(s, a)} V^{\pi}(s + \delta s)\label{eq:bellman_A}\\
 	A^{\pi}(s, \pi(s)) &= 0\label{eq:max_A}
 \end{align}
-for a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi(s, a')$.
-Eq.~\eqref{eq:max_A} is directly verified owing to the parameterization of $A$.
-To approximately verify~\eqref{eq:bellman_A}, the corresponding squared residual
-is minimized by an approximate gradient descent.
+for a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi(s, a')$,
+exactly implemented in the case of discrete actions, and approximated by a
+neural network $\pi_\phi(s)$, trained to maximize (an approximation of)
+$A^\pi(s, \pi_\phi(s))$ in the continuous case.  Eq.~\eqref{eq:max_A} is
+directly verified by $A_{\theta_1}$, owing to the reparameterization described
+in~\ref{subsec:reparam}.  To approximately verify~\eqref{eq:bellman_A}, the
+corresponding squared residual is minimized by an approximate gradient descent.
 The corresponding update equations when learning from incoming transitions of
 an exploratory trajectory are
 \begin{align}
-	\delta Q_t &= A(s_t, a_t) - \frac{\delta r_t + \gamma^{\deltat} V(s_{t+\deltat}) - V(s_t)}{\deltat}\\
+	\delta Q_t &= A(s_t, a_t) - \frac{\delta r_t + \gamma^{\deltat} V(s_{t}+\delta s_{t}) - V(s_t)}{\deltat}\\
 	\theta^1_{t+\deltat} &= \theta^1_t + \eta_1 \partial_{\theta^1} V(s_t) \delta Q_t\\
 	\theta^2_{t+\deltat} &= \theta^2_t + \eta_2 \partial_{\theta^2} A(s_t, a_t) \delta Q_t.
 	\label{eq:approx_bellman_A}
 \end{align}
-where $\eta$'s are learning rates. We are now left to derive appropriate learning rates
-to provide invariance to time discretization.
+where $\eta$'s are learning rates. In practice, $A$ and $V$ are learned using
+transitions sampled from a replay buffer instead of trajectory samples, to
+prevent excessive correlation between training samples~\cite{dqn}. Pseudocode
+for the discrete actions algorithm is given in Alg.~\ref{alg:dau}. Pseudocode
+for the continuous actions algorithm is given in the supplementary material.
 \begin{algorithm}[ht]
 	\caption{Deep Advantage Updating (Discrete actions)}
 	\input{dauc.tex}
+	\label{alg:dau}
 \end{algorithm}
 
 \subsection{Learning rates scalings}
