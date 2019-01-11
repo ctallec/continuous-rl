@@ -1391,7 +1391,12 @@ via
 \begin{equation}
 \partial \pi(a|s)\E_{s'|s,a} \E_{s_2\sim \rho} \, Z(s',s_2)R(s_2)
 \end{equation}
-(this works even if $\rho$ is \emph{not} the invariant distribution). We
+(this works even if $\rho$ is \emph{not} the invariant distribution) or,
+with a baseline,
+\begin{equation}
+\partial \pi(a|s)\E_{s'|s,a} \E_{s_2\sim \rho} \, (Z(s',s_2)-Z(s,s_2))R(s_2)
+\end{equation}
+which should have much better variance. We
 can apply this each time a new reward is observed at some point $s_2$. We
 can even set another arbitrary distribution on $s_1$: this policy
 gradient will maximize
