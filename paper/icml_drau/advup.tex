@@ -36,7 +36,7 @@ Contrary to the action state value function, the rescaled advantage function con
 to an action dependent quantity when $\deltat$ goes to $0$
 \begin{align}
 	A^\pi_\deltat(s, a)=&\reward(s, a)+\frac{\gamma^{\deltat}\E_{\delta s \sim \delta s(s, a)}V^\pi_\deltat(s + \delta s)-V^\pi\deltat(s)}{\deltat}\nonumber\\
-	=&\reward(s, a)+(\gamma - 1) V^\pi(s)+\partial_s V^\pi(s)f(s, a)\nonumber\\
+	=&\reward(s, a)+\log(\gamma) V^\pi(s)+\partial_s V^\pi(s)f(s, a)\nonumber\\
          &+\frac{\text{tr}\left(\Sigma^T(s, a)\partial^2_{s^2}V^\pi(s) \Sigma(s,a)\right)}{2} + O(\deltat)\nonumber.
 \end{align}
 The discretized state action value function can then be rewritten as
@@ -47,10 +47,10 @@ The discretized state action value function can then be rewritten as
 A natural way of approximating $V^\pi_\delta$ and $A^\pi_\deltat$ is to apply
 \emph{Sarsa} or Q-learning to a reparameterized Q-function approximator
 \begin{equation}
-	Q_\theta(s, a) = V_{\theta_1}(s) + \deltat A_{\theta_2}(s, a).
+	Q_\Theta(s, a) = V_{\theta}(s) + \deltat A_{\psi}(s, a).
 \end{equation}
 To avoid cumbersome notations, in what follows, parameter indices are dropped.
-At initialization, if both $V_{\theta_1}$ and $A_{\theta_2}$ are initialized
+At initialization, if both $V_{\theta}$ and $A_{\psi}$ are initialized
 independantly of $\deltat$, this parameterization reasonably scales the
 contribution of actions relative to states in the value of $Q$.  
 
@@ -81,86 +81,138 @@ In the spirit of~\cite{dueling_nets}, this condition is enforced by writing $A$ 
 \begin{equation}
 	A(s, a) = \bar{A}(s, a) - \bar{A}(s, \pi(s)).
 \end{equation}
+With this parameterization, one can hope to learn an approximation of $A^\pi_\deltat$,
+from which a proper hiearchy of actions can be derived for any $\deltat$.
 
 \subsection{Time invariant exploration}
 \label{subsec:explo}
 To obtain a time invariant reinforcement learning algorithm, a time invariant
-exploration scheme is required. 
+exploration scheme is required. All the exploration schemes hereby considered
+generate sequences of actions as
+\begin{equation}
+	a^k_\deltat = \pi^\text{explore}_\deltat(s^k_\deltat, \nu^k_\deltat)
+\end{equation}
+with $(\nu^k_\deltat)_k$ a sequence of random variables, independant from the $a$'s and $s$'s.
+For instance, $\varepsilon$-greedy exploration naturally falls in this framework, with each $\nu^k_\deltat$
+being a pair composed of a bernoulli random variables $b^k_\deltat$ with probability of being $1$ equal to $\varepsilon$,
+and of a uniform categorical random variable $\xi^k_\deltat$ on actions. Exploratory actions are then selected as
+\begin{equation}
+	a^k_\deltat = (1 - b^k_\deltat) \text{argmax}_{a'} Q^\pi_\deltat(s, a') + b^k_\deltat \xi^k_\deltat.
+\end{equation}
+
+A sufficient condition for the exploratory policy to admit a time continuous
+limit is for $\pi^\text{explore}_\deltat$ to be a measurable function, and for
+$\nu_\deltat$ to admit one, i.e. that the sequence $\nu_\deltat$ converges to a
+well defined continuous stochastic process $\nu$ as $\deltat$ goes to $0$.
+\TODO{I'm convinced that this is true, reviewers might not be.}
 
 The exploration scheme used~\cite{ddpg}, which consists in adding an
-\emph{Ornstein-Uhlenbeck}~\cite{orn-uhl} process to actions, is naturally time
-invariant in the sense that it is first defined as a time continuous stochastic
-process, and that discretization of this process are used in practice. Indeed,
-a continuous Ornstein-Uhlenbeck process is defined as
+\emph{Ornstein-Uhlenbeck}~\cite{orn-uhl} process (OU process) to actions, is naturally time.
+invariant. It can be rewritten as
 \begin{equation}
-	dx_t = - (x_t - \mu) \theta dt + \sigma \dbt
+	a^k_\deltat = \pi(s^k_\deltat) + \nu^k_\deltat
+\end{equation}
+where $\nu^k_\deltat$ is the discretization of a time continuous \emph{Ornstein-Uhlenbeck}
+process, defined as
+\begin{equation}
+	d\nu_t = - \nu_t \theta dt + \sigma \dbt.
 	\label{eq:orn_uhl}
 \end{equation}
-and is naturally discretized by turning $d$'s into $\delta$'s, and using
-the same $\deltat$ for both the learning algorithm and the exploration scheme.
-Consequently, this exploration scheme can readily be used in continuous action
-environments.
 
-On the other hand, the usual exploration scheme used in discrete actions
-Q-learning, $\varepsilon$-greedy exploration~\cite{sutton} is not time
-invariant, in the sense that resulting state trajectories do not converge to a
-well defined stochastic process as $\deltat \rightarrow 0$. As $\dt$ goes to $0$,
-for any $\varepsilon$ independant of $\dt$, the behavior of state trajectories get
-closer to that of a white noise.
+On the other hand, the same argument cannot be applied to $\varepsilon$-greedy
+exploration, as the $\nu_\deltat$'s used to define it do not converge to a 
+well defined stochastic process, but to a white noise.\footnote{\TODO{$\varepsilon$-greedy
+		does not, in general, converges to a well defined exploration scheme in continuous time.
+		For instance, if actions directly affects position, $\varepsilon$-greedy results in white-noise
+trajectories in state space. Show this in more detail in appendix ?}}
 
 To obtain a temporally coherent exploration scheme in discrete action environment
-when using Q-learning we instead directly apply a discretization of a time continuous
-stochastic process to the output of the approximate Q-function, and select actions
-by maximizing the resulting perturbed Q-function. Typically, the approximate Q-function
-values are also perturbed using a discretized Ornstein-Uhlenbeck noise.
+$\nu_\deltat$ is chosen to be a discretization of a $|\mathcal{A}|$ dimensional
+continuous OU process, and set
+\begin{equation}
+	a^k_\deltat = \text{argmax}_{a'} \left(Q^\pi_\deltat(s, a') + \nu_\deltat^k[a']\right)
+\end{equation}
+where $\nu_\deltat^k[a']$ denotes the $a'$-th component of the discretized OU process at time
+$k$. The resulting exploration scheme converges to a proper time continuous exploration scheme.
 
 \subsection{Algorithms}
 \label{subsec:algorithm}
-Two variants of \emph{Deep Advantage Updating} are derived to cover both the continuous
-and discrete action cases. They both rely on variants of Q-learning. More precisely,
-we learn $V$ and $A$ using approximate version of the following bellman equation
+To learn $V_{\theta}$ and $A_{\psi}$, variants of Q-learning for continuous~\cite{ddpg} and
+discrete~\cite{dqn} action spaces are used. In details, $V_{\theta}$ and $A_{\psi}$ are learnt
+using approximate version of the following bellman equation, which holds for the true $A^\pi_\deltat$
+and $V^\pi_\deltat$,
 \begin{align}
-	V^{\pi}(s) + A^{\pi}(s, a) &= \E_{\delta r \sim \delta r(s, a)}\delta r\nonumber\\ 
-				   &+ \gamma^{\deltat}  \E_{\delta s \sim \delta s(s, a)} V^{\pi}(s + \delta s)\label{eq:bellman_A}\\
-	A^{\pi}(s, \pi(s)) &= 0\label{eq:max_A}
+	V^{\pi}_\deltat(s) + \deltat A^{\pi}_\deltat(s, a) &= r\deltat + \gamma^{\deltat}  \E_{s'} V^{\pi}_\deltat(s')\label{eq:bellman_A}\\
+	A^{\pi}_\deltat(s, \pi(s)) &= 0\label{eq:max_A}
 \end{align}
-for a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi(s, a')$.
-Eq.~\eqref{eq:max_A} is directly verified owing to the parameterization of $A$.
-To approximately verify~\eqref{eq:bellman_A}, the corresponding squared residual
-is minimized by an approximate gradient descent.
-The corresponding update equations when learning from incoming transitions of
+for a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi_\deltat(s,
+a')$, exactly implemented in the case of discrete actions, and approximated by
+a neural network $\pi_\phi(s)$, trained to maximize (an approximation of)
+$A^\pi_\deltat(s, \pi_\phi(s))$ in the continuous case.  Eq.~\eqref{eq:max_A}
+is directly verified by $A_{\psi}$, owing to the reparameterization
+$A_\psi(s, a) = \bar{A}_\psi(s, a) - \bar{A}_\psi(s, \pi(s))$, described
+in~\ref{subsec:reparam}.  To approximately verify~\eqref{eq:bellman_A}, the
+corresponding squared residual is minimized by an approximate gradient descent.
+The corresponding update equations when learning from a transition $(s, a, r, s')$ of
 an exploratory trajectory are
 \begin{align}
-	\delta Q_t &= A(s_t, a_t) - \frac{\delta r_t + \gamma^{\deltat} V(s_{t+\deltat}) - V(s_t)}{\deltat}\\
-	\theta^1_{t+\deltat} &= \theta^1_t + \eta_1 \partial_{\theta^1} V(s_t) \delta Q_t\\
-	\theta^2_{t+\deltat} &= \theta^2_t + \eta_2 \partial_{\theta^2} A(s_t, a_t) \delta Q_t.
+	\delta Q_\deltat &\leftarrow A(s, a) \deltat - \left(r \deltat + \gamma^{\deltat} V(s') - V(s)\right)\\
+	\theta_\deltat &\leftarrow \theta_\deltat + \eta^1_\deltat \partial_{\theta} V(s) \frac{\delta Q_\deltat}{\deltat}\\
+	\psi_\deltat &\leftarrow \psi_\deltat + \eta^2_\deltat \partial_{\psi} A(s, a) \frac{\delta Q_\deltat}{\deltat}.
 	\label{eq:approx_bellman_A}
 \end{align}
-where $\eta$'s are learning rates. We are now left to derive appropriate learning rates
-to provide invariance to time discretization.
+where $\eta$'s are learning rates. As we will see in the following section,
+to obtain a well defined continuous time limit, the learning rates can be rewritten as
+$\eta^i_\deltat = \alpha^i \deltat$, where $\alpha^1$ and $\alpha^2$ are independant
+of $\deltat$. In practice, $A$ and $V$ are learned using
+transitions sampled from a replay buffer instead of trajectory samples, to
+prevent excessive correlation between training samples~\cite{dqn}.
 \begin{algorithm}[ht]
 	\caption{Deep Advantage Updating (Discrete actions)}
 	\input{dauc.tex}
+	\label{alg:dau}
 \end{algorithm}
 
 \subsection{Learning rates scalings}
 \label{subsec:lr}
-A necessary condition to guarantee invariance to time discretization is that
-the trajectory of the parameters of our function approximators should remain
-well behaved when the discretization parameter $\deltat$ decreases. This notably
-means that optimization steps should not be too large, in which case parameter
-trajectories could diverge in a single gradient step, or two small, in which case
-the trajectories would converge to single points as $\deltat$ goes to $0$.
-This in turn imposes conditions on the scalings of the learning rates of invariant
-algorithms with respect to the discretization timestep.
+For the discrete algorithm to admit a continuous time limit, the trajectories
+of parameters must converge to well defined trajectories as $\deltat$ goes to
+$0$.  Intuitively, this means that optimization steps should not be too large,
+in which case parameter trajectories could diverge in a single gradient step,
+or too small, in which case the trajectories would converge to single points as
+$\deltat$ goes to $0$.  This in turn imposes conditions on the scalings of the
+learning rates of invariant algorithms with respect to the discretization
+timestep.
 
-If we optimize $\theta_1$ and $\theta_2$ according to Eq.~\eqref{eq:approx_bellman_A},
-both $\theta_1$ and $\theta_2$ verify update equations of the form
+The updates equations on $\theta$ and $\psi$ are described in
+Eq.~\eqref{eq:approx_bellman_A}.  To have parameter steps that do not grow
+larger or shrink to $0$ as $\deltat \leftarrow 0$, both $\delta \theta^1$ and
+$\delta \theta^2$ should verify stochastic differential equations, and notably
+have a deterministic component of order $\deltat$. As $\deltat$ goes to $0$,
+updates are rephrased as
 \begin{align}
-	\
-	\delta \theta^1_t = \eta_1 \partial_{\theta_1} V(s_t) (
+	\delta Q_\deltat &= A(s, a)\deltat - r\deltat - \log(\gamma) V(s)\deltat - \partial_s V(s) \delta s\nonumber \\&- \frac{(\delta s)^T \partial_{s^2}^2 V(s) \delta s}{2} + \smallo\left(\sqrt{\deltat}\right)\\
+	\delta \theta_\deltat &= \eta^1_\deltat \partial_{\theta} V(s) \frac{\delta Q_\deltat}{\deltat} + \smallo\left(\frac{\eta^1_\deltat}{\sqrt{\deltat}}\right)\\
+	\delta \psi_\deltat &= \eta^2_\deltat \partial_{\psi} A(s) \frac{\delta Q_\deltat}{\deltat} + \smallo\left(\frac{\eta^2_\deltat}{\sqrt{\deltat}}\right).
 \end{align}
-To have parameter steps that do not grow larger or shrink to $0$ as $\deltat
-\leftarrow 0$, both $\delta \theta^1$ and $\delta \theta^2$ should verify
-stochastic differential equations, and notably have a deterministic component
-of order $\deltat$. If the deterministic component 
+For parameter updates to follow a stochastic differential equations, one must
+have $\eta^1_\deltat = \alpha^1 \deltat$ and $\eta^2_\deltat = \alpha^2
+\deltat$. With this choice of learning rates, the limit SDEs are
+\begin{align}
+	F &= A(s_t, a_t) - r_t - \log(\gamma) V(s_t) - \partial_s V(s_t) f(s_t, a_t)\nonumber\\
+	G &= - \partial_s V(s_t, a_t) \Sigma(s_t, a_t)\nonumber\\
+	d\theta_t &= (\alpha^1 F  + D \dbt)\partial_{\theta} V(s_t)\nonumber\\
+	d\psi_t &= (\alpha^2 F  + D \dbt)\partial_{\psi} A(s_t, a_t)\nonumber.
+\end{align}
+The full algorithm can now be derived.
+Pseudocode for the discrete actions algorithm is given in Alg.~\ref{alg:dau}.
+Pseudocode for the continuous actions algorithm is given in the supplementary
+material.
+\TODO{Be careful when using RMSprop. When you are facing a stochastic environment
+	RMSprop evaluates the second momentum of gradients and rescale gradients by its
+	square root. This second momentum will
+	be of order $\frac{1}{\deltat}$, due to the stochasticity in the environment. Consequently
+	all gradient steps are multiplied by $\sqrt{\deltat}$, and learning rates need only be
+multiplied by $\sqrt{\deltat}$ instead of $\deltat$. Taking batches of size proportional to $\frac{1}{\deltat}$
+applies a similar fix.}
+

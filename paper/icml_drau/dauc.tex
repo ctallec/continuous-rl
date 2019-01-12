@@ -1,37 +1,33 @@
 %! TEX root = icml_drau.tex
 \begin{algorithmic}
 	\STATE \textbf{Inputs:}
-	\STATE $\theta_1$ and $\theta_2$, parameters of
-	$V_{\theta_1}$ and $\bar{A}_{\theta_2}$.
-	\STATE $\theta_1'$ parameter of target $V_{\theta_1'}$.
-	\STATE $\pi_{\text{exp}}$ exploration policy.
-	\STATE \textbf{opt}$_1$, \textbf{opt}$_2$, $\eta_1$ and $\eta_2$ optimizers and learning rates.
-	\STATE $\mathcal{D}$, buffer of transitions $(s, a, r, d, s')$.
+	\STATE $\theta$ and $\psi$, parameters of
+	$V_{\theta}$ and $\bar{A}_{\psi}$.
+	\STATE $\pi^{\text{explore}}$ and $\nu_\deltat$ defining an exploration policy.
+	\STATE \textbf{opt}$_1$, \textbf{opt}$_2$, $\alpha_1 \deltat$ and $\alpha_2 \deltat$ optimizers and learning rates.
+	\STATE $\mathcal{D}$, buffer of transitions $(s, a, r, d, s')$, with $d$ the episode termination signal.
 	\STATE $\deltat$ and $\gamma$, time discretization and discount factor.
-	\STATE $\tau$, target network update factor.
 	\STATE \textbf{nb\_epochs} number of epochs.
 	\STATE \textbf{nb\_steps}, number of steps per epoch.
 	\STATE
 	\STATE Observe initial state $s^0$
 	\STATE $t \gets 0$
 	\FOR {$e=0, \textbf{nb\_epochs}$}
-	\FOR {$k=1, \textbf{nb\_steps}$}
-	\STATE Sample $a_t$ according to $\pi_{\text{exp}}$.
-	\STATE Perform $a_t$ and observe $(r_{t+1}, d_{t+1}, s_{t+1})$.
-	\STATE Store $(s_t, a_t, r_{t+1}, d_{t+1}, s_{t+1})$ in $\mathcal{D}$.
-	\STATE Update $\pi_{\text{exp}}$ with $(a_t, s_{t+1})$.
-	\STATE $t \gets t + 1$
+	\FOR {$j=1, \textbf{nb\_steps}$}
+	\STATE $a^k \leftarrow \pi^{\text{explore}}(s^k, \nu^k_\deltat)$.
+	\STATE Perform $a^k$ and observe $(r^{k+1}, d^{k+1}, s^{k+1})$.
+	\STATE Store $(s^k, a^k, r^{k+1}, d^{k+1}, s^{k+1})$ in $\mathcal{D}$.
+	\STATE $k \gets k + 1$
 	\ENDFOR
 	\FOR {$k=0, \text{nb\_learn}$}
 	\STATE \text{Sample a batch of $N$ random transitions from $\mathcal{D}$}
-	\STATE $Q^i \gets V_{\theta_1}(s^i) + \deltat\hspace{-.17em}\left(
-	\bar{A}_{\theta_2}(s^i, a^i) - \max\limits_{a'}\bar{A}_{\theta_2}(s^i, a')\right)$
-	\STATE $\tilde{Q^i} \gets r^i + (1 - d^i) \gamma^{\deltat} V_{\theta_1}(s'^i)$
-	\STATE $\Delta \theta_1 \gets \sum\limits_{i=1}^N \partial_{\theta_1} V_{\theta_1}(s^i) (Q^i - \tilde{Q^i})$
-	\STATE $\Delta \theta_2 \gets \sum\limits_{i=1}^N \partial_{\theta_2} A_{\theta_2}(s^i, a^i) (Q^i - \tilde{Q^i})$
-	\STATE Update $\theta_1$ using \textbf{opt}$_1$ with $\Delta \theta_1$ and learning rate $\eta_1$.
-	\STATE Update $\theta_2$ using \textbf{opt}$_2$ with $\Delta \theta_2$ and learning rate $\eta_2$.
-	\STATE $\theta_1' \gets \tau \theta_1' + (1 - \tau) \theta_1$
+	\STATE $Q^i \gets V_{\theta}(s^i) + \deltat\hspace{-.17em}\left(
+	\bar{A}_{\psi}(s^i, a^i) - \max\limits_{a'}\bar{A}_{\psi}(s^i, a')\right)$
+	\STATE $\tilde{Q^i} \gets r^i\deltat + (1 - d^i) \gamma^{\deltat} V_{\theta}(s'^i)$
+	\STATE $\Delta \theta \gets \frac{1}{N}\sum\limits_{i=1}^N  \frac{\left(Q^i - \tilde{Q^i}\right)\partial_{\theta} V_{\theta}(s^i)}{\deltat}$
+	\STATE $\Delta \psi \gets \frac{1}{N}\sum\limits_{i=1}^N \frac{\left(Q^i - \tilde{Q^i}\right)\partial_{\psi} \left(\bar{A}_{\psi}(s^i, a^i) - \max\limits_{a'}\bar{A}_{\psi}(s^i, a')\right) }{\deltat}$
+	\STATE Update $\theta$ with \textbf{opt}$_1$, $\Delta \theta$ and learning rate $\alpha_1 \deltat$.
+	\STATE Update $\psi$ with \textbf{opt}$_2$, $\Delta \psi$ and learning rate $\alpha_2 \deltat$.
 	\ENDFOR
 	\ENDFOR
 \end{algorithmic}
