@@ -1636,6 +1636,15 @@ random walk" problem by introducing temporary momentum; one can even
 increase temperature a bit on $\omega$, by using slightly larger/more
 variant values of $\omega$ as the goal.
 
+It's a bit strange to train the policy for goal $s_2$ via policy gradient,
+instead of just selecting the next state to maximize
+$z(s,s_2;s_2)$ where $z(s,s_2;s_3)$ is the $z$ function associated with
+the policy that has goal $s_3$. Formally, computing the latter is
+feasible: one has to follow an exploration policy that has a non-constant
+goal,so at each step we observe a transition of the policy with some goal
+$s_3$; and hope that Newton--Bellman for computing $z(s,s_2;s_3)$
+generalizes well with respect to $z_3$.
+
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
