@@ -1602,6 +1602,35 @@ supervised training target for $Z_\theta$; then it does not really matter
 what the sampling distribution for this supervised training is, as long
 as that sampling distribution covers everywhere.
 
+Building a universal policy. One may make the policy depend on a goal
+representation $\omega$ as an additional input. One may simultaneously
+compute $Z(s_1,s_2,\omega)$, namely the $Z$ function when following the
+policy with goal $\omega$, and train at the same time a map $s_2\mapsto \omega=\Omega(s_2)$ and
+policy parameters $\pi(a|s_1,\omega)$ such that following
+$\pi(|\Omega(s_2))$ indeed goes towards $s_2$, namely, the policy
+gradient for every $s_2$ is
+\begin{equation}
+\partial \pi(a|s,\Omega(s_2))\E_{s'|s,a} \E_{s_2\sim \rho} \,
+(z(s',s_2,\Omega(s_2))-z(s,s_2,\Omega(s_2)))
+\end{equation}
+[TODO check this is indeed the policy gradient for the time spent at
+$s_2$ if following policy $\pi(|\Omega(s_2))$]. Advantage: diversity of
+policies should appear by itself, no need to manually force options to be
+distinct. Depends on a chosen distribution of goals $s_2$; we could learn
+to go to uniformly distributed states, or create a goal at points where
+we observe a high reward value (so learning to go to all states with a
+reward). Just fixing $\Omega(s)\deq s$ once and for all might work, in
+principle, but may be ambitious. TODO check:
+this is with a reward a Dirac at $s_2$, check there's no technical
+problem wrt the reference distribution $\rho(s_2)$, as we use $z$ not $Z$
+in the policy gradient and $z$ is the density of $Z$ wrt $\rho$ but I
+think it's correct. Actually, for goal representations, a goal is not
+necessarily a state itself, should be a feature of states, or some
+representation of a reward function, so we should figure out the way to
+give a meaning to $\Omega(R)$ for an arbitrary reward $R$. The
+representation of $Z$ as $Z=\transp{\green}f$ does that automatically,
+thanks to linearity wrt $R$.
+
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
