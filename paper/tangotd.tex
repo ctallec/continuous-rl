@@ -1630,7 +1630,11 @@ necessarily a state itself, should be a feature of states, or some
 representation of a reward function, so we should figure out the way to
 give a meaning to $\Omega(R)$ for an arbitrary reward $R$. The
 representation of $Z$ as $Z=\transp{\green}f$ does that automatically,
-thanks to linearity wrt $R$.
+thanks to linearity wrt $R$. This could even help with exploration:
+setting temporary goals towards already-seen past states solves the "pure
+random walk" problem by introducing temporary momentum; one can even
+increase temperature a bit on $\omega$, by using slightly larger/more
+variant values of $\omega$ as the goal.
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
