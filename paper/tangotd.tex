@@ -1616,7 +1616,9 @@ gradient for every $s_2$ is
 [TODO check this is indeed the policy gradient for the time spent at
 $s_2$ if following policy $\pi(|\Omega(s_2))$]. Advantage: diversity of
 policies should appear by itself, no need to manually force options to be
-distinct. Depends on a chosen distribution of goals $s_2$. TODO check:
+distinct. Depends on a chosen distribution of goals $s_2$; we could learn
+to go to uniformly distributed states, or create a goal at points where
+we observe a high reward value (so learning to go to all states with a reward). TODO check:
 this is with a reward a Dirac at $s_2$, check there's no technical
 problem wrt the reference distribution $\rho(s_2)$, as we use $z$ not $Z$
 in the policy gradient and $z$ is the density of $Z$ wrt $\rho$ but I
