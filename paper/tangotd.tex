@@ -1645,6 +1645,13 @@ goal,so at each step we observe a transition of the policy with some goal
 $s_3$; and hope that Newton--Bellman for computing $z(s,s_2;s_3)$
 generalizes well with respect to $z_3$.
 
+What I don't like here: This still does not capture the composition of
+policies/goals (like: to go to $s_2$, first go to $s_1$ via the
+$s_1$-policy, then apply the known $s_2$-policy from $s_1$). The
+Newton--Bellman equation captures, \emph{for a fixed policy}, the
+composition of paths of that policy. But the above still treats
+$z(s_1,s_2;\omega)$ as a separate problem for each $\omega$.
+
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
