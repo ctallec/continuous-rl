@@ -23,6 +23,9 @@ plot_learning_curves(expdata_ant, ['Return', 'Return'], 'ant')
 expdata_cartpole = expdata.filter_settings(lambda s: s['env_id'] == 'cartpole')
 plot_learning_curves(expdata_cartpole, ['Return', 'Return'], 'cartpole')
 
+expdata_cheetah = expdata.filter_settings(lambda s: s['env_id'] == 'half_cheetah')
+plot_learning_curves(expdata_cheetah, ['Return', 'Return'], 'cheetah')
 
-# expdata_tau = expdata.filter_settings(lambda s: s['algo'] == 'discrete_value')
-# expdata_tau.repr_rawlogs("Return", 5)
+
+expdata_tau = expdata.filter_settings(lambda s: s['algo'] == 'discrete_value')
+expdata_tau.repr_rawlogs("Return", 5)
