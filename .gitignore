@@ -13,3 +13,4 @@ exp/logs*
 *~
 temp
 paper/decreasing_lr.tex
+.#*
