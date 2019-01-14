@@ -11,7 +11,7 @@ class ExperimentData:
             args = run.args
             for setting in setting_list:
                 if setting.args == args:
-                    setting.push(run)
+                    # setting.push(run)
                     break
             setting_list.append(ExperimentSetting([run]))
 
@@ -98,6 +98,7 @@ class ExperimentRun:
 
     @property
     def args(self):
+        print(self._args_file)
         if not hasattr(self, '_args'):
             assert os.path.isfile(self._args_file)
 

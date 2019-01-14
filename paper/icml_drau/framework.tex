@@ -8,7 +8,15 @@
 % value between two different actions in a fixed state is of order $\bigO(\deltat)$.
 
 
-Many reinforcement learning environments are discretizations or approximations of continuous environments. We say that these environments are \emph{near continuous}. This includes usual control environment (Mujoco, Gym, ...) \TODO{Cite}. In practice, these environments are considered as discrete, and a time discretization $\deltat$ is fixed by the simulator. In real environments, like in robotics, the time discretization $\deltat$ is fixed by the sensors or motors. Still, in these environments, there is an uderlying continuous process which do not depend on $\deltat$. Therefore, our learning methods should be invariant to $\deltat$, as well as all the meaningfull quantities we are using.
+Many reinforcement learning environments are discretizations or approximations
+of continuous environments. We say that these environments are \emph{near
+continuous}. This includes usual control environment (Mujoco, Gym, ...)
+\TODO{Cite}. In practice, these environments are considered as discrete, and a
+time discretization $\deltat$ is fixed by the simulator. In real environments,
+like in robotics, the time discretization $\deltat$ is fixed by the sensors or
+motors. Still, in these environments, there is an uderlying continuous process
+which do not depend on $\deltat$. Therefore, our learning methods should be
+invariant to $\deltat$, as well as all the meaningfull quantities we are using.
 
 In this paper, we try to analyze \emph{near-continuous} environments when  modifying $\deltat$, especially when $\deltat \rightarrow 0$. In order to design algorithms more robust to the choice of $\deltat$, we want that when $\deltat \rightarrow 0$, the quantities we are using and our algorithm do converge to meaningful limit quantities and algorithms.
 
@@ -16,9 +24,42 @@ In this paper, we try to analyze \emph{near-continuous} environments when  modif
 
 In this section, we first introduce our framework. Then we show how we can define the return, discount factor and Value function such that it has a limit when $\deltat \rightarrow 0$. Finally, we show that there is no Action-Value function in continuous MDPs.
 
+\VC{Many reinforcement learning environments are not intrinsically time
+	discrete, but discretization of an underlying continuous time
+	environment. For instance, many control environments, such as the
+	Mujoco~\cite{ddpg} environments or OpenAI Gym classic~!CITE! control
+	environments are discretization of continuous time control problems.
+	For real world environments, the discretization timestep, $\deltat$ is
+	most often imposed by the quality of sensors and actuators. For visual
+	simulated environments, it often corresponds to the number of frames
+	that the simulator generates per second. As $\deltat$ is not an
+	intrinsic parameter of the environment, but a constraint imposed by
+	computational ressources, we would expect that decreasing $\deltat$
+	could  only improve the performance of reinforcement learning agents.
+	To achieve this goal, reinforcement learning algorithms should be
+	resilient to a change of $\deltat$, and should remain viable when
+	$\deltat \rightarrow 0$. We are thus interested in the behavior of
+	reinforcement learning algorithms in discretized environments, when the
+	discretization timestep is small. We will refer to such environments as
+	\emph{near continuous environments}.
+
+	In what follows, a formalized view of near continuous environments is given,
+	along with $\deltat$ dependant definitions of return, discount factor and
+	value functions. With these definitions, each of these quantities is shown
+	to converge to a well defined continous time limit. Finally, it is shown
+	that the state-action value function collapses to the value function as
+	$\deltat$ goes to $0$, and consequently that there is no Q-learning in
+	continuous time.
+}
 \subsection{Framework}
 
-We say that ${\cal M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat, \gamma_\deltat\rangle$ is a \emph{near-continuous} Markov Decision Process with trajectories $(s_\deltat^k)_{k\in\mathbb{N}}$ if there is a \emph{physical time} $\deltat$ between two observations, and if $s_\deltat^{k+1}$ is close to $s_\deltat^k$. We assume that the state space ${\cal S}$ is continuous \TODO{True? Ok?}. The action space ${\cal A}$ can be either continuous or discrete \TODO{except in the theorems}.
+We say that ${\cal M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat},
+r_\deltat, \gamma_\deltat\rangle$ is a \emph{near-continuous} Markov Decision
+Process with trajectories $(s_\deltat^k)_{k\in\mathbb{N}}$ if there is a
+\emph{physical time} $\deltat$ between two observations, and if
+$s_\deltat^{k+1}$ is close to $s_\deltat^k$. We assume that the state space
+${\cal S}$ is continuous \TODO{True? Ok?}. The action space ${\cal A}$ can be
+either continuous or discrete \TODO{except in the theorems}.
 
 % Many practical Reinforcement Learning are near-continuous: For example, in a simulated physical environment in which the $\deltat$ is fixed by the simulator, or in a real environments, if the agent is a robot.
 
@@ -53,42 +94,129 @@ In this paper, we try to design RL methods for \emph{near continuous} MDP robust
   as probability distributions.
 \end{theorem}
 
+\VC{Consider ${\cal S} = \mathbb{R}^d$ a set of states, and ${\cal A}$ a set of
+	actions. A familly of \emph{Markov decision processes} ${\cal
+	M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
+	\gamma_\deltat\rangle$ is \emph{near continous} if for any
+	deterministic policy $\pi:{\cal S} \rightarrow {\cal A}$, trajectories
+	of ${\cal M}_\deltat$ converge to stochastic processes that satisfy the
+	Stochastic differential equation
+	\begin{equation}
+		\label{eq:diffusion}
+		ds = F(s, a)dt + \Sigma(s, a)\dbt.
+	\end{equation}
+	Informally $F: {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
+	the deterministic dynamic of the environment, while $\Sigma(s, a)\dbt$
+	describes its stochasticity. Notably, $\Sigma = 0$ if the environment is
+	deterministic, as in classical control theory, or in many usual simulated
+	environments (Mujoco, Gym, ...).
 
+	In what follows, ${\cal M}_\deltat$ is taken to be a direct discretization of
+	Eq.~\ref{eq:diffusion} with discretization timestep $\deltat$. The
+	corresponding transition function $T_\deltat(., s, a)$ is the distribution of
+	$s'$ when starting from point $s$, and following Eq.~\ref{eq:diffusion} while
+	maintaining $a$ constant on an interval of time $\deltat$.
 
+	In this paper, we try to design RL methods for \emph{near continuous} MDP
+	robust to the choice of $\deltat$. Our method is to analyse the different
+	quantities we are looking at when $\deltat$ is changing, and especially when
+	$\deltat \rightarrow 0$, and make sure that the quantities we are interested in
+	and our algorithms do converge to meaningful limit quantities and algorithms.
+	!OK?! The first formal statement we can make on discretized MDP with a
+	time discretization $\deltat$ is that if $\deltat \rightarrow 0$, the
+	distribution of trajectories do converge to the continuous trajectories.
+
+	\begin{theorem}
+		Assume that $\pi: {\cal S} \rightarrow {\cal A}$ is a continuous and
+		deterministic policy. Let $(s_t)_{t\in\mathbb{R}_+}$ be the
+		continuous process by following \eqref{eq:diffusion} and
+		$(s_\deltat^k)$ be the discrete process obtained if the agent only
+		get observations every $\deltat$ !explain better!.
+
+		We define the time process $\tilde s_\deltat^t = s^{\lfloor
+		\frac{t}{\deltat}\rfloor}_\deltat$ for
+		$t\in\mathbb{R_+}$.!Explain!. Then:
+		\begin{equation}
+			\label{eq:conv-traj}
+			(\tilde s_\deltat^t)_{t\in\mathbb{R}_+} 
+			\xrightarrow[\deltat \rightarrow 0]{} (s_t)_{t\in\mathbb{R}_+}
+		\end{equation}
+		in distribution.
+	\end{theorem}
+}
 
 \subsection{Return, discount factor  and Value function in near continuous time}
 \label{sec:ret-gamma-v}
 
 In this section, we show how to define the discount factor $\gamma_\deltat$ as a function of $\deltat$, such that the return and Value function do converge to the desired limit when $\deltat \rightarrow 0$. 
 
-\paragraph{Return and Discount Factor} For a continuous MDP the return is defined as \TODO{Cite}:
+\VC{
+	In what follows, $\deltat$-dependant definitions of the discount factor
+	and the reward are given. These definitions fit the discrete case
+	scenario when $\deltat=1$, and yields well defined, non trivial returns
+	and value functions when $\deltat$ goes to $0$.
+}
+
+\paragraph{Return and Discount Factor}
+For a continuous MDP and a continuous trajectory $\tau = (s_t, a_t)_t$,
+the return is defined as~\cite{cont_rl}
 \begin{equation}
-  \label{eq:continuous-return}
-  R(\tau) = \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt
+	\label{eq:continuous-return}
+	R(\tau) = \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt
 \end{equation}
 
-The natural discretization of this equation, if we want to define a discretize return $R_\delta$ for each $\deltat$ is:
+The natural discretization of this equation, if we want to define a discretized
+return $R_\delta$ for each $\deltat$ is:
 \begin{equation}
-  \label{eq:discretized-return}
-  R_\deltat(\tau) = \sum_{k=0}^\infty\gamma^{k\deltat}r(s^\deltat_k, a^\deltat_k)\deltat
+	\label{eq:discretized-return}
+	R_\deltat(\tau) = \sum_{k=0}^\infty\gamma^{k\deltat}
+	r(s^\deltat_k, a^\deltat_k)\deltat
 \end{equation}
 
-We see that the natural definitions of $\gamma_\deltat$ and $r_\deltat$ such that the return defined in equation (\ref{eq:discretized-return}) corresponds to the discrete return for the MDP ${\cal M}_\deltat$ are:
+Natural definitions of $\gamma_\deltat$ and $r_\deltat$ such
+that the return defined in equation (\ref{eq:discretized-return}) corresponds
+to the discrete return for the MDP ${\cal M}_\deltat$ follow:
 \begin{align}
-  \label{eq:def-gamma}
-  \gamma_\deltat =& \gamma^\deltat\\
-  \label{eq:def-reward}
-  r_\deltat =& \deltat . r
+	\label{eq:def-gamma}
+	\gamma_\deltat =& \gamma^\deltat\\
+	\label{eq:def-reward}
+	r_\deltat =& \deltat . r.
 \end{align}
 % Thus, we see that the natural discretization of a continuous MDP ${\cal M} = \langle {\cal S}, {\cal A}, T, r, \gamma\rangle$ is ${\cal M}_\deltat = \langle {\cal S}, {\cal A}, T_\deltat, r\deltat, \gamma^\deltat\rangle$.
 
 % Thus, we should define $\gamma_\deltat = \gamma^\deltat$, so we have $\lim_{\deltat \rightarrow 0} R_\deltat(\tau)  = R(\tau)$.
 
+\paragraph{Microscopic/Macroscopic time, Time horizon}
+\VC{In near continuous environments, there are two notions of time,
+	the number of observation received, or the number of actions taken,
+	which we call the microscopic time, and the actual amount of time spent
+	in the underlying continuous time environment, which we call the macroscopic
+	time. The two are related through
+	\begin{equation}
+		\tau^\text{macro} = \tau^\text{micro} \deltat.
+	\end{equation}
 
+	The notion of time horizon, which is, informally, the amount of time on
+	which the agent optimizes its return, is only meaningful in macroscopic
+	time. Having a time horizon of $10$ steps means something very different
+	if $\deltat = 0.1$ and if $\deltat = 0.0001$. A rule of thumb
+	is that the time horizon of an agent with discount factor $\gamma$ is
+	of order $\frac{1}{1 - \gamma}$. If $\gamma_\deltat$ was left constant
+	as $\deltat$ goes to $0$, the corresponding macroscopic time horizon 
+	would write as $\frac{\deltat}{1 - \gamma}$ which goes to $0$ when
+	$\deltat$ goes to $0$.
 
-
-
-\paragraph{Time horizon} The definition of $\gamma_\deltat$ in equation (\ref{eq:def-gamma}) is consistent with what we expect for the time horizon. We know \TODO{Cite?} that for a MDP with discount factor $\gamma$, the time horizon is $\frac{1}{1-\gamma}$ steps. But if the duration of a step is $\deltat$, the time horizon in \emph{physical time} is $\frac{\deltat}{1-\gamma}$, which goes to 0 if $\deltat \rightarrow 0$.
+	On the contrary, the definition of $\gamma_\deltat$ in
+	Eq.~\eqref{eq:def-gamma} yields an approximately constant macroscopic
+	time horizon when $\deltat$ goes to $0$. Indeed,
+	\begin{equation}
+		\label{eq:time-horizon}
+		\frac{\deltat}{1-\gamma^\deltat}
+		= - \frac{1}{\log \gamma} + \bigO(\deltat)
+		\approx \frac{1}{1-\gamma}
+	\end{equation}
+}
+The definition of $\gamma_\deltat$ in equation (\ref{eq:def-gamma}) is consistent with what we expect for the time horizon. We know \TODO{Cite?} that for a MDP with discount factor $\gamma$, the time horizon is $\frac{1}{1-\gamma}$ steps. But if the duration of a step is $\deltat$, the time horizon in \emph{physical time} is $\frac{\deltat}{1-\gamma}$, which goes to 0 if $\deltat \rightarrow 0$.
 % This means that if $\gamma$ is not adapted to $\deltat$, the return $R_\deltat(\tau) = \sum_{k=0}^\infty\gamma^{k}r(s^\deltat_k, a^\deltat_k)\deltat \rightarrow_{\deltat\rightarrow 0} r(s_0, a_0)$. \TODO{A changer pour ne pas ecrire de chose fausse}
 But in practice, for example on a control problem, we do not care about the time horizon as a number of steps but as a \emph{physical} quantity independant of $\deltat$. With $\gamma_\deltat = \gamma^\deltat$, the time horizon in \emph{physical time} is:
 \begin{equation}
@@ -99,10 +227,17 @@ But in practice, for example on a control problem, we do not care about the time
 
 \paragraph{Value function}
 
-With the definition of $\gamma_\deltat$ and $r_\deltat$ in equations \eqref{eq:def-gamma} and \eqref{eq:def-reward}, the Value Function for a policy $\pi$ with a discretization $\deltat$ becomes:
+The definition of the return Eq.~\eqref{eq:continuous-return}, yields the
+following definition of the continuous value function
+\begin{equation}
+  V^\pi(s) = \E_{\tau\sim\pi}\left[\int\limits_{0}^\infty \gamma^{t}\deltat r_{t} \mid s_0 = s\right].
+\end{equation}
+The corresponding discretization for time discretization $\deltat$ is
 \begin{equation}
   V^\pi_\deltat(s) = \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty \gamma^{k\deltat}\deltat r_{k\deltat} \mid s_0 = s\right]
 \end{equation}
+which fits the usual definition of the discrete V-function for $\gamma_\deltat$ and
+$r_\deltat$ defined in~(\ref{eq:def-gamma}, \ref{eq:def-reward}).
 We have the following convergence theorem of the discretized value function to the continuous value function:
   \begin{theorem}
     We have, for all $s \in {\cal S}$:
@@ -121,13 +256,18 @@ The discretized value function follows the Bellman equation:
 If the MDP is following the equation (\ref{eq:diffusion}), the limit of the Bellman equation for $V^\pi_\deltat$ when $\deltat \rightarrow 0$ is the Hamilton-Jacobi-Bellman equation on $V^\pi$:
 \begin{equation}
   \label{eq:hamilton-jacobi-bellman}
-  r + \partial_s V^\pi \cdot F + \frac{1}{2} \text{tr}\left(\Sigma^T\partial^2_{s^2} V^\pi\Sigma\right) = (1 - \gamma) V^\pi(s)
+  r + \partial_s V^\pi \cdot F + \frac{1}{2} \text{tr}\left(\Sigma^T\partial^2_{s^2} V^\pi\Sigma\right) = - \log(\gamma) V^\pi(s)
 \end{equation}
 
 
 \subsection{There is no Q-function in continuous time}
 
-Contrary to the Value function, the Action-Value function $Q$ is ill-defined for a continuous MDP. More precisely, for a continuous MDP, $Q^\pi(s, a) = V^\pi(s)$, so the continuous $Q$-function is independant of the actions. For a \emph{near-continuous} MDP, this means that the $Q$ is very close  to the $V$-function.\TODO{Say more ?} Moreover, this means that the discretized $Q$ function \TODO{explain}. This can be stated formally.
+Contrary to the Value function, the Action-Value function $Q$ is ill-defined
+for a continuous MDP. More precisely, for a continuous MDP, $Q^\pi(s, a) =
+V^\pi(s)$, so the continuous $Q$-function is independant of the actions. For a
+\emph{near-continuous} MDP, this means that the $Q$-function is very close  to the
+$V$-function.\TODO{Say more ?} Moreover, this means that the discretized $Q$
+function \TODO{explain}. This can be stated formally.
 \begin{theorem}
   For all $s, a$, we have
   \begin{equation}

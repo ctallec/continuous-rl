@@ -57,7 +57,7 @@ class AdvantageCritic(CompoundStateful, Critic):
             torch.cat([action, max_action], dim=0))
         pre_adv, pre_max_adv = pre_advs[:batch_size], pre_advs[batch_size:]
         adv = pre_adv - pre_max_adv
-        q = v + adv
+        q = v + self._dt * adv
         # next_adv = 0 by definition
         expected_q = (reward * self._dt + self._gamma ** self._dt * next_v).detach()
 
