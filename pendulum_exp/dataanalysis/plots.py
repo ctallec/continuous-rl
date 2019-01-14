@@ -15,8 +15,7 @@ algolabeldict = {
     'approximate_value':'ddpg',
 }
 
-def plot_learning_curves(expdata, key_list, namefile):
-    mint, maxt = 0, 100
+def plot_learning_curves(expdata, key_list, namefile, mint: float = 0, maxt: float = 100):
 
     nlines, ncol = len(key_list), 1
     fig, axes = plt.subplots(nlines, ncol, figsize=(5.*ncol, 4.*nlines))
