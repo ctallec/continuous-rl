@@ -1614,9 +1614,9 @@ gradient for every $s_2$ is
 (z(s',s_2;\Omega(s_2))-z(s,s_2;\Omega(s_2)))
 \end{equation}
 This equation is used to train the policy parameters; $\Omega(s_2)$ is
-trained so that $\omega=\Omega(s_2)$ indeed maximizes $z(s,s_2,\omega)$
+trained so that $\omega=\Omega(s_2)$ indeed maximizes $z(s,s_2;\omega)$
 (because the best way to reach $s_2$ is to select the $\omega$ with
-maximal $z(s,s_2,\omega)$ at each step; TODO: from which $s$? TODO: here
+maximal $z(s,s_2;\omega)$ at each step; TODO: from which $s$? TODO: here
 I'm confusing constant action plans and time-variable action plans).
 [TODO check this is indeed the policy gradient for the time spent at
 $s_2$ if following policy $\pi(\Omega(s_2))$]. Advantage: diversity of
@@ -1666,6 +1666,7 @@ V(s,s')=\1_{s=s'}+\gamma \max_a \E_{s_1|s,a} V(s_1,s')
 \end{equation}
 and it also satisfies
 \begin{equation}
+\label{eq:optrightbellman}
 V(s,s')=\1_{s=s'}+\gamma \sum_{s_{t-1}} V(s,s_{t-1})\max_a
 \E_{s_t|s_{t-1},a}\1_{s_t=s'}
 \end{equation}
@@ -1723,5 +1724,21 @@ is more general, by taking a full basis of Dirac features $\1_{s'}$. Then
 $V(s,(\alpha_i))$ does not just learn how to go to individual states, but
 how to maximize time spent in an arbitrary weighted sum of states. This
 is why we can later extend to an arbitrary reward function.)
+
+By multiplying \eqref{eq:optrightbellman} by $V$, one finds the
+Newton--Bellman equation for the optimal function $V$ seen as a matrix:
+\begin{equation}
+\label{eq:optrightbellman}
+V^2_{s_1s_2}=V_{s_1s_2}+\gamma \sum_{s_3} V_{s_1s_3}\max_a
+\E_{s_4|s_3,a} V_{s_4s_2}
+\end{equation}
+TODO DOUBLE-CHECK
+and representing $V$ by its density wrt $\rho$ namely
+$V_{s_1s_2}=z(s_1,s_2)\rho(s_2)$ this suggests the Newton method
+\begin{equation}
+z(s_1,s_2)\gets 2z(s_1,s_2)-\E_{s_3\sim \rho} z(s_1,s_3)z(s_3,s_2)+\gamma
+\E_{s_3\sim \rho} z(s_1,s_3)\max_a \E_{s_4\sim P(s_4|s_3,a)} z(s_4,s_2)
+\end{equation}
+satisfied by the optimal $z$ function.
 
 \end{document}
