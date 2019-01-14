@@ -1662,6 +1662,7 @@ represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
 satisfies the Bellman equation
 \begin{equation}
+\label{eq:optleftbellman}
 V(s,s')=\1_{s=s'}+\gamma \max_a \E_{s_1|s,a} V(s_1,s')
 \end{equation}
 and it also satisfies
@@ -1725,20 +1726,20 @@ $V(s,(\alpha_i))$ does not just learn how to go to individual states, but
 how to maximize time spent in an arbitrary weighted sum of states. This
 is why we can later extend to an arbitrary reward function.)
 
-By multiplying \eqref{eq:optrightbellman} by $V$, one finds the
+By multiplying \eqref{eq:optleftbellman} by $V$ on the left, one finds the
 Newton--Bellman equation for the optimal function $V$ seen as a matrix:
 \begin{equation}
-\label{eq:optrightbellman}
 V^2_{s_1s_2}=V_{s_1s_2}+\gamma \sum_{s_3} V_{s_1s_3}\max_a
 \E_{s_4|s_3,a} V_{s_4s_2}
 \end{equation}
-TODO CHECK, MAY BE WRONG DUE TO MAX OF WRONG STUFF!!
 and representing $V$ by its density wrt $\rho$ namely
-$V_{s_1s_2}=z(s_1,s_2)\rho(s_2)$ this suggests the Newton method
-\begin{equation}
-z(s_1,s_2)\gets 2z(s_1,s_2)-\E_{s_3\sim \rho} z(s_1,s_3)z(s_3,s_2)+\gamma
-\E_{s_3\sim \rho} z(s_1,s_3)\max_a \E_{s_4\sim P(s_4|s_3,a)} z(s_4,s_2)
-\end{equation}
+$V_{s_1s_2}=z^\ast(s_1,s_2)\rho(s_2)$ this suggests the Newton method
+\begin{multline}
+z^\ast(s_1,s_2)\gets 2z^\ast(s_1,s_2)-\E_{s_3\sim \rho}\,
+z^\ast(s_1,s_3)z^\ast(s_3,s_2)\\
++\gamma
+\E_{s_3\sim \rho} \,z^\ast(s_1,s_3)\max_a \E_{s_4\sim P(s_4|s_3,a)} z^\ast(s_4,s_2)
+\end{multline}
 satisfied by the optimal $z$ function.
 
 \end{document}
