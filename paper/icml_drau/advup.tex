@@ -24,7 +24,7 @@ behaved parameter trajectories when $\deltat$ goes to $0$.
 \subsection{Advantage Updating}
 \label{subsec:reparam}
 To define an object which contains the same information on actions as
-$Q^\pi_\deltat$, but admits an action dependant continuous time limit, , it is
+$Q^\pi_\deltat$, but admits an action dependant continuous time limit, it is
 natural to define
 \begin{align}
 	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat},
@@ -33,12 +33,26 @@ natural to define
 a rescaled version of the advantage function, as the difference between between
 $Q^\pi_\deltat(s, a)$ and $V^\pi\deltat(s)$ is of order $\bigO(\deltat)$.
 Contrary to the action state value function, the rescaled advantage function converges
-to an action dependent quantity when $\deltat$ goes to $0$
+to an action dependent quantity when $\deltat$ goes to $0$ \LB{In next equation, tiny detail but I would write $\frac{1}{\deltat}(r\deltat+...)$, easier to read.}
 \begin{align}
-	A^\pi_\deltat(s, a)=&\reward(s, a)+\frac{\gamma^{\deltat}\E_{\delta s \sim \delta s(s, a)}V^\pi_\deltat(s + \delta s)-V^\pi\deltat(s)}{\deltat}\nonumber\\
+	A^\pi_\deltat(s, a)=&\reward(s, a)+\frac{\gamma^{\deltat}\E_{\delta s \sim \delta s(s, a)}V^\pi_\deltat(s + \delta s)-V^\pi_\deltat(s)}{\deltat}\nonumber\\
 	=&\reward(s, a)+\log(\gamma) V^\pi(s)+\partial_s V^\pi(s)f(s, a)\nonumber\\
          &+\frac{\text{tr}\left(\Sigma^T(s, a)\partial^2_{s^2}V^\pi(s) \Sigma(s,a)\right)}{2} + O(\deltat)\nonumber.
 \end{align}
+
+\LB{It might be my math bias, but I would really prefer to read something like:
+  Contrary to the action state value function, the rescaled advantage function converges
+  to an action dependent quantity when $\deltat$ goes to $0$, which contains all the necessary information to improve the strategy. We have the following theorem:
+  \begin{theorem}
+    There is function $A^\pi(s, a)$ such that for all $a, s$, we have:
+    \begin{equation}
+      A^\pi_\deltat(s, a) \rightarrow_{\deltat \rightarrow 0} A^\pi(s, a)
+    \end{equation}
+    Moreover, $A^\pi$ contains all the necessary information about actions. We have $\pi$ is the optimal strategy if and only if $A^\pi(s, \pi(s)) = 0$ for all $s \in {\cal S}$.
+    [[I don't know if this is true, but this is the kind of property we want for A, and this is the idea of not only it converges, but it converges to a meaningful limit]]
+  \end{theorem}
+  And the equation which is there before would only be in the appendix, in the proof.
+}
 The discretized state action value function can then be rewritten as
 \begin{equation}
 	Q^\pi_\deltat(s, a) = V^\pi_\deltat(s) + \deltat A^\pi_\deltat(s, a).
@@ -100,14 +114,14 @@ and of a uniform categorical random variable $\xi^k_\deltat$ on actions. Explora
 	a^k_\deltat = (1 - b^k_\deltat) \text{argmax}_{a'} Q^\pi_\deltat(s, a') + b^k_\deltat \xi^k_\deltat.
 \end{equation}
 
-A sufficient condition for the exploratory policy to admit a time continuous
+\LB{All this subsection is not extremely clear to me, especially the next paragraph. And it is a detail, but I'm not sure I like $\nu$ as a notation for a random variable.} A sufficient condition for the exploratory policy to admit a time continuous
 limit is for $\pi^\text{explore}_\deltat$ to be a measurable function, and for
 $\nu_\deltat$ to admit one, i.e. that the sequence $\nu_\deltat$ converges to a
 well defined continuous stochastic process $\nu$ as $\deltat$ goes to $0$.
 \TODO{I'm convinced that this is true, reviewers might not be.}
 
 The exploration scheme used~\cite{ddpg}, which consists in adding an
-\emph{Ornstein-Uhlenbeck}~\cite{orn-uhl} process (OU process) to actions, is naturally time.
+\emph{Ornstein-Uhlenbeck}~\cite{orn-uhl} process (OU process) to actions, is naturally time
 invariant. It can be rewritten as
 \begin{equation}
 	a^k_\deltat = \pi(s^k_\deltat) + \nu^k_\deltat
@@ -148,8 +162,8 @@ and $V^\pi_\deltat$,
 for a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi_\deltat(s,
 a')$, exactly implemented in the case of discrete actions, and approximated by
 a neural network $\pi_\phi(s)$, trained to maximize (an approximation of)
-$A^\pi_\deltat(s, \pi_\phi(s))$ in the continuous case.  Eq.~\eqref{eq:max_A}
-is directly verified by $A_{\psi}$, owing to the reparameterization
+$A^\pi_\deltat(s, \pi_\phi(s))$ in the continuous case.  \LB{Maybe say here that it's the same than DDPG?}Eq.~\eqref{eq:max_A}
+is directly verified by $A_{\psi}$, owing to the reparametrization
 $A_\psi(s, a) = \bar{A}_\psi(s, a) - \bar{A}_\psi(s, \pi(s))$, described
 in~\ref{subsec:reparam}.  To approximately verify~\eqref{eq:bellman_A}, the
 corresponding squared residual is minimized by an approximate gradient descent.
@@ -161,6 +175,7 @@ an exploratory trajectory are
 	\psi_\deltat &\leftarrow \psi_\deltat + \eta^2_\deltat \partial_{\psi} A(s, a) \frac{\delta Q_\deltat}{\deltat}.
 	\label{eq:approx_bellman_A}
 \end{align}
+\LB{I don't like the notations $\alpha^1$ and $\alpha^2$. What about $\alpha^A$ and $\alpha^V$? Easier to read} 
 where $\eta$'s are learning rates. As we will see in the following section,
 to obtain a well defined continuous time limit, the learning rates can be rewritten as
 $\eta^i_\deltat = \alpha^i \deltat$, where $\alpha^1$ and $\alpha^2$ are independant
