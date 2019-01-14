@@ -1621,7 +1621,11 @@ I'm confusing constant action plans and time-variable action plans).
 [TODO check this is indeed the policy gradient for the time spent at
 $s_2$ if following policy $\pi(\Omega(s_2))$]. Advantage: diversity of
 policies should appear by itself, no need to manually force options to be
-distinct. Depends on a chosen distribution of goals $s_2$; we could learn
+distinct. This could even help with exploration:
+setting temporary goals towards already-seen past states solves the "pure
+random walk" problem by introducing temporary momentum; one can even
+increase temperature a bit on $\omega$, by using slightly larger/more
+variant values of $\omega$ as the goal. Depends on a chosen distribution of goals $s_2$; we could learn
 to go to uniformly distributed states, or create a goal at points where
 we observe a high reward value (so learning to go to all states with a
 reward). Just fixing $\Omega(s)\deq s$ once and for all might work, in
@@ -1635,11 +1639,7 @@ necessarily a state itself, should be a feature of states, or some
 representation of a reward function, so we should figure out the way to
 give a meaning to $\Omega(R)$ for an arbitrary reward $R$. The
 representation of $Z$ as $Z=\transp{\green}f$ does that automatically,
-thanks to linearity wrt $R$. This could even help with exploration:
-setting temporary goals towards already-seen past states solves the "pure
-random walk" problem by introducing temporary momentum; one can even
-increase temperature a bit on $\omega$, by using slightly larger/more
-variant values of $\omega$ as the goal.
+thanks to linearity wrt $R$.
 
 It's a bit strange to train the policy for goal $s_2$ via policy gradient,
 instead of just selecting the next state to maximize
