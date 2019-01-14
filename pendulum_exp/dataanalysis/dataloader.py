@@ -115,7 +115,7 @@ class ExperimentRun:
     @property
     def args(self):
         if not hasattr(self, '_args'):
-            assert os.path.isfile(self._args_file)
+            assert os.path.isfile(self._args_file), f"Non existing args file {self._args_file}"
 
             with open(os.path.join(self._args_file), 'rb') as f:
                 args = pkl.load(f)
@@ -128,7 +128,7 @@ class ExperimentRun:
     @property
     def logs(self):
         if not hasattr(self, '_logs'):
-            assert os.path.isfile(self._logs_file)
+            assert os.path.isfile(self._logs_file), f"Non existing log file {self._logs_file}"
 
             with open(self._logs_file, 'rb') as f:
                 self._logs = pkl.load(f)

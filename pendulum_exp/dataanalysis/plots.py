@@ -49,10 +49,11 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 alpha = None
             else:
                 raise ValueError
+
             timeseq_stats = setting.timeseq(key)
-            timeseq = timeseq_stats['mean']
-            if timeseq is None:
+            if timeseq_stats is None:
                 continue
+            timeseq = timeseq_stats['mean']
 
             xdata = np.array([i for (i, v) in timeseq.items()])
             ydata = np.array([v for (i, v) in timeseq.items()])
