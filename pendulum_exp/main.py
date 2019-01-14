@@ -63,7 +63,7 @@ def main(args):
     logdir = args.logdir
     noreload = args.noreload
     dt = args.dt
-    nb_epochs = args.nb_epochs
+    nb_true_epochs = args.nb_true_epochs
     nb_steps = args.nb_steps
     time_limit = args.time_limit
     eval_gap = args.eval_gap
@@ -88,7 +88,7 @@ def main(args):
         policy.load_state_dict(state_dict)
     log_gap = int(.1 / dt)
 
-    for e in range(cur_e, nb_epochs):
+    for e in range(cur_e, int(nb_true_epochs / dt)):
         info(f"Epoch {e}...")
         obs = train(nb_steps, env, policy, obs)
         new_R = evaluate(
