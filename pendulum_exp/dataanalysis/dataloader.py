@@ -62,14 +62,16 @@ class ExperimentData:
         print(f'{nlastvalues} last values of key {key} for all settings')
         for setting in self._settings:
             print(' ; '.join(f'{key}: {setting.args[key]}' for key in deltakeys))
-            timeseq, timeseq_std = setting.timeseq(key)
-            if timeseq is None:
+            stats = setting.timeseq(key)
+            timeseq = stats['mean']
+            std = stats['std']
+            if stats is None:
                 print('No logs')
                 print('----')
                 continue
             idxs = sorted(list(timeseq.keys()))[-nlastvalues:]
             for i in idxs:
-                print(f"{i}: {timeseq[i]}")
+                print(f"{i}: {timeseq[i]}+-{std[i]}")
             print('----')
 
 
@@ -81,7 +83,7 @@ class ExperimentSetting:
         self._runs = runs
 
     def append(self, run: 'ExperimentRun'):
-        assert run == self.args
+        assert run.args == self.args
         self._runs.append(run)
 
     def timeseq(self, key: str):
@@ -90,10 +92,19 @@ class ExperimentSetting:
             return None
         timeseqs = {k: [r.logs[key][k] for r in self._runs if k in r.logs[key]]
                     for k in self._runs[0].logs[key]}
-        mean_seq = {k: np.mean(t) for k, t in timeseqs.items()}
-        std_seq = {k: np.std(t) for k, t in timeseqs.items()}
-        return (mean_seq, std_seq)
-
+        stats_seq = {k: {
+            'mean': np.mean(t),
+            'std': np.std(t),
+            'median': np.median(t),
+            'max': np.max(t),
+            'min': np.min(t)} for k, t in timeseqs.items()}
+        timeseq = {}
+        for k1 in stats_seq:
+            for k2 in stats_seq[k1]:
+                if k2 not in timeseq:
+                    timeseq[k2] = {}
+                timeseq[k2][k1] = stats_seq[k1][k2]
+        return timeseq
 
 class ExperimentRun:
     def __init__(self, args_file: str, logs_file: str) -> None:
@@ -104,7 +115,7 @@ class ExperimentRun:
     @property
     def args(self):
         if not hasattr(self, '_args'):
-            assert os.path.isfile(self._args_file)
+            assert os.path.isfile(self._args_file), f"Non existing args file {self._args_file}"
 
             with open(os.path.join(self._args_file), 'rb') as f:
                 args = pkl.load(f)
@@ -117,7 +128,7 @@ class ExperimentRun:
     @property
     def logs(self):
         if not hasattr(self, '_logs'):
-            assert os.path.isfile(self._logs_file)
+            assert os.path.isfile(self._logs_file), f"Non existing log file {self._logs_file}"
 
             with open(self._logs_file, 'rb') as f:
                 self._logs = pkl.load(f)

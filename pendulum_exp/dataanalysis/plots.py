@@ -49,9 +49,11 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 alpha = None
             else:
                 raise ValueError
-            timeseq, timeseq_std = setting.timeseq(key)
-            if timeseq is None:
+
+            timeseq_stats = setting.timeseq(key)
+            if timeseq_stats is None:
                 continue
+            timeseq = timeseq_stats['mean']
 
             xdata = np.array([i for (i, v) in timeseq.items()])
             ydata = np.array([v for (i, v) in timeseq.items()])
@@ -75,9 +77,12 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 ax.fill_between(x, y-sigma, y+sigma, facecolor=c, alpha=0.2)
                 # ax.plot(dt*xdata, dt*ydata, c=c, alpha=0.2, linestyle=linestyle, linewidth=linewidth)
             elif gtype == 'run_std':
-                std_data = np.array([v for (i, v) in timeseq_std.items()])
-                ax.plot(xdata, ydata, label=label, c=c, alpha=alpha, linestyle=linestyle, linewidth=linewidth)
-                ax.fill_between(xdata, ydata-std_data / 2, y+std_data / 2, facecolor=c, alpha=0.2)
+                std_data = np.array([v for (i, v) in timeseq_stats['std'].items()])
+                x = xdata * dt
+                y = ydata * dt
+                std = std_data * dt
+                ax.plot(x, y, label=label, c=c, alpha=alpha, linestyle=linestyle, linewidth=linewidth)
+                ax.fill_between(x, y - std / 2, y + std / 2, facecolor=c, alpha=0.2)
         first = False
 
     plt.tight_layout()

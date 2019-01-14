@@ -86,7 +86,7 @@ def main(args):
         cur_e = state_dict["epoch"]
         info(f"Loading policy with return {R} at epoch {cur_e}...")
         policy.load_state_dict(state_dict)
-    log_gap = int(.1 / dt)
+    log_gap = int(eval_gap / dt)
 
     for e in range(cur_e, int(nb_true_epochs / dt)):
         info(f"Epoch {e}...")
