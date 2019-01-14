@@ -7,7 +7,7 @@ thrived and provided impressive results in a variety of domains, achieving super
 performances with no expert knowledge in perfect information zero-sum
 games~\cite{alphazero}, reaching level of top players in video
 games~(\citealt{openai_five}, \citealt{dqn}), or learning dexterous manipulation
-from scratch without demonstrations~\cite{hand_control}.
+from scratch without demonstrations~\cite{hand_control}. \LB{I would merge these two paragraphs.}
 
 In spite of those successes, \emph{Deep reinforcement learning} approaches are
 sensitive to a number of factors, including hyperparameterization,
@@ -18,7 +18,8 @@ world settings. High sensitivity to environment parameters notably prevents
 transfering abilities from imperfect simulators to real world scenarios.
 
 In this paper we focus our attention on the sensitivity to time discretization
-of DRL approaches, i.e. what happens when an agent receives $50$ observations
+of DRL approaches \LB{in \emph{near-continuous} environments (control, ...},
+i.e. what happens when an agent receives $50$ observations
 and is expected to take $50$ actions per second instead of $10$. One expects
 that decreasing time discretization, or equivalently shortening reaction time,
 should only improve agent performances. This is not what happens in practice
@@ -42,4 +43,16 @@ the scaling of learning rates (Sec.~\ref{subsec:lr}, Sec.~\ref{subsec:explo}).
 The resulting algorithm is shown to provide near perfect invariance to time
 discretization on simple environments, and much better invariance properties
 than vanilla DQN or DDPG on more complex environments (Sec.~\ref{sec:exp}).
+\LB{I think I would give less details, especially at the beginning, but insist on the methodology
+  (all quantities and algorithms should have meaningful limits when $\deltat \rightarrow 0$)}
+
+\LB{We should say somewhere that more invariance should mean less time spent to find hyperparameters}
+
+\LB{Our main contributions are:
+  \begin{itemize}
+  \item We show that the Q-function is ill-defined in continuous environments, and thus that
+    RL methods based on the Q-function (Q-learning, DDPG) are not robust to variations of time discretization.
+  \item We introduce an algorithm (NAME?) resilient to time discretization \TODO{say more}
+  \end{itemize}
+}
 

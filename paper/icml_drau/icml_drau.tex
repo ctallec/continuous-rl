@@ -106,11 +106,11 @@
 	hyperparameterization, implementation details and small environment changes~(\citealt{drl_matter}, \citealt{drl_matter_bis}). 
 	Overcoming this sensitivity is key to making DRL applicable to real world problems.
 	In this paper, we study the sensitivity of Deep Reinforcement learning algorithms to
-	time discretization. More precisely, we show that approaches based on estimations of the
+	time discretization \LB{in near-continuous time environments}. More precisely, we show that approaches based on estimations of the
 	Q-function, e.g. \emph{Deep Q-learning}~\cite{dqn} and \emph{Deep deterministic policy gradient}~\cite{ddpg}
 	are sensitive to variations of time discretization. We further show that a simple reparameterization of the
 	Q-function as a sum of a state value term and a \emph{small} action dependent advantage term yields an algorithm
-	much more resilient to variations of time discretization.
+	much more resilient to variations of time discretization.\LB{Change last sentence to: We introduce a more resilient algorithm to variations of time discretization [We could say more, but still less that what is already there]}
 \end{abstract}
 
 \input{intro.tex}

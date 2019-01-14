@@ -1604,24 +1604,28 @@ as that sampling distribution covers everywhere.
 
 Building a universal policy. One may make the policy depend on a goal
 representation $\omega$ as an additional input. One may simultaneously
-compute $Z(s_1,s_2,\omega)$, namely the $Z$ function when following the
+compute $Z(s_1,s_2;\omega)$, namely the $Z$ function when following the
 policy with goal $\omega$, and train at the same time a map $s_2\mapsto \omega=\Omega(s_2)$ and
 policy parameters $\pi(a|s_1,\omega)$ such that following
 $\pi(|\Omega(s_2))$ indeed goes towards $s_2$, namely, the policy
 gradient for every $s_2$ is
 \begin{equation}
 \partial \pi(a|s,\Omega(s_2))\E_{s'|s,a} \E_{s_2\sim \rho} \,
-(z(s',s_2,\Omega(s_2))-z(s,s_2,\Omega(s_2)))
+(z(s',s_2;\Omega(s_2))-z(s,s_2;\Omega(s_2)))
 \end{equation}
 This equation is used to train the policy parameters; $\Omega(s_2)$ is
-trained so that $\omega=\Omega(s_2)$ indeed maximizes $z(s,s_2,\omega)$
+trained so that $\omega=\Omega(s_2)$ indeed maximizes $z(s,s_2;\omega)$
 (because the best way to reach $s_2$ is to select the $\omega$ with
-maximal $z(s,s_2,\omega)$ at each step; TODO: from which $s$? TODO: here
+maximal $z(s,s_2;\omega)$ at each step; TODO: from which $s$? TODO: here
 I'm confusing constant action plans and time-variable action plans).
 [TODO check this is indeed the policy gradient for the time spent at
 $s_2$ if following policy $\pi(\Omega(s_2))$]. Advantage: diversity of
 policies should appear by itself, no need to manually force options to be
-distinct. Depends on a chosen distribution of goals $s_2$; we could learn
+distinct. This could even help with exploration:
+setting temporary goals towards already-seen past states solves the "pure
+random walk" problem by introducing temporary momentum; one can even
+increase temperature a bit on $\omega$, by using slightly larger/more
+variant values of $\omega$ as the goal. Depends on a chosen distribution of goals $s_2$; we could learn
 to go to uniformly distributed states, or create a goal at points where
 we observe a high reward value (so learning to go to all states with a
 reward). Just fixing $\Omega(s)\deq s$ once and for all might work, in
@@ -1635,11 +1639,7 @@ necessarily a state itself, should be a feature of states, or some
 representation of a reward function, so we should figure out the way to
 give a meaning to $\Omega(R)$ for an arbitrary reward $R$. The
 representation of $Z$ as $Z=\transp{\green}f$ does that automatically,
-thanks to linearity wrt $R$. This could even help with exploration:
-setting temporary goals towards already-seen past states solves the "pure
-random walk" problem by introducing temporary momentum; one can even
-increase temperature a bit on $\omega$, by using slightly larger/more
-variant values of $\omega$ as the goal.
+thanks to linearity wrt $R$.
 
 It's a bit strange to train the policy for goal $s_2$ via policy gradient,
 instead of just selecting the next state to maximize
@@ -1655,17 +1655,21 @@ policies/goals (like: to go to $s_2$, first go to $s_1$ via the
 $s_1$-policy, then apply the known $s_2$-policy from $s_1$). The
 Newton--Bellman equation captures, \emph{for a fixed policy}, the
 composition of paths of that policy. But the above still treats
-$z(s_1,s_2;\omega)$ as a separate problem for each $\omega$.
+$z(s_1,s_2;\omega)$ as a separate problem for each $\omega$. The optimal
+Newton--Bellman equation for $z^\ast$ (see below) does capture
+composition of optimal actions, though.
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
 towards $s'$ (just as if the reward was $\1_{s'}$). It is defined by an iterated expectimax to reach $s'$, and
 satisfies the Bellman equation
 \begin{equation}
+\label{eq:optleftbellman}
 V(s,s')=\1_{s=s'}+\gamma \max_a \E_{s_1|s,a} V(s_1,s')
 \end{equation}
 and it also satisfies
 \begin{equation}
+\label{eq:optrightbellman}
 V(s,s')=\1_{s=s'}+\gamma \sum_{s_{t-1}} V(s,s_{t-1})\max_a
 \E_{s_t|s_{t-1},a}\1_{s_t=s'}
 \end{equation}
@@ -1723,5 +1727,29 @@ is more general, by taking a full basis of Dirac features $\1_{s'}$. Then
 $V(s,(\alpha_i))$ does not just learn how to go to individual states, but
 how to maximize time spent in an arbitrary weighted sum of states. This
 is why we can later extend to an arbitrary reward function.)
+
+By multiplying \eqref{eq:optleftbellman} by $V$ on the left, one finds the
+Newton--Bellman equation for the optimal function $V$ seen as a matrix:
+\begin{equation}
+V^2_{s_1s_2}=V_{s_1s_2}+\gamma \sum_{s_3} V_{s_1s_3}\max_a
+\E_{s_4|s_3,a} V_{s_4s_2}
+\end{equation}
+and representing $V$ by its density wrt $\rho$ namely
+$V_{s_1s_2}=z^\ast(s_1,s_2)\rho(s_2)$ this suggests the Newton method
+\begin{multline}
+z^\ast(s_1,s_2)\gets 2z^\ast(s_1,s_2)-\E_{s_3\sim \rho}\,
+z^\ast(s_1,s_3)z^\ast(s_3,s_2)\\
++\gamma
+\E_{s_3\sim \rho} \,z^\ast(s_1,s_3)\max_a \E_{s_4|s_3,a} z^\ast(s_4,s_2)
+\end{multline}
+satisfied by the optimal $z$ function. This is not quite an instance of
+the Newton method for matrix inversion anymore (because the operator
+$\Id-\gamma \max_a \E_{\cdot|a}$ is not linear), so convergence
+is unclear.
+
+Moreover, this matrix $V$ does not contain all the information about
+optimizing rewards: the optimal strategy to optimize a reward $R$ is not
+an average of the optimal strategies for going to $s_2$ weighted by
+$R(s_2)$...
 
 \end{document}
