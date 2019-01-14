@@ -1586,7 +1586,9 @@ fear it might make the fixed point $z(s_1,s_2)=\frac{1}{1-\gamma}$
 attractive instead of repulsive, and it might also perturb initialization
 (initializing $Z=\Id$ does not satisfy this normalization, so enforcing
 it too early is basically like initializing to
-$Z=\frac{1}{1-\gamma}\Id$ which empirically diverges).
+$Z=\frac{1}{1-\gamma}\Id$ which empirically diverges). Still, one might
+use whether $\E_{s_2\sim \rho}z(s_1,s_2)$ is significantly above
+$\frac1{1-\gamma}$ as a divergence criterion (same with negative values).
 
 Convergence? The true Newton iteration $Z\gets 2Z-Z\Delta Z$ initialized
 with $Z=\Id$ converges, and so does the continuous-time version
