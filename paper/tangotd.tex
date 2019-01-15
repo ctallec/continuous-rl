@@ -1748,10 +1748,15 @@ z^\ast(s_1,s_3)z^\ast(s_3,s_2)\\
 +\gamma
 \E_{s_3\sim \rho} \,z^\ast(s_1,s_3)\max_a \E_{s_4|s_3,a} z^\ast(s_4,s_2)
 \end{multline}
-satisfied by the optimal $z$ function. This is not quite an instance of
-the Newton method for matrix inversion anymore (because the operator
-$\Id-\gamma \max_a \E_{\cdot|a}$ is not linear), so convergence
-is unclear.
+satisfied by the optimal $z$ function. A problem with this is how to
+estimate the max of an expectation; we would have to work with
+$Q$-function analogues, i.e., estimating $z^\ast(s_3,a,s_2)$. The
+advantage of this over working with $z(s_3,s_2;\omega)$ is unclear (I
+prefer goals/action plans to individual actions).
+
+This is not quite an instance of the Newton method for matrix inversion
+anymore (because the operator $\Id-\gamma \max_a \E_{\cdot|a}$ is not
+linear), so convergence is unclear.
 
 Moreover, this matrix $V$ does not contain all the information about
 optimizing rewards: the optimal strategy to optimize a reward $R$ is not
