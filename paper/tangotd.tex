@@ -1663,7 +1663,13 @@ Newton--Bellman equation captures, \emph{for a fixed policy}, the
 composition of paths of that policy. But the above still treats
 $z(s_1,s_2;\omega)$ as a separate problem for each $\omega$. The optimal
 Newton--Bellman equation for $z^\ast$ (see below) does capture
-composition of optimal actions, though.
+composition of optimal actions, though. TODO but I think I can prove that
+if $\Omega(s_2)$ contains the list of all optimal action paths to reach
+$s_2$, and the policy given $\Omega(s_2)$ follows that path, then
+$z(s,s_2;\Omega(s_2))=z^\ast(s,s_2)$; therefore, there would be no loss
+from working with the $z(s,s_2;\omega)$ formalism if we effectively find
+a solution to all equations. Still treats every $\omega$ as a separate
+problem though.
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
