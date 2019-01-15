@@ -7,9 +7,7 @@ import numpy as np
 from envs.pusher import DiscretePusherEnv, ContinuousPusherEnv
 from envs.hill import HillEnv
 from envs.wrappers import WrapContinuousPendulum, WrapPendulum
-from envs.biped import WalkerHardcore
-
-from logging import info
+from envs.biped import WalkerHardcore, Walker
 
 def tile_images(img_nhwc):
     """
@@ -185,9 +183,7 @@ def make_env(env_id: str, dt: float, time_limit: float): # noqa: C901
         lunar_lander.FPS = 1. / dt
         env = gym.make('LunarLander-v2').unwrapped
     elif env_id == 'bipedal_walker':
-        from gym.envs.box2d import bipedal_walker
-        bipedal_walker.FPS = 1. / dt
-        env = gym.make('BipedalWalker-v2').unwrapped
+        env = Walker(dt)
     elif env_id == 'bipedal_hardcore':
         env = WalkerHardcore(dt)
     elif env_id == 'half_cheetah':
@@ -200,7 +196,7 @@ def make_env(env_id: str, dt: float, time_limit: float): # noqa: C901
         # from gym.envs.mujoco import HalfCheetahEnv
         from gym.envs.mujoco.ant import AntEnv
 
-        env = AntEnv(dt)\
+        env = AntEnv(dt)
         # env = gym.make('Ant-v2').unwrapped
         assert env.dt == dt
         # env.model.opt.timestep = dt / env.frame_skip

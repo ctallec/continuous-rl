@@ -1612,7 +1612,7 @@ policy parameters $\pi(a|s_1,\omega)$ such that following
 $\pi(|\Omega(s_2))$ indeed goes towards $s_2$, namely, the policy
 gradient for every $s_2$ is
 \begin{equation}
-\partial \pi(a|s,\Omega(s_2))\E_{s'|s,a} \E_{s_2\sim \rho} \,
+\partial \pi(a|s,\Omega(s_2))\E_{s'|s,a} 
 (z(s',s_2;\Omega(s_2))-z(s,s_2;\Omega(s_2)))
 \end{equation}
 This equation is used to train the policy parameters; $\Omega(s_2)$ is
@@ -1643,14 +1643,18 @@ give a meaning to $\Omega(R)$ for an arbitrary reward $R$. The
 representation of $Z$ as $Z=\transp{\green}f$ does that automatically,
 thanks to linearity wrt $R$.
 
-It's a bit strange to train the policy for goal $s_2$ via policy gradient,
-instead of just selecting the next state to maximize
-$z(s,s_2;s_2)$ where $z(s,s_2;s_3)$ is the $z$ function associated with
-the policy that has goal $s_3$. Formally, computing the latter is
-feasible: one has to follow an exploration policy that has a non-constant
-goal,so at each step we observe a transition of the policy with some goal
-$s_3$; and hope that Newton--Bellman for computing $z(s,s_2;s_3)$
-generalizes well with respect to $z_3$.
+It's a bit strange to train the policy for goal $s_2$ via policy gradient
+on the policy with parameter $\omega(s_2)$, instead of just selecting the
+policy parameter $\omega$ to maximize $z(s,s_2;\omega)$ where
+$z(s,s_2;\omega)$ is the $z$ function associated with the policy that has
+goal $\omega$.  This is why we propose to train the function $s_2\mapsto
+\omega$ so that $\omega(s_2)$ is indeed the parameter that maximizes
+$z(s,s_2;\omega)$.
+To compute $z(s,s_2;\omega)$ one has to follow an
+exploration policy that has a non-constant goal, so at each step we
+observe a transition of the policy with some goal $\omega$; and hope that
+Newton--Bellman for computing $z(s,s_2;\omega)$ generalizes well with
+respect to $\omega$.
 
 What I don't like here: This still does not capture the composition of
 policies/goals (like: to go to $s_2$, first go to $s_1$ via the
@@ -1659,7 +1663,13 @@ Newton--Bellman equation captures, \emph{for a fixed policy}, the
 composition of paths of that policy. But the above still treats
 $z(s_1,s_2;\omega)$ as a separate problem for each $\omega$. The optimal
 Newton--Bellman equation for $z^\ast$ (see below) does capture
-composition of optimal actions, though.
+composition of optimal actions, though. TODO but I think I can prove that
+if $\Omega(s_2)$ contains the list of all optimal action paths to reach
+$s_2$, and the policy given $\Omega(s_2)$ follows that path, then
+$z(s,s_2;\Omega(s_2))=z^\ast(s,s_2)$; therefore, there would be no loss
+from working with the $z(s,s_2;\omega)$ formalism if we effectively find
+a solution to all equations. Still treats every $\omega$ as a separate
+problem though.
 
 \paragraph{Early version of the above: Learning to navigate.} Define a function $V(s,s')$ that
 represents the time spent in $s'$ if starting at $s$ and acting optimally
@@ -1737,17 +1747,22 @@ V^2_{s_1s_2}=V_{s_1s_2}+\gamma \sum_{s_3} V_{s_1s_3}\max_a
 \E_{s_4|s_3,a} V_{s_4s_2}
 \end{equation}
 and representing $V$ by its density wrt $\rho$ namely
-$V_{s_1s_2}=z^\ast(s_1,s_2)\rho(s_2)$ this suggests the Newton method
+$V_{s_1s_2}=z^\ast(s_1,s_2)\rho(s_2)$ this suggests the Newton-like method
 \begin{multline}
 z^\ast(s_1,s_2)\gets 2z^\ast(s_1,s_2)-\E_{s_3\sim \rho}\,
 z^\ast(s_1,s_3)z^\ast(s_3,s_2)\\
 +\gamma
 \E_{s_3\sim \rho} \,z^\ast(s_1,s_3)\max_a \E_{s_4|s_3,a} z^\ast(s_4,s_2)
 \end{multline}
-satisfied by the optimal $z$ function. This is not quite an instance of
-the Newton method for matrix inversion anymore (because the operator
-$\Id-\gamma \max_a \E_{\cdot|a}$ is not linear), so convergence
-is unclear.
+satisfied by the optimal $z$ function. A problem with this is how to
+estimate the max of an expectation; we would have to work with
+$Q$-function analogues, i.e., estimating $z^\ast(s_3,a,s_2)$. The
+advantage of this over working with $z(s_3,s_2;\omega)$ is unclear (I
+prefer goals/action plans to individual actions).
+
+This is not quite an instance of the Newton method for matrix inversion
+anymore (because the operator $\Id-\gamma \max_a \E_{\cdot|a}$ is not
+linear), so convergence is unclear.
 
 Moreover, this matrix $V$ does not contain all the information about
 optimizing rewards: the optimal strategy to optimize a reward $R$ is not
