@@ -71,8 +71,7 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
 
                 if first:
                     ax.legend()
-                ax.set_xlim(mint, maxt)
-                ax.set_xlabel("time (second)")
+                
                 ax.plot(x, y, label=label, c=c, alpha=alpha, linestyle=linestyle, linewidth=linewidth)
                 ax.fill_between(x, y-sigma, y+sigma, facecolor=c, alpha=0.2)
                 # ax.plot(dt*xdata, dt*ydata, c=c, alpha=0.2, linestyle=linestyle, linewidth=linewidth)
@@ -82,7 +81,12 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 y = ydata * dt
                 std = std_data * dt
                 ax.plot(x, y, label=label, c=c, alpha=alpha, linestyle=linestyle, linewidth=linewidth)
-                ax.fill_between(x, y - std / 2, y + std / 2, facecolor=c, alpha=0.2)
+                ax.fill_between(x, y - std, y + std, facecolor=c, alpha=0.2)
+
+
+                ax.set_xlim(mint, maxt)
+                ax.set_xlabel("Physical time")
+                # ax.fill_between(x, y - std / 2, y + std / 2, facecolor=c, alpha=0.2)
         first = False
 
     plt.tight_layout()
