@@ -1643,14 +1643,18 @@ give a meaning to $\Omega(R)$ for an arbitrary reward $R$. The
 representation of $Z$ as $Z=\transp{\green}f$ does that automatically,
 thanks to linearity wrt $R$.
 
-It's a bit strange to train the policy for goal $s_2$ via policy gradient,
-instead of just selecting the next state to maximize
-$z(s,s_2;s_2)$ where $z(s,s_2;s_3)$ is the $z$ function associated with
-the policy that has goal $s_3$. Formally, computing the latter is
-feasible: one has to follow an exploration policy that has a non-constant
-goal,so at each step we observe a transition of the policy with some goal
-$s_3$; and hope that Newton--Bellman for computing $z(s,s_2;s_3)$
-generalizes well with respect to $z_3$.
+It's a bit strange to train the policy for goal $s_2$ via policy gradient
+on the policy with parameter $\omega(s_2)$, instead of just selecting the
+policy parameter $\omega$ to maximize $z(s,s_2;\omega)$ where
+$z(s,s_2;\omega)$ is the $z$ function associated with the policy that has
+goal $\omega$.  This is why we propose to train the function $s_2\mapsto
+\omega$ so that $\omega(s_2)$ is indeed the parameter that maximizes
+$z(s,s_2;\omega)$.
+To compute $z(s,s_2;\omega)$ one has to follow an
+exploration policy that has a non-constant goal, so at each step we
+observe a transition of the policy with some goal $\omega$; and hope that
+Newton--Bellman for computing $z(s,s_2;\omega)$ generalizes well with
+respect to $\omega$.
 
 What I don't like here: This still does not capture the composition of
 policies/goals (like: to go to $s_2$, first go to $s_1$ via the
@@ -1737,7 +1741,7 @@ V^2_{s_1s_2}=V_{s_1s_2}+\gamma \sum_{s_3} V_{s_1s_3}\max_a
 \E_{s_4|s_3,a} V_{s_4s_2}
 \end{equation}
 and representing $V$ by its density wrt $\rho$ namely
-$V_{s_1s_2}=z^\ast(s_1,s_2)\rho(s_2)$ this suggests the Newton method
+$V_{s_1s_2}=z^\ast(s_1,s_2)\rho(s_2)$ this suggests the Newton-like method
 \begin{multline}
 z^\ast(s_1,s_2)\gets 2z^\ast(s_1,s_2)-\E_{s_3\sim \rho}\,
 z^\ast(s_1,s_3)z^\ast(s_3,s_2)\\
