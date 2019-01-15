@@ -3,6 +3,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter1d
+from scipy.interpolate import interp1d
 from typing import List
 
 
@@ -78,9 +79,12 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 # ax.plot(dt*xdata, dt*ydata, c=c, alpha=0.2, linestyle=linestyle, linewidth=linewidth)
             elif gtype == 'run_std':
                 std_data = np.array([v for (i, v) in timeseq_stats['std'].items()])
-                x = xdata * dt
-                y = ydata * dt
-                std = std_data * dt
+                x = np.linspace(min(xdata), max(xdata), 400)
+                y = interp1d(xdata, ydata, kind='cubic')(x)
+                std = interp1d(xdata, std_data, kind='cubic')(x)
+                x = x * dt
+                y = y * dt
+                std = std * dt
                 ax.plot(x, y, label=label, c=c, alpha=alpha, linestyle=linestyle, linewidth=linewidth)
                 ax.fill_between(x, y - std / 2, y + std / 2, facecolor=c, alpha=0.2)
         first = False
