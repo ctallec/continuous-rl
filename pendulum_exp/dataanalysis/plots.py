@@ -85,7 +85,12 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 ax.set_xlabel("Physical time")
                 ax.set_ylabel("Scaled return")
                 ax.plot(x, y, label=label, c=c, alpha=alpha, linestyle=linestyle, linewidth=linewidth)
-                ax.fill_between(x, y - std / 2, y + std / 2, facecolor=c, alpha=0.2)
+                ax.fill_between(x, y - std, y + std, facecolor=c, alpha=0.2)
+
+
+                ax.set_xlim(mint, maxt)
+                ax.set_xlabel("Physical time")
+                # ax.fill_between(x, y - std / 2, y + std / 2, facecolor=c, alpha=0.2)
         first = False
 
     plt.tight_layout()
