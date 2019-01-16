@@ -67,8 +67,6 @@ def main(args):
     nb_steps = args.nb_steps
     time_limit = args.time_limit
     eval_gap = args.eval_gap
-    print(args.memory_size)
-    input()
 
     # device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
