@@ -9,6 +9,9 @@ from typing import List
 
 def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                          mint: float = 0, maxt: float = 100, gtype: str = 'time_std'):
+    MIN_DT = 5e-4
+    MAX_DT = 5e-2
+    plt.style.use('ggplot')
     algolabeldict = {
         'discrete_value': "qlearning",
         'discrete_advantage': "advup",
@@ -16,13 +19,13 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
         'approximate_value': 'ddpg',
     }
     dts = sorted(list(set([s.args['dt'] for s in expdata._settings])))
-    lss = [(0, ()), (0, (5, 1)), (0, (5, 5)), (0, (5, 10)), (0, (1, 5)), (0, (1, 10))]
-    dt_dict = {dt: ls for dt, ls in zip(dts, lss)}
+#    lss = [(0, ()), (0, (5, 1)), (0, (5, 5)), (0, (5, 10)), (0, (1, 5)), (0, (1, 10))]
+#    dt_dict = {dt: ls for dt, ls in zip(dts, lss)}
 
 
     if len(dts) > 0:
-        print(f'dts:{dts}')
-        cnorm = matplotlib.colors.Normalize(vmin=np.log(min(dts)), vmax=np.log(max(dts)))
+        #        print(f'dts:{dts}')
+        cnorm = matplotlib.colors.Normalize(vmin=np.log(MIN_DT) - 3, vmax=np.log(MAX_DT) + .1)
         cm1 = matplotlib.cm.ScalarMappable(norm=cnorm, cmap='Blues')
         cm2 = matplotlib.cm.ScalarMappable(norm=cnorm, cmap='Reds')
 
@@ -36,7 +39,7 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
         for setting in sorted(expdata._settings, key=lambda s: s.args['dt']):
             args = setting.args
             dt = args['dt']
-            print(dt)
+#            print(dt)
             algo = args["algo"]
             label = f"{algolabeldict[algo]}; dt={dt:.0e}"
             # linestyle = dt_dict[dt]
