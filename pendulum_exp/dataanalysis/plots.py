@@ -15,14 +15,12 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
         'approximate_advantage': 'advup',
         'approximate_value': 'ddpg',
     }
+    dts = sorted(list(set([s.args['dt'] for s in expdata._settings])))
+    lss = [(0, ()), (0, (5, 1)), (0, (5, 5)), (0, (5, 10)), (0, (1, 5)), (0, (1, 10))]
+    dt_dict = {dt: ls for dt, ls in zip(dts, lss)}
 
     nlines, ncol = len(key_list), 1
     fig, axes = plt.subplots(nlines, ncol, figsize=(5.*ncol, 4.*nlines))
-
-    dtlist = [np.log(setting.args['dt']) for setting in expdata._settings]
-    if len(dtlist) > 0:
-        cnorm = matplotlib.colors.Normalize(vmin=min(dtlist), vmax=max(dtlist))
-        cm = matplotlib.cm.ScalarMappable(norm=cnorm, cmap='plasma')
 
     first = True
     for key, ax in zip(key_list, axes.flat):
@@ -33,19 +31,16 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
             dt = args['dt']
             algo = args["algo"]
             label = f"{algolabeldict[algo]}; dt={dt:.0e}"
-            if algo == 'discrete_value' or algo == 'approximate_value':
-                linestyle = '--'
-                c = cm.to_rgba(np.log(dt))
+            linestyle = dt_dict[dt]
+            if 'value' in algo:
+                c = 'blue'
                 linewidth = 1.
                 alpha = None
                 if 'tau' in expdata.deltakeys:
                     tau = setting.args['tau']
                     label += f';tau{tau}'
-                    if tau != 0:
-                        linestyle = ':'
-            elif algo == 'discrete_advantage' or algo == 'approximate_advantage':
-                linestyle = '-'
-                c = cm.to_rgba(np.log(dt))
+            elif 'advantage' in algo:
+                c = 'red'
                 linewidth = 1.
                 alpha = None
             else:
@@ -73,7 +68,8 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 if first:
                     ax.legend()
                 ax.set_xlim(mint, maxt)
-                ax.set_xlabel("time (second)")
+                ax.set_xlabel("Physical time")
+                ax.set_ylabel("Scaled return")
                 ax.plot(x, y, label=label, c=c, alpha=alpha, linestyle=linestyle, linewidth=linewidth)
                 ax.fill_between(x, y-sigma, y+sigma, facecolor=c, alpha=0.2)
                 # ax.plot(dt*xdata, dt*ydata, c=c, alpha=0.2, linestyle=linestyle, linewidth=linewidth)
@@ -85,6 +81,9 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 x = x * dt
                 y = y * dt
                 std = std * dt
+                ax.set_xlim(mint, maxt)
+                ax.set_xlabel("Physical time")
+                ax.set_ylabel("Scaled return")
                 ax.plot(x, y, label=label, c=c, alpha=alpha, linestyle=linestyle, linewidth=linewidth)
                 ax.fill_between(x, y - std / 2, y + std / 2, facecolor=c, alpha=0.2)
         first = False
