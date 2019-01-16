@@ -19,6 +19,13 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
     lss = [(0, ()), (0, (5, 1)), (0, (5, 5)), (0, (5, 10)), (0, (1, 5)), (0, (1, 10))]
     dt_dict = {dt: ls for dt, ls in zip(dts, lss)}
 
+
+    if len(dts) > 0:
+        print(f'dts:{dts}')
+        cnorm = matplotlib.colors.Normalize(vmin=np.log(min(dts)), vmax=np.log(max(dts)))
+        cm1 = matplotlib.cm.ScalarMappable(norm=cnorm, cmap='Blues')
+        cm2 = matplotlib.cm.ScalarMappable(norm=cnorm, cmap='Reds')
+
     nlines, ncol = len(key_list), 1
     fig, axes = plt.subplots(nlines, ncol, figsize=(5.*ncol, 4.*nlines))
 
@@ -29,18 +36,22 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
         for setting in sorted(expdata._settings, key=lambda s: s.args['dt']):
             args = setting.args
             dt = args['dt']
+            print(dt)
             algo = args["algo"]
             label = f"{algolabeldict[algo]}; dt={dt:.0e}"
-            linestyle = dt_dict[dt]
+            # linestyle = dt_dict[dt]
+            linestyle = '-'
             if 'value' in algo:
-                c = 'blue'
+                # c = 'blue'
+                c = cm1.to_rgba(np.log(dt))
                 linewidth = 1.
                 alpha = None
                 if 'tau' in expdata.deltakeys:
                     tau = setting.args['tau']
                     label += f';tau{tau}'
             elif 'advantage' in algo:
-                c = 'red'
+                # c = 'red'
+                c = cm2.to_rgba(np.log(dt))
                 linewidth = 1.
                 alpha = None
             else:

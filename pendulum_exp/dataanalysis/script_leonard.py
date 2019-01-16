@@ -6,10 +6,11 @@ from dataloader import loader_leonard, ExperimentData
 
 from plots import plot_learning_curves
 
-# start_date = datetime.strptime('2019_01_09_05_44_37', "%Y_%m_%d_%H_%M_%S")
-# stop_date = datetime.strptime('2019_01_08_03_13_35', "%Y_%m_%d_%H_%M_%S")
-start_date = 'last'
-stop_date = None
+# 
+start_date = datetime.strptime('2019_01_14_10_22_54', "%Y_%m_%d_%H_%M_%S")
+stop_date = datetime.strptime('2019_01_14_10_22_55', "%Y_%m_%d_%H_%M_%S")
+# start_date = 'last'
+# stop_date = None
 runlist = loader_leonard('/private/home/leonardb/workdir', 'mujoco_continuous', 
     start_date=start_date, stop_date=stop_date)
 
