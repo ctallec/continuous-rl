@@ -36,7 +36,7 @@ def setup_args():
     parser.add_argument('--beta', type=float, default=None)
     parser.add_argument('--tau', type=float, default=.99)
     parser.add_argument('--noreference', action='store_true')
-    parser.add_argument('--optimizer', type=str, choices=['sgd', 'rmsprop'],
+    parser.add_argument('--optimizer', type=str, choices=['sgd', 'rmsprop', 'adam'],
                         default='sgd')
     parser.add_argument('--noreload', action='store_true')
     parser = argload.ArgumentLoader(parser, to_reload=[
