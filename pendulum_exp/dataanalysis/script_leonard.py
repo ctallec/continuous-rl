@@ -23,10 +23,10 @@ print(expdata.deltakeys)
 # plot_learning_curves(expdata_ant, ['Return', 'Return'], 'ant', gtype='run_std', mint=0, maxt=20)
 
 # expdata_cartpole = expdata.filter_settings(lambda s: s['env_id'] == 'cartpole')
-# plot_learning_curves(expdata_cartpole, ['Return', 'Return'], 'cartpole')
+# plot_learning_curves(expdata_cartpole, ['Return', 'Return'], 'cartpole', gtype='run_std', mint=0, maxt=20)
 
 expdata_cheetah = expdata.filter_settings(lambda s: s['env_id'] == 'half_cheetah')
-plot_learning_curves(expdata_cheetah, ['Return', 'Return'], 'cheetah')
+plot_learning_curves(expdata_cheetah, ['Return', 'Return'], 'cheetah', gtype='run_std', mint=0, maxt=20)
 
 
 # expdata_tau = expdata.filter_settings(lambda s: s['algo'] == 'discrete_value')
