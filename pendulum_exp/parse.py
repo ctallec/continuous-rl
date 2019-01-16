@@ -49,5 +49,5 @@ def setup_args():
     ])
     args = parser.parse_args()
     # very dirty fix, I will change that in the long go
-    args.memory_size = args.memory_size * .01 / args.dt
+    args.memory_size = int(args.memory_size * .01 / args.dt)
     return args
