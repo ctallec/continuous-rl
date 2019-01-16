@@ -47,4 +47,7 @@ def setup_args():
         'nb_policy_samples', 'policy_lr', 'alpha', 'beta', 'weight_decay', 'optimizer',
         'tau', 'noreference', 'eval_gap'
     ])
-    return parser.parse_args()
+    args = parser.parse_args()
+    # very dirty fix, I will change that in the long go
+    args.memory_size = int(args.memory_size * .01 / args.dt)
+    return args
