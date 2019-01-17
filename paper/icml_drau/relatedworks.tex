@@ -2,18 +2,18 @@
 \section{Related work}
 \label{sec:related}
 
-Our approach builds on \cite{adv_upd}, who identified the
-collapse of Q-learning for small time steps and suggested the Advantage
-Updating algorithm with proper $\deltat$ scalings as a solution; testing
-was only done on a quadratic-linear problem. Our Deep Advantage Updating
-expands this idea. Using a different normalization step for $A$ (which
-forgoes the need to learn the normalization itself, thanks to the
-parameterization \eqref{eq:Aparam}), we test Advantage Updating for the
-first time on a variety on RL environments using deep networks,
-establishing as a viable algorithm in this setting.
-Additionally, we provide formal proofs for the collapse
-of Q-learning when $\deltat\to 0$, and for the non-collapse of Advantage
-Updating.
+Our approach expands on \cite{adv_upd}, who identified the collapse of
+Q-learning for small time steps and suggested as a solution the Advantage Updating
+algorithm with proper $\deltat$ scalings for the $V$ part and the
+advantage part; testing was only
+done on a quadratic-linear problem. Using a different normalization step
+for $A$ (which forgoes the need to learn the normalization itself, thanks
+to the parameterization \eqref{eq:Aparam}), we test Advantage Updating
+for the first time on a variety on RL environments using deep networks,
+establishing Deep Advantage Updating as a viable algorithm in this
+setting.  Additionally, we provide formal proofs for the collapse of
+Q-learning when $\deltat\to 0$, and for the non-collapse of Advantage
+Updating, in a general setting.
 
 \TODO{Say that Actor-critic has no problem when $\deltat\to 0$?}
 
@@ -34,7 +34,11 @@ discretization. We show that Advantage updating is viable in the context of deep
 reinforcement learning, while not using the true gradient of the residual error.
 
 More recently, \cite{dueling_nets} also introduced a parameterization separating
-the value and the advantage components of the Q-function. We additionally
-introduce a natural scaling coeficient between the two, that strongly improves
-the time discretization invariance properties.
+the value and the advantage components of the Q-function. Contrary to
+\cite{advup}'s Advantage Updating, learning is still done in a standard
+way on the $Q$-function obtained from adding these two components. Thus this
+approach reparameterizes $Q$ but does not introduce the proper scalings
+and does not result in an invariant algorithm for small $\deltat$.%We additionally
+%introduce a natural scaling coeficient between the two, that strongly improves
+%the time discretization invariance properties.
 
