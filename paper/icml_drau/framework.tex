@@ -122,12 +122,12 @@
 	\end{theorem}
       
 
-\subsection{Return, discount factor  and Value function in near continuous time}
+\subsection{Return, discount factor and value function in near continuous time}
 \label{sec:ret-gamma-v}
 
 
 
-	In what follows, $\deltat$-dependant definitions of the discount factor $\gamma_\deltat$
+	In what follows, $\deltat$-dependant scalings of the discount factor $\gamma_\deltat$
 	and the reward $r_\deltat$ are given. These definitions fit the discrete case
 	scenario when $\deltat=1$, and yields well defined, non trivial returns
 	and value functions when $\deltat$ goes to $0$.
@@ -137,7 +137,7 @@ For a continuous MDP and a continuous trajectory $\tau = (s_t, a_t)_t$,
 the return is defined as~\cite{cont_rl}
 \begin{equation}
 	\label{eq:continuous-return}
-	R(\tau) = \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt
+	R(\tau) = \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt.
 \end{equation}
 
 The natural discretization of this equation, if we want to define a discretized
@@ -145,7 +145,7 @@ return $R_\delta$ for each $\deltat$ is:
 \begin{equation}
 	\label{eq:discretized-return}
 	R_\deltat(\tau) = \sum_{k=0}^\infty\gamma^{k\deltat}
-	r(s^\deltat_k, a^\deltat_k)\deltat
+	r(s_\deltat^k, a_\deltat^k)\deltat
 \end{equation}
 
 Natural definitions of $\gamma_\deltat$ and $r_\deltat$ such
@@ -202,10 +202,8 @@ to the discrete return for the MDP ${\cal M}_\deltat$ follow:
 	The notion of time horizon, which is, informally, the amount of time on
 	which the agent optimizes its return, is only meaningful in physical
 	time.
-        
         %Having a time horizon of $10$ steps means something very different
 	%if $\deltat = 0.1$ and if $\deltat = 0.0001$.
-        
         A rule of thumb
 	is that the time horizon of an agent with discount factor $\gamma$ is
 	of order $\frac{1}{1 - \gamma}$ steps. If $\gamma_\deltat$ was left constant
@@ -233,15 +231,27 @@ The definition of the return Eq.~\eqref{eq:continuous-return}, yields the
 following definition of the continuous value function
 \begin{align}
   V^\pi(s) =& \E_{\tau\sim\pi}\left[R(\tau) \mid s_0 = s\right]\\
-  =& \E_{\tau\sim\pi}\left[\int\limits_{0}^\infty \gamma^{t}\deltat r_{t} \mid s_0 = s\right].
+  =& \E_{\tau\sim\pi}\left[\int\limits_{0}^\infty \gamma^{t} r(s_t, a_t) dt \mid s_0 = s\right].
 \end{align}
 The corresponding discretization for time discretization $\deltat$ is
 \begin{align}
   V^\pi_\deltat(s) =& \E_{\tau\sim\pi}\left[R_\deltat(\tau) \mid s_0 = s\right]\\
-  =& \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty \gamma^{k\deltat}\deltat r_{k\deltat} \mid s_0 = s\right]
+  =& \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty \gamma^{k\deltat}r(s^k_{\deltat}, a^k_{\deltat})\deltat \mid s_0 = s\right]
 \end{align}
 which fits the usual definition of the discrete V-function for $\gamma_\deltat$ and
 $r_\deltat$ defined in~(\ref{eq:def-gamma}, \ref{eq:def-reward}).
+The discretized value function follows the Bellman equation\footnote{
+	If the continuous MDP dynamic follows~\eqref{eq:diffusion}, the limit of the Bellman equation for $V^\pi_\deltat$ when $\deltat \rightarrow 0$ is the Hamilton-Jacobi-Bellman equation on $V^\pi$ \cite{cont_rl}
+\begin{equation}
+  \label{eq:hamilton-jacobi-bellman}
+  r + \partial_s V^\pi \cdot F = - \log(\gamma) V^\pi
+\end{equation}}
+
+\begin{equation}
+  \label{eq:bellman}
+  V^\pi_\deltat(s) = \reward(s, \pi(s))\deltat + \gamma^{\deltat} \E_{s_{\deltat}^{k+1} | s_{\deltat}^{k} = s} V^\pi_\deltat(s_{\deltat}^{k+1})
+\end{equation}
+
 We have the following convergence theorem of the discretized value function to the continuous value function:
   \begin{theorem}
    For all $s \in {\cal S}$:
@@ -249,39 +259,26 @@ We have the following convergence theorem of the discretized value function to t
       \label{eq:conv-value}
       V^\pi_\deltat(s) = V^\pi(s) + \bigO(\deltat)
     \end{equation}
+    \label{th:conv-value}
   \end{theorem}
-
-The discretized value function follows the Bellman equation:
-\begin{equation}
-  \label{eq:bellman}
-  V^\pi_\deltat(s) = \reward(s, \pi(s))\deltat + \gamma^{\deltat} \E_{s_{\deltat}^{k+1} | s_{\deltat}^{k} = s} V^\pi_\deltat(s_{\deltat}^{k+1})
-\end{equation}
-
-If the MDP is following the Eq. \eqref{eq:diffusion}, the limit of the Bellman equation for $V^\pi_\deltat$ when $\deltat \rightarrow 0$ is the Hamilton-Jacobi-Bellman equation on $V^\pi$:\TODO{Cite ?}
-\begin{equation}
-  \label{eq:hamilton-jacobi-bellman}
-  r + \partial_s V^\pi \cdot F + \frac{1}{2} \text{tr}\left(\Sigma^T\partial^2_{s^2} V^\pi\Sigma\right) = - \log(\gamma) V^\pi(s)
-\end{equation}
 
 
 \subsection{There is no Q-function in continuous time}
 
 Contrary to the Value function, the Action-Value function $Q$ is ill-defined
-for a continuous MDP. More precisely, the Q-function  collapses to the V-function when $\deltat \rightarrow 0$. In near continuous time,
-the effect of individual actions on the Q-function is of order $\bigO(\deltat)$. This makes deriving a hierarchy of action from an approximate Q-function difficult.
+for a continuous MDP. More precisely, the Q-function  collapses to the
+V-function when $\deltat \rightarrow 0$. In near continuous time, the effect of
+individual actions on the Q-function is of order $\bigO(\deltat)$. This makes
+deriving a ranking of action from an approximate Q-function difficult.
 Formally:
 \begin{theorem}
-  For all $s, a$, we have
-  \begin{equation}
-    \label{eq:q-discr}
-    Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO\left(\deltat\right)
-  \end{equation}
-  
-  If we consider the continuous action-value function $Q^\pi$, we have:
-  \begin{equation}
-    \label{eq:q-cont}
-    Q^\pi(s, a) = V^\pi
-  \end{equation}
+	Let $\pi$ be a deterministic policy such that for all $\deltat$, $V^\pi_\deltat$ is continuously
+	differentiable, then, for all $s, a$,
+	\begin{equation}
+		\label{eq:q-discr}
+		Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO\left(\deltat\right)
+	\end{equation}
+
   \label{th:q-cont}
 \end{theorem}
 % Consider a discretization of Eq.~\eqref{eq:cont_bell} with time interval
@@ -296,27 +293,47 @@ Formally:
                       %   \end{align}
 
 A consequence of Theorem \ref{th:q-cont} is that in exact continuous time,
-$Q^\pi$ does not bear any information on the hierarchy of actions, and
+$Q^\pi$ does not bear any information on the ranking of actions, and
 thus cannot be used to select actions that yields higher future returns. There is no time continuous Q-learning.
 
 \begin{proof}
+	Bellman equation for the discretized Q-function yields
   \begin{align}
     Q^\pi_\deltat(s, a) &= r(s, a)\deltat + \gamma^\deltat \E_{s'|s, a}\left[V^\pi_\deltat(s')\right] 
   \end{align}
-  But we know that $s'$ is close to $s$. If we define $\delta s = s' - s$, then:
+  From the environment dynamic equation, 
   \begin{equation}
-    \E_{s'|s, a}\left[\delta s\right] = \bigO(\deltat) \quad \text{Var}(\delta s) = \bigO(\deltat)
-  \end{equation}
-  \TODO{Explain. And this is not exactly the Variance.} Therefore:
+	  s' = s + f(s, a) \deltat + \smallo(\deltat).
+  \end{equation}As $V^\pi$ is assumed to be continuously differentiable,
   \begin{align}
-    |\E_{s'|s, a}\left[V^\pi_\deltat(s')\right] - V^\pi_\deltat(s)| &= \E_{\delta s|s, a}\left[\partial_s V^\pi_\deltat\cdot \delta s +\bigO(\|\delta s\|^2)\right]\nonumber\\
-                                            &\leq \|\partial_s V_\deltat^\pi\|\cdot \|\E_{\delta s|s, a}\left[\delta s\right]\| +\bigO(\delta t)\nonumber\\
-    &= \bigO(\deltat)\nonumber
+	  V^\pi_\deltat(s') &= V^\pi_\deltat(s) + \partial_s V^\pi_\deltat(s) F(s, a)\deltat + \smallo(\deltat)\\
+			    &= V^\pi_\deltat(s) + \bigO(\deltat)
   \end{align}
-  Finally:
+  Rewriting $Q^\pi_\deltat$ yields
   \begin{align}
-    Q^\pi_\deltat(s, a) &= r(s, a)\deltat + \gamma^\deltat \E_{s'|s, a}\left[V_\deltat^\pi(s')\right] \nonumber\\
-                &= r(s, a)\deltat + \left(1 + \bigO(\deltat)\right)(V^\pi(s) + \bigO(\deltat))\nonumber\\
-    &= V^\pi(s) + \bigO(\deltat)\nonumber
+	  Q^\pi_\deltat(s, a) &= r(s, a)\deltat + \gamma^\deltat (V^\pi_\deltat(s) + \bigO(\deltat))\\
+			      &= (1 + \bigO(\deltat)) (V^\pi_\deltat(s) + \bigO(\deltat)) + \bigO(\deltat)\\
+			      &= V^\pi_\deltat(s) + \bigO(\deltat).
   \end{align}
+  Now, using Thm.~\ref{th:conv-value},
+  \begin{align}
+	  Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO(\deltat)
+  \end{align}
+  which ends the proof.
+%  But we know that $s'$ is close to $s$. If we define $\delta s = s' - s$, then:
+%  \begin{equation}
+%    \E_{s'|s, a}\left[\delta s\right] = \bigO(\deltat) \quad \text{Var}(\delta s) = \bigO(\deltat)
+%  \end{equation}
+%  \TODO{Explain. And this is not exactly the Variance.} Therefore:
+%  \begin{align}
+%    |\E_{s'|s, a}\left[V^\pi_\deltat(s')\right] - V^\pi_\deltat(s)| &= \E_{\delta s|s, a}\left[\partial_s V^\pi_\deltat\cdot \delta s +\bigO(\|\delta s\|^2)\right]\nonumber\\
+%                                            &\leq \|\partial_s V_\deltat^\pi\|\cdot \|\E_{\delta s|s, a}\left[\delta s\right]\| +\bigO(\delta t)\nonumber\\
+%    &= \bigO(\deltat)\nonumber
+%  \end{align}
+%  Finally:
+%  \begin{align}
+%    Q^\pi_\deltat(s, a) &= r(s, a)\deltat + \gamma^\deltat \E_{s'|s, a}\left[V_\deltat^\pi(s')\right] \nonumber\\
+%                &= r(s, a)\deltat + \left(1 + \bigO(\deltat)\right)(V^\pi(s) + \bigO(\deltat))\nonumber\\
+%    &= V^\pi(s) + \bigO(\deltat)\nonumber
+%  \end{align}
   \end{proof}
