@@ -92,6 +92,7 @@ With this additional constraint, if $Q^\pi_\deltat = Q$,
 \end{align}
 In the spirit of~\cite{dueling_nets}, this condition is enforced by writing $A$ as
 \begin{equation}
+\label{eq:Aparam}
 	A(s, a) = \bar{A}(s, a) - \bar{A}(s, \pi(s)).
 \end{equation}
 With this parameterization, one can hope to learn an approximation of $A^\pi_\deltat$,
