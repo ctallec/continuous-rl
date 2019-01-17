@@ -27,15 +27,8 @@ $\deltat$.
 % exploration method, Advantage updating provide near invariance to change of time
 % discretization. We show that Advantage updating is viable in the context of deep
 % reinforcement learning, while not using the true gradient of the residual error.
-% \TODO{Say that Actor-critic has no problem when $\deltat\to 0$?}
 
-Continuous and near continuous reinforcement learning, which is at the core of
-our approach has been thoroughly studied in the deterministic case
-in~\cite{adv_upd} or \cite{cont_rl}, but has not been applied in the context of
-deep reinforcement learning.
-
-The approach presented in this paper is closely related to \cite{adv_upd} and
-\cite{cont_rl}.
+\TODO{Say that Actor-critic has no problem when $\deltat\to 0$?}
 
 More recently, \cite{dueling_nets} also introduced a parameterization separating
 the value and the advantage components of the Q-function. Contrary to
@@ -45,4 +38,24 @@ approach reparameterizes $Q$ but does not introduce the proper scalings
 and does not result in an invariant algorithm for small $\deltat$.%We additionally
 %introduce a natural scaling coeficient between the two, that strongly improves
 %the time discretization invariance properties.
+
+Continuous and near continuous reinforcement learning, which is at the core of
+our approach has been thoroughly studied in the deterministic case
+in~\cite{adv_upd} or \cite{cont_rl}, but has not been applied in the context of
+deep reinforcement learning.
+
+Reinforcement learning has been studied from a mathematical perspective
+when time and space are both continuous, in connection with optimal
+control and the Hamilton--Jacobi--Bellman equation (a PDE which
+characterizes the value function for continuous space-time). We refer to
+\cite{cont_rl} and the references therein. In particular \TODO{cite
+Munos, convergence of sol to HJB.}  \cite{cont_rl} focusses on practical
+algorithms for the continuous space-time case, including advantage
+updating.
+
+Here on the other hand we focus on generic RL algorithms that can handle
+both discrete and continuous time and space, without collapsing in
+continuous time, thus being robust to changing the timestep.
+
+%The approach presented in this paper is closely related to \cite{adv_upd} and \cite{cont_rl}.
 
