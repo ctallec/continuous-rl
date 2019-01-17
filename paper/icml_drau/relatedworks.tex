@@ -52,8 +52,9 @@ control and the Hamilton--Jacobi--Bellman (HJB) equation (a PDE which
 characterizes the value function for continuous space-time). See for
 instance
 \cite{cont_rl,MunosBourgines98} and the references therein.
-\cite{MunosBourgines98} use a grid algorithm to provably solve the HJB
-equation when discretization tends to $0$. However,
+\cite{MunosBourgines98} use a grid approach to provably solve the HJB
+equation when discretization tends to $0$ (assuming every state in the
+grid is visited a large number of times). However,
 the corresponding algorithms are
 often impractical \cite{cont_rl} for larger-dimensional problems.
 \cite{cont_rl} focusses on practical algorithms specific to the continuous
