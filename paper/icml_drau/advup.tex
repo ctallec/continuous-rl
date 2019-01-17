@@ -166,30 +166,31 @@ interacting with the environment using the $a$'s converge to solutions of
 \begin{equation}
 	ds_t = \E_{a\sim p_A}\left[F(s_t, a)\right]dt
 \end{equation}
-where the expectation cancels the exploration noise.
+where the expectation cancels the exploration noise. The proof is given in the
+supplementary material.
 
 \subsection{Algorithms}
 \label{subsec:algorithm}
-To learn $V_{\theta}$ and $A_{\psi}$, variants of Q-learning for continuous~\cite{ddpg} and
-discrete~\cite{dqn} action spaces are used. In details, $V_{\theta}$ and $A_{\psi}$ are learnt
+To learn $V_{\theta}$ and $A_{\psi}$, variants of Q-learning for continuous and
+discrete action spaces are used. In details, $V_{\theta}$ and $A_{\psi}$ are learnt
 using approximate version of the following bellman equation, which holds for the true $A^\pi_\deltat$
-and $V^\pi_\deltat$,
+and $V^\pi_\deltat$, with a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi_\deltat(s, a')$
 \begin{align}
 	V^{\pi}_\deltat(s) + \deltat A^{\pi}_\deltat(s, a) &= r\deltat + \gamma^{\deltat}  \E_{s'} V^{\pi}_\deltat(s')\label{eq:bellman_A}\\
-	A^{\pi}_\deltat(s, \pi(s)) &= 0\label{eq:max_A}
+	A^{\pi}_\deltat(s, \pi(s)) &= 0\label{eq:max_A}.
 \end{align}
-for a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi_\deltat(s,
-a')$. The argmax is exactly implemented in the case of discrete actions, and approximated by
-a neural network $\pi_\phi(s)$, trained to maximize
-$A(s, \pi_\phi(s))$ in the continuous case.  This is similar to what is done in \cite{ddpg}.
+Maximization over actions is implemented exactly in the discrete actions case,
+and approximated by a policy neural network $\pi_\phi(s)$, trained to maximize $A(s,
+\pi_\phi(s))$ in the continuous case.  This is similar to what is done in
+\cite{ddpg}.
 
 Eq.~\eqref{eq:max_A}
 is directly verified by $A_{\psi}$, owing to the reparametrization
 $A_\psi(s, a) = \bar{A}_\psi(s, a) - \bar{A}_\psi(s, \pi(s))$, described
 in~\ref{subsec:reparam}.  To approximately verify~\eqref{eq:bellman_A}, the
 corresponding squared residual is minimized by an approximate gradient descent.
-The update equations when learning from a transition $(s, a, r, s')$ of
-an exploratory trajectory are
+The update equations when learning from a transition $(s, a, r, s')$, either from
+an exploratory trajectory or from a replay buffer~\cite{dqn} are
 \begin{align}
 	\delta Q_\deltat &\leftarrow A(s, a) \deltat - \left(r \deltat + \gamma^{\deltat} V(s') - V(s)\right)\\
 	\theta_\deltat &\leftarrow \theta_\deltat + \eta^V_\deltat \partial_{\theta} V(s) \frac{\delta Q_\deltat}{\deltat}\\
@@ -202,9 +203,6 @@ Appropriate scalings for the learning rates $\eta^V_\deltat$ and $\eta^A_\deltat
 % to obtain a well defined continuous time limit, the learning rates can be rewritten as
 % $\eta^i_\deltat = \alpha^i \deltat$, where $\alpha^1$ and $\alpha^2$ are independant
 % of $\deltat$.
-In practice, $A$ and $V$ are learned using
-transitions sampled from a replay buffer instead of trajectory samples, to
-prevent excessive correlation between training samples~\cite{dqn}.
 \begin{algorithm}[ht]
 	\caption{Deep Advantage Updating (Discrete actions)}
 	\input{dauc.tex}
@@ -236,9 +234,20 @@ updates are rephrased as
 
 For parameter updates to follow a SDE, one must
 have $\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
-\deltat$:
+\deltat$. More precisely
 \begin{theorem}
-  If $\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A\deltat$, the continuous limit trajectory for parameters follows an SDE.
+	\TODO{We need a bit more details: we probably want to assume that states and actions are
+	drawn from a single fixed trajectory, and that we are learning for a fixed, constant policy.}
+	Let $\eta^V_\deltat = \alpha^V \deltat^\beta$ (resp. $\eta^A \deltat^\beta$) be the learning rate
+	of $V$ (resp. $A$), when training on a single exploratory trajectory. Then
+	\begin{itemize}
+		\item If $\beta = 1$ the discrete parameter trajectories converge to continuous parameter
+			trajectories as $\deltat$ goes to $0$.
+		\item If $\beta < 1$, parameters grow arbitrarily large in a single timestep as $\deltat$
+			goes to $0$.
+		\item If $\beta > 1$, parameter trajectories shrink to a single point as 
+			$\deltat$ goes to $0$.
+	\end{itemize}
 \end{theorem}
 
 % With this choice of learning rates, the limit SDEs are
