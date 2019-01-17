@@ -1,25 +1,28 @@
 %! TEX root = icml_drau.tex
 \section{Reinforcement learning with a continuous time limit}
+
+In what follows, a discrete algorithm with a well defined time continuous
+limit is defined. The algorithm relies on three elements, namely, defining and
+learning a quantity that contains some information on the ranking of actions
+while admitting a time continuous limit, defining exploration methods that
+admit a continuous time limit and defining learning rates that induce well
+behaved parameter trajectories when $\deltat$ goes to $0$.
+
 As seen in Sec.~\ref{sec:framework}, there is no continuous time limit to
-Q-learning. In continuous time, $Q^\pi$ is independant of actions and can thus
+Q-learning. In continuous time, $Q^\pi$ is independent of actions and can thus
 not be used to select promising actions.  In near continuous time, $Q^\pi_\deltat$
 still depends on actions, and can still be used to choose promising actions
 under the current policy. However, when approximating $Q^\pi_\deltat$, if the
 approximation error is much bigger than $\bigO(\deltat)$, approximation errors
-dominates, and the hierarchy of actions given by the approximation is likely to
-be erroneous.  When the approximate Q-function is initialized, if the effect of
-actions on the Q-function is order of magnitudes higher than what it should be,
-approximating $Q^\pi_\deltat$ is likely to be difficult. Besides, the error is likely
-to be further propagated when the equation used to update our approximate $Q$
-function relies on bootstraping, as is the case for usual temporal difference
-derived methods.
-
-In what follows, a discrete algorithm that has a well defined time continuous
-limit is defined. The algorithm relies on three elements, namely, defining and
-learning a quantity that contains some information on the hierarchy of actions
-while admitting a time continuous limit, defining exploration methods that
-admit a continuous time limit and defining learning rates that induce well
-behaved parameter trajectories when $\deltat$ goes to $0$.
+dominates, and the ranking of actions given by the approximation is likely to
+be erroneous.
+% When the approximate Q-function is initialized, if the effect of
+% actions on the Q-function is order of magnitudes higher than what it should be,
+% approximating $Q^\pi_\deltat$ is likely to be difficult.
+%Besides, the error is likely
+%to be further propagated when the equation used to update our approximate $Q$
+%function relies on bootstraping, as is the case for usual temporal difference
+%derived methods.
 
 \subsection{Advantage Updating}
 \label{subsec:reparam}
@@ -27,10 +30,10 @@ To define an object which contains the same information on actions as
 $Q^\pi_\deltat$, but admits an action dependant continuous time limit, it is
 natural to define
 \begin{align}
-	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat},
+	A^\pi_\deltat(s, a) &\mathdef \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat},
     \label{eq:adv}
 \end{align}
-a rescaled version of the advantage function, as the difference between between
+a rescaled version of the advantage function \cite{adv_upd}, as the difference between between
 $Q^\pi_\deltat(s, a)$ and $V^\pi\deltat(s)$ is of order $\bigO(\deltat)$.
 Contrary to the action state value function, the rescaled advantage function converges when $\deltat$ goes to $0$
 to an action dependent quantity which contains the necessary information for policy improvement:
@@ -62,13 +65,21 @@ A natural way of approximating $V^\pi_\deltat$ and $A^\pi_\deltat$ is to apply
 \begin{equation}
 	Q_\Theta(s, a) = V_{\theta}(s) + \deltat A_{\psi}(s, a).
 \end{equation}
-To avoid cumbersome notations, in what follows, parameter indices are dropped.
-At initialization, if both $V_{\theta}$ and $A_{\psi}$ are initialized
-independantly of $\deltat$, this parameterization reasonably scales the
-contribution of actions relative to states in the value of $Q$.  
+with $\Theta = (\theta, \pi)$. To avoid cumbersome notations, in what follows,
+parameter indices are dropped.  At initialization, if both $V_{\theta}$ and
+$A_{\psi}$ are initialized independantly of $\deltat$, this parameterization
+reasonably scales the contribution of actions relative to states in the value
+of $Q$.  Our goal is for $V_\theta$ to approximate $V^\pi_\deltat$ and for
+$A_{\psi}$ to approximate $A^\pi_\deltat$.
 
-\TODO{CT and LB are fighting each other about the importance which should be given to the next paragraph. A impartial judge should give his opinion. (CT is wrong)} However, the proposed reparameterization does not, on its own, guarantee that
-when $Q$ correctly approximates $Q^\pi_\deltat$, $A$ approximates $A^\pi_\deltat$.
+
+%\TODO{CT and LB are fighting each other about the importance which should be given to the next paragraph. A impartial judge should give his opinion. (CT is wrong)}
+However, the proposed reparameterization does not, on its own, guarantee that
+when $Q$ correctly approximates $Q^\pi_\deltat$, $A$ approximates $A^\pi_\deltat$\footnote{
+	Ensuring that $A$ do not differ from $A^\pi_\deltat$ by a state dependent function only affects
+	$A$'s interpretability. Indeed, for any function $f$, the ranking of actions given by
+	$A^\pi_\deltat(s, \cdot)$ and $A^\pi_\deltat(s, \cdot) + f(s)$ is the same.
+}.
 Indeed, for any given pair $V$, $A$,
 \begin{align}
 	\tilde{V}(s) &= V(s) - f(s)\\
@@ -76,7 +87,7 @@ Indeed, for any given pair $V$, $A$,
 \end{align}
 yields the exact same $Q$ function. Consequently, $Q$ can correctly approximate
 $Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
-To enforce, identifiability of $A$, one must enforce the consistency equation
+To enforce identifiability of $A$, one must enforce the consistency equation
 \begin{equation}
 	Q^\pi_\deltat(s, \pi(s)) - V^\pi_\deltat(s) = 0
 \end{equation}
@@ -84,7 +95,7 @@ on the approximate $A$ and $V$. This translates to
 \begin{equation}
 	A(s, \pi(s)) = 0.
 \end{equation}
-With this additional constraint, if $Q^\pi_\deltat = Q$,
+With this additional constraint, if $Q = Q^\pi_\deltat$, then $A = A^\pi_\deltat$ and $V = V^\pi_\deltat$.
 \begin{align}
 	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat}\\
 		    &= \frac{Q(s,a) - Q(s, \pi(s))}{\deltat}\\
@@ -101,37 +112,40 @@ from which a proper hiearchy of actions can be derived for any $\deltat$.
 \subsection{Time invariant exploration}
 \label{subsec:explo}
 To obtain a time invariant reinforcement learning algorithm, a time invariant
-exploration scheme is required. All the exploration schemes hereby considered
-generate sequences of actions as
+exploration scheme is required. 
+\cite{ddpg} already introduces an exploration scheme for continuous actions, which consists in adding an
+\emph{Ornstein-Uhlenbeck}~\cite{orn-uhl} process (OU process) to actions, that is naturally time
+discretization invariant. Formally, it is defined as
+\begin{equation}
+	\pi^\text{explore}(s^k_\deltat, z^k_\deltat) = \pi(s^k_\deltat) + z^k_\deltat
+\end{equation}
+with $z^k_\deltat$ the discretization of a time continuous OU process, defined as
+\begin{equation}
+	dz_t = - z_t \theta dt + \sigma \dbt.
+	\label{eq:orn_uhl}
+\end{equation}
+where $B_t$ is a brownian motion. Resulting discretized trajectories converge
+to non trivial continuous time trajectories.
+
+This exploration can be extended to schemes of the form
 \begin{equation}
   \label{eq:explore}
 	a^k_\deltat = \pi^\text{explore}_\deltat(s^k_\deltat, z^k_\deltat)
 \end{equation}
 with $(z^k_\deltat)_k$ a sequence of random variables, independant from the $a$'s and $s$'s.
-For instance, $\varepsilon$-greedy exploration naturally falls in this framework, \TODO{[[CT would like to give these details, LB thinks it is not necessary:]] with each $z^k_\deltat$
-being a pair composed of a bernoulli random variables $b^k_\deltat$ with probability of being $1$ equal to $\varepsilon$,
-and of a uniform categorical random variable $\xi^k_\deltat$ on actions. Exploratory actions are then selected as
-\begin{equation}
-	a^k_\deltat = (1 - b^k_\deltat) \text{argmax}_{a'} Q^\pi_\deltat(s, a') + b^k_\deltat \xi^k_\deltat.
-\end{equation}}
-
 A sufficient condition for the exploratory policy to admit a time continuous
 limit is for
 $z_\deltat$ to admit a limit, i.e. that the sequence $z_\deltat$ converges to a
 well defined continuous stochastic process $z$ as $\deltat$ goes to $0$.
-\TODO{I'm convinced that this is true, reviewers might not be.}
+% For instance, $\varepsilon$-greedy exploration naturally falls in this framework, \TODO{[[CT would like to give these details, LB thinks it is not necessary:]] with each $z^k_\deltat$
+% being a pair composed of a bernoulli random variables $b^k_\deltat$ with probability of being $1$ equal to $\varepsilon$,
+% and of a uniform categorical random variable $\xi^k_\deltat$ on actions. Exploratory actions are then selected as
+% \begin{equation}
+% 	a^k_\deltat = (1 - b^k_\deltat) \text{argmax}_{a'} Q^\pi_\deltat(s, a') + b^k_\deltat \xi^k_\deltat.
+% \end{equation}}
 
-The exploration scheme used in~\cite{ddpg} for continuous actions, which consists in adding an
-\emph{Ornstein-Uhlenbeck}~\cite{orn-uhl} process (OU process) to actions, is naturally time
-invariant. It follows Eq. \eqref{eq:explore} with:
-\begin{equation}
-	\pi^\text{explore}(s_t, z_t) = \pi(s_t) + z_t
-\end{equation}
-and $z_t$ a time continuous OU process, defined as
-\begin{equation}
-	dz_t = - z_t \theta dt + \sigma \dbt.
-	\label{eq:orn_uhl}
-\end{equation}
+% \TODO{I'm convinced that this is true, reviewers might not be.}
+
 
 On the other hand, the same argument cannot be applied to $\varepsilon$-greedy
 exploration, as the $z_\deltat$'s used to define it do not converge to a 
