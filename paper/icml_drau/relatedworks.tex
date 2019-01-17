@@ -49,13 +49,14 @@ when time and space are both continuous, in connection with optimal
 control and the Hamilton--Jacobi--Bellman equation (a PDE which
 characterizes the value function for continuous space-time). We refer to
 \cite{cont_rl} and the references therein. In particular \TODO{cite
-Munos, convergence of sol to HJB.}  \cite{cont_rl} focusses on practical
-algorithms for the continuous space-time case, including advantage
-updating.
+Munos, convergence of sol to HJB.}  The corresponding algorithms are
+often impractical \cite{cont_rl} for larger-dimensional problems.
+\cite{cont_rl} focusses on practical algorithms for the continuous
+space-time case, including advantage updating.
 
 Here on the other hand we focus on generic RL algorithms that can handle
 both discrete and continuous time and space, without collapsing in
-continuous time, thus being robust to changing the timestep.
+continuous time, thus being robust to arbitrary timesteps.
 
 %The approach presented in this paper is closely related to \cite{adv_upd} and \cite{cont_rl}.
 
