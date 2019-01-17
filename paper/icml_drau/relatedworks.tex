@@ -2,9 +2,19 @@
 \section{Related work}
 \label{sec:related}
 
-Our approach largely builds on \cite{adv_upd}, who identified the
-collapse of Q-learning for small time steps and suggested advantage
-updating with proper $\deltat$ scalings as a solution.
+Our approach builds on \cite{adv_upd}, who identified the
+collapse of Q-learning for small time steps and suggested the Advantage
+Updating algorithm with proper $\deltat$ scalings as a solution; testing
+was only done on a quadratic-linear problem. Our Deep Advantage Updating
+reuses this idea with a different normalization step for $A$ (which
+forgoes the need to learn the normalization itself, thanks to the
+parameterization \eqref{eq:Aparam}), and tests Advantage Updating for the
+first time on a variety on RL environments using deep networks.
+Additionally, we provide formal proofs for the collapse
+of Q-learning when $\deltat\to 0$, and the non-collapse of Advantage
+Updating.
+
+\TODO{Say that Actor-critic has no problem when $\deltat\to 0$?}
 
 Continuous and near continuous reinforcement learning, which is at the core of
 our approach has been thoroughly studied in the deterministic case
