@@ -2,18 +2,22 @@
 \section{Related work}
 \label{sec:related}
 
-Our approach expands on \cite{adv_upd}, who identified the collapse of
-Q-learning for small time steps and suggested as a solution the Advantage Updating
-algorithm with proper $\deltat$ scalings for the $V$ part and the
-advantage part; testing was only
-done on a quadratic-linear problem. Using a different normalization step
-for $A$ (which forgoes the need to learn the normalization itself, thanks
-to the parameterization \eqref{eq:Aparam}), we test Advantage Updating
-for the first time on a variety on RL environments using deep networks,
-establishing Deep Advantage Updating as a viable algorithm in this
-setting.  Additionally, we provide formal proofs for the collapse of
-Q-learning when $\deltat\to 0$, and for the non-collapse of Advantage
-Updating, in a general setting.
+Our approach builds on \cite{adv_upd}, who identified the collapse of
+Q-learning for small time steps and suggested as a solution the Advantage
+Updating algorithm with proper $\deltat$ scalings for the $V$ part and
+the advantage part; testing was only done on a quadratic-linear problem.
+We expand on \cite{adv_upd} in several directions. First, we modify the
+algorithm by
+using a different normalization step for $A$, which forgoes the need to
+learn the normalization itself, thanks to the parameterization
+\eqref{eq:Aparam}. Second, we test Advantage Updating for the first time on a
+variety on RL environments using deep networks, establishing Deep
+Advantage Updating as a viable algorithm in this setting.  Third,
+we provide formal proofs in a general setting for the collapse of Q-learning when $\deltat\to
+0$, and for the non-collapse of Advantage Updating.
+Fourth, we also discuss how to obtain $\deltat$-invariant exploration. Fifth, we
+provide stringent experimental tests of the actual robustness to changing
+$\deltat$.
 
 \TODO{Say that Actor-critic has no problem when $\deltat\to 0$?}
 
