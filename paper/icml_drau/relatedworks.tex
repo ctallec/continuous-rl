@@ -49,13 +49,14 @@ and does not result in an invariant algorithm for small $\deltat$.%We additional
 Reinforcement learning has been studied from a mathematical perspective
 when time and space are both continuous, in connection with optimal
 control and the Hamilton--Jacobi--Bellman (HJB) equation (a PDE which
-characterizes the value function for continuous space-time). See for
-instance
-\cite{cont_rl,MunosBourgines98} and the references therein.
-\cite{MunosBourgines98} use a grid algorithm to provably solve the HJB
-equation when discretization tends to $0$. However,
+characterizes the value function for continuous space-time). Continuous
+space-time algorithms are studied in
+\cite{cont_rl,MunosBourgines98} (see also the references therein).
+\cite{MunosBourgines98} use a grid approach to provably solve the HJB
+equation when discretization tends to $0$ (assuming every state in the
+grid is visited a large number of times). However,
 the corresponding algorithms are
-often impractical \cite{cont_rl} for larger-dimensional problems.
+impractical \cite{cont_rl} for larger-dimensional problems.
 \cite{cont_rl} focusses on practical algorithms specific to the continuous
 space-time case, including advantage updating.
 
