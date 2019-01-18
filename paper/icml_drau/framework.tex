@@ -91,10 +91,10 @@ M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
       environment \eqref{eq:diffusion}, but 
       only making observations and choosing actions every $\deltat$. We
       call such an  MDP ${\cal M}_\deltat$
-      near-continuous.\footnote{
+      \emph{near-continuous}.\footnote{
       We believe the results presented here hold more
       generallly, assuming states
-      follow a \emph{Stochastic Differential Equation} \begin{equation}
+      follow a \emph{stochastic} differential equation \begin{equation}
 	      ds = F(s, a)dt  + \Sigma(s, a)\dbt
 	      \label{eq:sde}
       \end{equation} with
@@ -121,7 +121,7 @@ make sure the various quantities involved converge to meaningful
 limits when $\deltat\to 0$.
 
 By standard arguments for time discretizations of differential
-equations, the near-continuous-time states themselves converge to the
+equations, for a given policy the near-continuous states converge to the
 continuous-time states when $\deltat\to 0$. \TODO{ref to appendix+formal
 statement in appendix} We now turn to the RL-related quantities.
 
