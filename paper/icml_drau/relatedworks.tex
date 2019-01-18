@@ -33,19 +33,28 @@ $\deltat$.
 but not with RMSProp, and needs robust exploration, and limited to
 on-policy}
 
-More recently, \cite{dueling_nets} also introduced a parameterization separating
-the value and the advantage components of the $Q$-function. Contrary to
+\cite{dueling_nets} also use a parameterization separating
+the value and advantage components of the $Q$-function. But contrary to
 \cite{adv_upd}'s Advantage Updating, learning is still done in a standard
 way on the $Q$-function obtained from adding these two components. Thus this
 approach reparameterizes $Q$ but does not change scalings
 and does not result in an invariant algorithm for small $\deltat$.%We additionally
-%introduce a natural scaling coeficient between the two, that strongly improves
+%introduce a natural scaling coefficient between the two, that strongly improves
 %the time discretization invariance properties.
 
 % Continuous and near continuous reinforcement learning, which is at the core of
 % our approach has been thoroughly studied in the deterministic case
 % in~\cite{adv_upd} or \cite{cont_rl}, but has not been applied in the context of
 % deep reinforcement learning.
+
+The problem studied here is a continuity effect quite distinct from
+multiscale RL approaches: indeed the issue arises even if there
+is only one timescale in the environment. Arguably, a small
+$\deltat$ can be seen as a mismatch between the algorithm's
+timescale and the physical system's timescale, but the collapse of the
+$Q$ function to the $V$ function is an intrinsic mathematical phenomenon from time
+continuity, and cannot obviously be addressed via existing multiscale
+techniques. \TODO{cite something!}
 
 Reinforcement learning has been studied from a mathematical perspective
 when time and space are both continuous, in connection with optimal
