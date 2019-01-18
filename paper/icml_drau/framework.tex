@@ -66,7 +66,7 @@ problematic behaviors of near continuous time $Q$-learning.
 % 	$s'$ when starting from point $s$, and following Eq.~\ref{eq:diffusion} while
 % 	maintaining $a$ constant on an interval of time $\deltat$.
 
-g
+
 %       }
 
       
@@ -74,11 +74,11 @@ g
 Let ${\cal S} = \mathbb{R}^d$ be a set of states, and ${\cal A}$ be a set of
 actions. Consider the continuous \emph{Markov Decision Process} (MDP) defined by the differential equation %\TODO{Explain the intuition of Brownian in SDE}:
         \begin{equation}
-g	\label{eq:diffusion}
-g	ds = F(s, a)dt. % + \Sigma(s, a)\dbt.
+	\label{eq:diffusion}
+	ds = F(s, a)dt. % + \Sigma(s, a)\dbt.
               \end{equation}
         For any $\deltat$, the discrete MDP ${\cal
-gM}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
+M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
       \gamma_\deltat\rangle$ is a discretization of the continuous MDP with
       \emph{time discretization} $\deltat$. Here the deterministic
       transition function
@@ -92,52 +92,57 @@ gM}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
       only making observations and choosing actions every $\deltat$. We
       call such an  MDP ${\cal M}_\deltat$
       near-continuous.\footnote{
-g      We believe the results presented here hold more
-g      generallly, assuming states
-g      follow a \emph{Stochastic Differential Equation} \begin{equation}
-g	      ds = F(s, a)dt  + \Sigma(s, a)\dbt
-g	      \label{eq:sde}
+      We believe the results presented here hold more
+      generallly, assuming states
+      follow a \emph{Stochastic Differential Equation} \begin{equation}
+	      ds = F(s, a)dt  + \Sigma(s, a)\dbt
+	      \label{eq:sde}
       \end{equation} with
-g      $B_t$ a multidimensional Brownian motion and $\Sigma$ a covariance matrix. A
+      $B_t$ a multidimensional Brownian motion and $\Sigma$ a covariance matrix. A
       formal treatment of SDEs is beyond the scope of this paper.}
       Informally $F: {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
-gthe dynamic of the environment. The agent interacts with the environment through a deterministic policy function
-g$\pi \colon {\cal S} \rightarrow {\cal A}$. Determinism of the policy is assumed to prevent problematic definitions
-gof the value function in continuous time. This is only a mild requirement, as we introduce an off-policy algorithm,
-gand only impose determinism of the exploitation policy.
-g% This framework covers classical control theory, as well as many usual simulated environments. TODO: not convinced that this is relevant here.
+the dynamic of the environment. The agent interacts with the environment through a deterministic policy function
+$\pi \colon {\cal S} \rightarrow {\cal A}$. Determinism of the policy is assumed to prevent problematic definitions
+of the value function in continuous time. This is only a mild requirement, as we introduce an off-policy algorithm,
+and only impose determinism of the exploitation policy.
+% This framework covers classical control theory, as well as many usual simulated environments. TODO: not convinced that this is relevant here.
 
 %      \footnote{Informally, $T_\deltat(s, a, s')$ is approximately
 %	      the probability distribution of $s + F(s, a)\deltat +
 %	      \sqrt{\deltat}\Sigma(s, a){\cal N}(0, I)$, which is the
 %	      discretization of Eq. \eqref{eq:diffusion} \TODO{CITE}}.
         %In this paper, we try to design RL methods for near continuous MDP
-g%robust to the choice of $\deltat$. 
-g
-gA necessary condition for robustness of an algorithm for
-gnear-continuous time MDPs is 
-gto remain viable when $\deltat \rightarrow 0$. Thus we will try to
-gmake sure the various quantities involved converge to meaningful
-glimits when $\deltat\to 0$.
+%robust to the choice of $\deltat$. 
 
-        The first step in that direction is to check that the discretized
-          trajectories converge to the continuous ones. 
-g\begin{theorem}
-g	Assume that $\pi: {\cal S} \rightarrow {\cal A}$ is a continuous and
-g	deterministic policy. Let $(s_t)_{t\in\mathbb{R}_+}$ be the
-g	continuous process obtained by following \eqref{eq:diffusion} and
-g	$(s_\deltat^k)$ be the discrete process obtained if the agent only
-g	get observations and interacts with the environment every $\deltat$ \TODO{explain better}.
+A necessary condition for robustness of an algorithm for
+near-continuous time MDPs is 
+to remain viable when $\deltat \rightarrow 0$. Thus we will try to
+make sure the various quantities involved converge to meaningful
+limits when $\deltat\to 0$.
 
-g	We define the time process $\tilde s_\deltat^t = s^{\lfloor
-g	\frac{t}{\deltat}\rfloor}_\deltat$ for
-g	$t\in\mathbb{R_+}$.\TODO{Explain}. Then:
-g	\begin{equation}
-g		\label{eq:conv-traj}
-g		(\tilde s_\deltat^t)_{t\in\mathbb{R}_+} 
-g		\xrightarrow[\deltat \rightarrow 0]{} (s_t)_{t\in\mathbb{R}_+}.
-g	\end{equation}
-g\end{theorem}
+By standard arguments involving time discretization of differential
+equations, the near-continuous time states themselves converge to the
+continuous-time states when $\deltat\to 0$. \TODO{ref to appendix+formal
+statement in appendix} We now turn to the RL-related quantities.
+
+%         The first step in that direction is to check that the discretized
+%           trajectories converge to the continuous ones. 
+% \begin{theorem}
+% 	Assume that $\pi: {\cal S} \rightarrow {\cal A}$ is a continuous and
+% 	deterministic policy. Let $(s_t)_{t\in\mathbb{R}_+}$ be the
+% 	continuous process obtained by following \eqref{eq:diffusion} and
+% 	$(s_\deltat^k)$ be the discrete process obtained if the agent only
+% 	get observations and interacts with the environment every $\deltat$ \TODO{explain better}.
+% 
+% 	We define the time process $\tilde s_\deltat^t = s^{\lfloor
+% 	\frac{t}{\deltat}\rfloor}_\deltat$ for
+% 	$t\in\mathbb{R_+}$.\TODO{Explain}. Then:
+% 	\begin{equation}
+% 		\label{eq:conv-traj}
+% 		(\tilde s_\deltat^t)_{t\in\mathbb{R}_+} 
+% 		\xrightarrow[\deltat \rightarrow 0]{} (s_t)_{t\in\mathbb{R}_+}.
+% 	\end{equation}
+% \end{theorem}
       
 
 \subsection{Return, discount factor and value function in near continuous time}
@@ -145,35 +150,35 @@ g\end{theorem}
 
 
 
-gIn what follows, $\deltat$-dependant scalings of the discount factor $\gamma_\deltat$
-gand the reward $r_\deltat$ are given. These definitions fit the discrete case
-gscenario when $\deltat=1$, and yields well defined, non trivial returns
-gand value functions when $\deltat$ goes to $0$.
+In what follows, $\deltat$-dependant scalings of the discount factor $\gamma_\deltat$
+and the reward $r_\deltat$ are given. These definitions fit the discrete case
+scenario when $\deltat=1$, and yields well defined, non trivial returns
+and value functions when $\deltat$ goes to $0$.
 
 \paragraph{Return and Discount Factor}
 For a continuous MDP and a continuous trajectory $\tau = (s_t, a_t)_t$,
 the return is defined as~\cite{cont_rl}
 \begin{equation}
-g\label{eq:continuous-return}
-gR(\tau) = \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt.
+\label{eq:continuous-return}
+R(\tau) = \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt.
 \end{equation}
 
 The natural discretization of this equation, if we want to define a discretized
 return $R_\delta$ for each $\deltat$ is:
 \begin{equation}
-g\label{eq:discretized-return}
-gR_\deltat(\tau) = \sum_{k=0}^\infty\gamma^{k\deltat}
-gr(s_\deltat^k, a_\deltat^k)\deltat
+\label{eq:discretized-return}
+R_\deltat(\tau) = \sum_{k=0}^\infty\gamma^{k\deltat}
+r(s_\deltat^k, a_\deltat^k)\deltat
 \end{equation}
 
 Natural definitions of $\gamma_\deltat$ and $r_\deltat$ such
 that the return defined in equation (\ref{eq:discretized-return}) corresponds
 to the discrete return for the MDP ${\cal M}_\deltat$ follow:
 \begin{align}
-g\label{eq:def-gamma}
-g\gamma_\deltat =& \gamma^\deltat\\
-g\label{eq:def-reward}
-gr_\deltat =& \deltat . r.
+\label{eq:def-gamma}
+\gamma_\deltat =& \gamma^\deltat\\
+\label{eq:def-reward}
+r_\deltat =& \deltat . r.
 \end{align}
 % Thus, we see that the natural discretization of a continuous MDP ${\cal M} = \langle {\cal S}, {\cal A}, T, r, \gamma\rangle$ is ${\cal M}_\deltat = \langle {\cal S}, {\cal A}, T_\deltat, r\deltat, \gamma^\deltat\rangle$.
 
@@ -213,25 +218,25 @@ gr_\deltat =& \deltat . r.
       \paragraph{Number of steps / Physical time, Time horizon}
         % [[I prefer to talk about ``number of steps'' VS ``Physical time'' than microscopic/Macroscopic]]
         In near continuous environments, there are two notions of time,
-gthe number of steps, or the number of actions taken, and the actual amount of time spent
-gin the underlying continuous time environment, which we call the physical
-gtime. If $t$ is the real time and $k$ the number of steps, the two are related through $t = k \deltat$.
+the number of steps, or the number of actions taken, and the actual amount of time spent
+in the underlying continuous time environment, which we call the physical
+time. If $t$ is the real time and $k$ the number of steps, the two are related through $t = k \deltat$.
 
-gThe notion of time horizon, which is, informally, the amount of time on
-gwhich the agent optimizes its return, is only meaningful in physical
-gtime.
+The notion of time horizon, which is, informally, the amount of time on
+which the agent optimizes its return, is only meaningful in physical
+time.
         %Having a time horizon of $10$ steps means something very different
-g%if $\deltat = 0.1$ and if $\deltat = 0.0001$.
+%if $\deltat = 0.1$ and if $\deltat = 0.0001$.
         A rule of thumb
-gis that the time horizon of an agent with discount factor $\gamma$ is
-gof order $\frac{1}{1 - \gamma}$ steps. If $\gamma_\deltat$ was left constant
-gas $\deltat$ goes to $0$, the corresponding time horizon in physical time
-gwould write as $\frac{\deltat}{1 - \gamma}$ which goes to $0$ when
-g$\deltat$ goes to $0$.
+is that the time horizon of an agent with discount factor $\gamma$ is
+of order $\frac{1}{1 - \gamma}$ steps. If $\gamma_\deltat$ was left constant
+as $\deltat$ goes to $0$, the corresponding time horizon in physical time
+would write as $\frac{\deltat}{1 - \gamma}$ which goes to $0$ when
+$\deltat$ goes to $0$.
         On the contrary, the definition of $\gamma_\deltat$ in
-gEq.~\eqref{eq:def-gamma} yields an approximately constant
-gtime horizon in physical time when $\deltat$ goes to $0$. Indeed,
-g\begin{equation}
+Eq.~\eqref{eq:def-gamma} yields an approximately constant
+time horizon in physical time when $\deltat$ goes to $0$. Indeed,
+\begin{equation}
           \label{eq:time-horizon}
           \frac{\deltat}{1-\gamma^\deltat}
           = - \frac{1}{\log \gamma} + \bigO(\deltat)
@@ -259,7 +264,7 @@ The corresponding discretization for time discretization $\deltat$ is
 which fits the usual definition of the discrete V-function for $\gamma_\deltat$ and
 $r_\deltat$ defined in~(\ref{eq:def-gamma}, \ref{eq:def-reward}).
 The discretized value function follows the Bellman equation\footnote{
-gIf the continuous MDP dynamic follows~\eqref{eq:diffusion}, the limit of the Bellman equation for $V^\pi_\deltat$ when $\deltat \rightarrow 0$ is the Hamilton-Jacobi-Bellman equation on $V^\pi$ \cite{cont_rl}
+If the continuous MDP dynamic follows~\eqref{eq:diffusion}, the limit of the Bellman equation for $V^\pi_\deltat$ when $\deltat \rightarrow 0$ is the Hamilton-Jacobi-Bellman equation on $V^\pi$ \cite{cont_rl}
 \begin{equation}
   \label{eq:hamilton-jacobi-bellman}
   r + \partial_s V^\pi \cdot F = - \log(\gamma) V^\pi
@@ -290,12 +295,12 @@ individual actions on the $Q$-function is of order $\bigO(\deltat)$. This makes
 deriving a ranking of action from an approximate $Q$-function difficult.
 Formally:
 \begin{theorem}
-gLet $\pi$ be a deterministic policy such that for all $\deltat$, $V^\pi_\deltat$ is continuously
-gdifferentiable, then, for all $s, a$,
-g\begin{equation}
-g	\label{eq:q-discr}
-g	Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO\left(\deltat\right)
-g\end{equation}
+Let $\pi$ be a deterministic policy such that for all $\deltat$, $V^\pi_\deltat$ is continuously
+differentiable, then, for all $s, a$,
+\begin{equation}
+	\label{eq:q-discr}
+	Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO\left(\deltat\right)
+\end{equation}
 
   \label{th:q-cont}
 \end{theorem}
@@ -315,27 +320,27 @@ $Q^\pi$ does not bear any information on the ranking of actions, and
 thus cannot be used to select actions that yields higher future returns. There is no time continuous $Q$-learning.
 
 \begin{proof}
-gBellman equation for the discretized $Q$-function yields
+Bellman equation for the discretized $Q$-function yields
   \begin{align}
     Q^\pi_\deltat(s, a) &= r(s, a)\deltat + \gamma^\deltat \E_{s'|s, a}\left[V^\pi_\deltat(s')\right] 
   \end{align}
   From the environment dynamic equation, 
   \begin{equation}
-g  s' = s + f(s, a) \deltat + \smallo(\deltat).
+  s' = s + f(s, a) \deltat + \smallo(\deltat).
   \end{equation}As $V^\pi$ is assumed to be continuously differentiable,
   \begin{align}
-g  V^\pi_\deltat(s') &= V^\pi_\deltat(s) + \partial_s V^\pi_\deltat(s) F(s, a)\deltat + \smallo(\deltat)\\
-g		    &= V^\pi_\deltat(s) + \bigO(\deltat)
+  V^\pi_\deltat(s') &= V^\pi_\deltat(s) + \partial_s V^\pi_\deltat(s) F(s, a)\deltat + \smallo(\deltat)\\
+		    &= V^\pi_\deltat(s) + \bigO(\deltat)
   \end{align}
   Rewriting $Q^\pi_\deltat$ yields
   \begin{align}
-g  Q^\pi_\deltat(s, a) &= r(s, a)\deltat + \gamma^\deltat (V^\pi_\deltat(s) + \bigO(\deltat))\\
-g		      &= (1 + \bigO(\deltat)) (V^\pi_\deltat(s) + \bigO(\deltat)) + \bigO(\deltat)\\
-g		      &= V^\pi_\deltat(s) + \bigO(\deltat).
+  Q^\pi_\deltat(s, a) &= r(s, a)\deltat + \gamma^\deltat (V^\pi_\deltat(s) + \bigO(\deltat))\\
+		      &= (1 + \bigO(\deltat)) (V^\pi_\deltat(s) + \bigO(\deltat)) + \bigO(\deltat)\\
+		      &= V^\pi_\deltat(s) + \bigO(\deltat).
   \end{align}
   Now, using Thm.~\ref{th:conv-value},
   \begin{align}
-g  Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO(\deltat)
+  Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO(\deltat)
   \end{align}
   which ends the proof.
 %  But we know that $s'$ is close to $s$. If we define $\delta s = s' - s$, then:
