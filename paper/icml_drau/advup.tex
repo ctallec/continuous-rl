@@ -171,6 +171,12 @@ supplementary material.
 
 \subsection{Algorithms}
 \label{subsec:algorithm}
+\begin{algorithm}[ht]
+	\caption{Deep Advantage Updating (Discrete actions)}
+	\input{dauc.tex}
+	\label{alg:dau}
+\end{algorithm}
+
 To learn $V_{\theta}$ and $A_{\psi}$, variants of Q-learning for continuous and
 discrete action spaces are used. In details, $V_{\theta}$ and $A_{\psi}$ are learnt
 using approximate version of the following bellman equation, which holds for the true $A^\pi_\deltat$
@@ -203,14 +209,9 @@ Appropriate scalings for the learning rates $\eta^V_\deltat$ and $\eta^A_\deltat
 % to obtain a well defined continuous time limit, the learning rates can be rewritten as
 % $\eta^i_\deltat = \alpha^i \deltat$, where $\alpha^1$ and $\alpha^2$ are independant
 % of $\deltat$.
-\begin{algorithm}[ht]
-	\caption{Deep Advantage Updating (Discrete actions)}
-	\input{dauc.tex}
-	\label{alg:dau}
-\end{algorithm}
-
 \subsection{Learning rates scalings}
 \label{subsec:lr}
+\input{pendulum_fig.tex}
 For the discrete algorithm to admit a continuous time limit, the trajectories
 of parameters must converge to well defined trajectories as $\deltat$ goes to
 $0$.  Intuitively, this means that optimization steps should not be too large,
