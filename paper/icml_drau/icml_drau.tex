@@ -40,7 +40,7 @@
 \begin{document}
 
 \twocolumn[
-\icmltitle{Making Deep Q-learning methods robust to time discretization}
+\icmltitle{Making Deep Q-learning Methods Robust to Time Discretization}
 
 
 % It is OKAY to include author information, even for blind
@@ -100,17 +100,33 @@
 %\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \begin{abstract}
-	Despite remarkable successes, \emph{Deep Reinforcement learning} (DRL) remains not robust to
-	hyperparameterization, implementation details and small environment changes~(\citealt{drl_matter}, \citealt{drl_matter_bis}). 
-	Overcoming this sensitivity is key to making DRL applicable to real world problems.
-	In this paper, we study the sensitivity of DRL to
-	time discretization in \emph{near continuous time} environments. More precisely, we show that approaches based on estimations of the
-	Q-function, e.g. \emph{Deep Q-learning}~\cite{dqn} and \emph{Deep deterministic policy gradient}~\cite{ddpg}
-	are sensitive to variations of time discretization.
-        We detail a principled method to obtain an off-policy RL algorithm that is more robust to changes in time discretization, and demontrate this robustness empirically. 
-        % We further show that a simple reparameterization of the
-	% Q-function as a sum of a state value term and a \emph{small} action dependent advantage term yields an algorithm
-	% much more resilient to variations of time discretization.\LB{Change last sentence to: We introduce a more resilient algorithm to variations of time discretization [We could say more, but still less that what is already there]}
+	Despite remarkable successes, \emph{Deep Reinforcement Learning}
+	(DRL) is not robust to hyperparameterization, implementation
+	details, or small environment changes (\citealt{drl_matter},
+	\citealt{drl_matter_bis}).  Overcoming such sensitivity is key to
+	making DRL applicable to real world problems.  In this paper,
+	we identify
+	sensitivity to \emph{time discretization} in near
+	continuous-time environments as a critical factor; this covers, e.g., changing the number of
+	frames per second, or the action frequency of the controller.
+	Empirically, we find that
+	Q-learning-based approaches such as
+	\emph{Deep Q-learning}~\cite{dqn} and \emph{Deep Deterministic
+	Policy Gradient}~\cite{ddpg} %are highly sensitive to variations of time discretization and
+	collapse with small time steps. Formally, we prove that
+	$Q$-learning does not exist in
+	continuous time.
+	We detail a principled way to build an
+	off-policy RL algorithm that yields similar performances over a wide range
+	of time
+	discretizations, and confirm this robustness empirically. 
+	% We further show that a simple reparameterization of the
+	% Q-function as a sum of a state value term and a \emph{small}
+	% action dependent advantage term yields an algorithm much more
+	% resilient to variations of time discretization.\LB{Change last
+	% sentence to: We introduce a more resilient algorithm to
+	% variations of time discretization [We could say more, but still
+	% less that what is already there]}
 \end{abstract}
 
 

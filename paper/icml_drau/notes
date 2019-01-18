@@ -1,0 +1,10 @@
+not just due to wrong gamma when dt->0
+
+true in any context where individual actions contribute small rewards/adv
+(dt=order of magnitude of the advantage)
+
+discuter choix du dt
+
+not the same as multiscale
+
+more pedagogical intro
