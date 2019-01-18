@@ -84,7 +84,10 @@
       only making observations and choosing actions every $\deltat$. We
       say the the MDP ${\cal M}_\deltat$ is near-continuous.\footnote{
 	      We believe the results presented here to be true in a more general framework, where states
-	      follow a \emph{Stochastic Differential Equation} $ds = F(s, a)dt.  + \Sigma(s, a)\dbt$, with
+	      follow a \emph{Stochastic Differential Equation} \begin{equation}
+		      ds = F(s, a)dt.  + \Sigma(s, a)\dbt
+		      \label{eq:sde}
+      \end{equation}, with
 	      $B_t$ a multidimensional brownian motion and $\Sigma$ its associated covariance matrix. However,
       formal treatment of SDEs is generally tedious and out of the scope of this paper.}
       Informally $F: {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes

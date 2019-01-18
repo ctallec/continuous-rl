@@ -263,11 +263,4 @@ The full algorithm can now be derived.
 Pseudocode for the discrete actions algorithm is given in Alg.~\ref{alg:dau}.
 Pseudocode for the continuous actions algorithm is given in the supplementary
 material.
-\TODO{Be careful when using RMSprop. When you are facing a stochastic environment
-	RMSprop evaluates the second momentum of gradients and rescale gradients by its
-	square root. This second momentum will
-	be of order $\frac{1}{\deltat}$, due to the stochasticity in the environment. Consequently
-	all gradient steps are multiplied by $\sqrt{\deltat}$, and learning rates need only be
-multiplied by $\sqrt{\deltat}$ instead of $\deltat$. Taking batches of size proportional to $\frac{1}{\deltat}$
-applies a similar fix.}
 
