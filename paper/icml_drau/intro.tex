@@ -12,20 +12,21 @@ In spite of those successes, DRL approaches are
 sensitive to a number of factors, including hyperparameterization,
 implementation details or small changes in the environment
 parameters~(\citealt{drl_matter}, \citealt{drl_matter_bis}). This sensitivity,
-along with sample inefficiency, prevents DRL from being applied in real
-world settings. High sensitivity to environment parameters notably prevents
-transfer of abilities from imperfect simulators to real world scenarios.
+along with sample inefficiency, largely prevents DRL from being applied in real
+world settings. Notably, high sensitivity to environment parameters prevents
+transfer from imperfect simulators to real world scenarios.
 
-In this paper we focus our attention on the sensitivity to time discretization
-of DRL approaches,
-i.e. what happens when an agent receives $50$ observations
-and is expected to take $50$ actions per second instead of $10$. One expects
-that decreasing time discretization, or equivalently shortening reaction time,
-should only improve agent performance. Robustness to time discretization is notably relevant in \emph{near-continuous}
-environments, which includes most continuous control environments, robotics and many video games.
-More generally, robusteness to time discretization is important in any setting in which the advantage
-of an individual action over another is small compared to the total return, and notably on long time horizon
-problems.
+In this paper we focus on the sensitivity to time discretization of DRL
+approaches, such as what happens when an agent receives $50$ observations
+and is expected to take $50$ actions per second instead of $10$. One
+would expect that decreasing time discretization, or equivalently
+shortening reaction time, should only improve agent performance.
+Robustness to time discretization is especially relevant in
+\emph{near-continuous} environments, which includes most continuous
+control environments, robotics, and many video games.  (We focus on
+near-continuous time because this leads to a clear framework, but the
+approach below would be relevant in any setting in which the advantage of
+any single individual action is small compared to the total return.)%, for instance, long time horizon problems.
 
 In practice, standard approaches based on estimation of state action value functions, e.g.
 \emph{Deep Q-learning} (DQN~\citep{dqn} and \emph{Deep deterministic policy
