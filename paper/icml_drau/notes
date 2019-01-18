@@ -5,6 +5,8 @@ true in any context where individual actions contribute small rewards/adv
 
 discuter choix du dt
 
-not the same as multiscale
+not the same as multiscale. NOt really linked to multiscale (pb even for environments with a single scale), we and Baird treat it just by considerations of physical homogeneity of the algorithm
 
 more pedagogical intro
+
+discussion : autres sources de non-invariance (buffer, non-observable+LSTM, RMSProp)
