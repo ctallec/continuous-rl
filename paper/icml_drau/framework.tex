@@ -25,18 +25,17 @@ $\deltat$, and should remain viable when $\deltat \rightarrow 0$.
 Besides, designing a time discretization invariant algorithm could
 alleviate tedious hyperparameterization by providing better defaults for
 time-horizon-related parameters.
-\TODO{Move some of this to the intro??}
 
 We are thus interested in the behavior of reinforcement learning
 algorithms in discretized environments, when the discretization timestep
 is small. We will refer to such environments as \emph{near-continuous
 environments}.
 
-In what follows, a formalized view of near continuous environments is
-given, along with $\deltat$ dependant definitions of return, discount
-factor and value functions that are shown to converge to well defined
-continous time limits. Finally, it is shown that the state-action value
-function collapses to the value function as $\deltat$ goes to $0$.
+A formalized view of near continuous environments is
+given below, along with $\deltat$-dependent definitions of return, discount
+factor and value functions, that converge to well defined
+continous-time limits. The state-action value
+function is shown to collapse to the value function as $\deltat$ goes to $0$.
 Consequently there is no Q-learning in continuous time, foreshadowing
 problematic behaviors of near continuous time Q-learning.
 %      \TODO{We should explain somwhere here that, if not invariant,
