@@ -35,7 +35,7 @@ Intuitively, as the discretization timestep
 decreases, the effect of individual actions on the total return decreases
 too: $Q(s,a)$ is the value of playing action $a$ then playing optimally,
 and if $a$ is only maintained for a very short time its advantage over
-other actions will be accordingly small. (This occurs even with a
+other actions will be accordingly small. (This continuity effect occurs even with a
 well-adjusted decay factor $\gamma$.)
 
 The natural framework to study this phenomenon is Continuous time
@@ -57,11 +57,13 @@ provides relevant scalings for a number of hyperparameters.
 
 Our contribution is threefold:
 \begin{itemize} 
-\item We show that the Q-function collapses to the V-function in near-continuous time, and thus that
-    standard Q-learning is ill-behaved in this setting.
+\item Building on \cite{adv_upd}, we formally show that the $Q$-function collapses to the $V$-function in near-continuous time, and thus that
+    standard $Q$-learning is ill-behaved in this setting.
   \item Our analysis of limit properties in near continuous environments leads to a robust off-policy algorithm. In particular,
-    it provides insights on how to design architectures, constraint exploration, and scale learning rates.
-  \item We empirically show that standard Q-learning methods are not robust to changes in time discretization, and that our algorithm provides notable gains in that domain.
+    it provides insights on how to design architectures, constrain exploration, and scale learning rates.
+  \item We empirically show that standard Q-learning methods are not
+  robust to changes in time discretization, while our algorithm provides
+  substantial robustness in that domain.
 \end{itemize}
 
 
