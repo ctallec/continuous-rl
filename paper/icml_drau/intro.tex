@@ -31,16 +31,24 @@ any single individual action is small compared to the total return.)%, for insta
 In practice, standard approaches based on estimation of state action value functions, e.g.
 \emph{Deep Q-learning} (DQN~\citep{dqn} and \emph{Deep deterministic policy
 gradient} (DDPG~\citep{ddpg}) are not robust to changes in time discretization. This is shown experimentally in Sec.~\ref{sec:exp}. 
-This sensitivity can be understood as follows: as the discretization timestep
-decreases, the effect of individual actions on the total return decreases too, and
-can vanish when the discretization timestep becomes infinitesimal. The natural
-framework to study this phenomenon is Continuous time reinforcement learning 
-(Sec.~\ref{sec:framework}) \cite{cont_rl, adv_upd}.
+Intuitively, as the discretization timestep
+decreases, the effect of individual actions on the total return decreases
+too: $Q(s,a)$ is the value of playing action $a$ then playing optimally,
+and if $a$ is only maintained for a very short time its advantage over
+other actions will be accordingly small. (This occurs even with a
+well-adjusted decay factor $\gamma$.)
 
-A time discretization invariant algorithm should in particular admit a time
-continuous limit i.\,e. when the discretization timestep goes to $0$.  This
+The natural framework to study this phenomenon is Continuous time
+reinforcement learning (Sec.~\ref{sec:framework}) \cite{cont_rl,
+adv_upd}. Formally, the effect of a single action vanishes when the
+discretization timestep becomes infinitesimal: there is no
+continuous-time $Q$-function. 
+
+A time discretization invariant algorithm should in particular admit a
+continuous-time
+limit when the discretization timestep goes to $0$.  This
 leads to precise design choices in term of agent architecture, exploration
-policy and learning rates scalings.  The resulting algorithm is shown to
+policy, and learning rates scalings.  The resulting algorithm is shown to
 provide better invariance to time discretization on many environments than
 vanilla DQN or DDPG (Sec.~\ref{sec:exp}).  On a new environment, as soon as the
 order of magnitude of the time discretization is known, our analysis readily
