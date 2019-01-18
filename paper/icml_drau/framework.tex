@@ -101,11 +101,14 @@ M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
       \end{equation} with
       $B_t$ a multidimensional Brownian motion and $\Sigma$ a covariance matrix. A
       formal treatment of SDEs is beyond the scope of this paper.}
-      Informally $F: {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
-the dynamic of the environment. The agent interacts with the environment through a deterministic policy function
+      Informally, $F\colon {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
+the dynamics of the environment. The agent interacts with the environment through a deterministic policy function
 $\pi \colon {\cal S} \rightarrow {\cal A}$. Determinism of the policy is assumed to prevent problematic definitions
 of the value function in continuous time. This is only a mild requirement, as we introduce an off-policy algorithm,
-and only impose determinism of the exploitation policy.
+and only impose determinism of the exploitation policy. \TODO{justify
+better or just say: for simplicity we assume that both the dynamics and
+policy are deterministic, or say the optimal policy can always be assumed
+to be deterministic.}
 % This framework covers classical control theory, as well as many usual simulated environments. TODO: not convinced that this is relevant here.
 
 %      \footnote{Informally, $T_\deltat(s, a, s')$ is approximately
