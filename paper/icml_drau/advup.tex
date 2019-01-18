@@ -204,7 +204,7 @@ an exploratory trajectory or from a replay buffer~\cite{dqn} are
 	\label{eq:approx_bellman_A}
 \end{align} 
 where $\eta$'s are learning rates.
-Appropriate scalings for the learning rates $\eta^V_\deltat$ and $\eta^A_\deltat$ in term of $\deltat$ to obtain a well defined continuous limit are derived in the following section. \TODO{Change notations for the learning rates in the algorithm}
+Appropriate scalings for the learning rates $\eta^V_\deltat$ and $\eta^A_\deltat$ in term of $\deltat$ to obtain a well defined continuous limit are derived in the following section.
 % As we will see in the following section,
 % to obtain a well defined continuous time limit, the learning rates can be rewritten as
 % $\eta^i_\deltat = \alpha^i \deltat$, where $\alpha^1$ and $\alpha^2$ are independant
@@ -249,6 +249,7 @@ have $\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
 		\item If $\beta > 1$, parameter trajectories shrink to a single point as 
 			$\deltat$ goes to $0$.
 	\end{itemize}
+	\label{th:cont-params}
 \end{theorem}
 
 % With this choice of learning rates, the limit SDEs are
