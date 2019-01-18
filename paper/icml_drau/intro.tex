@@ -12,47 +12,60 @@ In spite of those successes, DRL approaches are
 sensitive to a number of factors, including hyperparameterization,
 implementation details or small changes in the environment
 parameters~(\citealt{drl_matter}, \citealt{drl_matter_bis}). This sensitivity,
-along with sample inefficiency, prevents DRL from being applied in real
-world settings. High sensitivity to environment parameters notably prevents
-transfer of abilities from imperfect simulators to real world scenarios.
+along with sample inefficiency, largely prevents DRL from being applied in real
+world settings. Notably, high sensitivity to environment parameters prevents
+transfer from imperfect simulators to real world scenarios.
 
-In this paper we focus our attention on the sensitivity to time discretization
-of DRL approaches,
-i.e. what happens when an agent receives $50$ observations
-and is expected to take $50$ actions per second instead of $10$. One expects
-that decreasing time discretization, or equivalently shortening reaction time,
-should only improve agent performance. Robustness to time discretization is notably relevant in \emph{near-continuous}
-environments, which includes most continuous control environments, robotics and many video games.
-More generally, robusteness to time discretization is important in any setting in which the advantage
-of an individual action over another is small compared to the total return, and notably on long time horizon
-problems.
+In this paper we focus on the sensitivity to time discretization of DRL
+approaches, such as what happens when an agent receives $50$ observations
+and is expected to take $50$ actions per second instead of $10$.
+In principle, decreasing time discretization, or equivalently
+shortening reaction time, should only improve agent performance.
+Robustness to time discretization is especially relevant in
+\emph{near-continuous} environments, which includes most continuous
+control environments, robotics, and many video games.  
+(We focus on
+near-continuous time because this leads to a clear framework, but the
+approach below would be relevant in any setting in which the advantage of
+any single individual action is small compared to the total return.)%, for instance, long time horizon problems.
 
-In practice, standard approaches based on estimation of state action value functions, e.g.
-\emph{Deep Q-learning} (DQN~\citep{dqn} and \emph{Deep deterministic policy
-gradient} (DDPG~\citep{ddpg}) are not robust to changes in time discretization. This is shown experimentally in Sec.~\ref{sec:exp}. 
-This sensitivity can be understood as follows: as the discretization timestep
-decreases, the effect of individual actions on the total return decreases too, and
-can vanish when the discretization timestep becomes infinitesimal. The natural
-framework to study this phenomenon is Continuous time reinforcement learning 
-(Sec.~\ref{sec:framework}) \cite{cont_rl, adv_upd}.
+Standard approaches based on estimation of state-action
+value functions, such as
+\emph{Deep $Q$-learning} (DQN~\citep{dqn} and \emph{Deep deterministic policy
+gradient} (DDPG~\citep{ddpg}) are not at all robust to changes in time discretization. This is shown experimentally in Sec.~\ref{sec:exp}. 
+Intuitively, as the discretization timestep
+decreases, the effect of individual actions on the total return decreases
+too: $Q(s,a)$ is the value of playing action $a$ then playing optimally,
+and if $a$ is only maintained for a very short time its advantage over
+other actions will be accordingly small. (This continuity effect occurs even with a
+well-adjusted decay factor $\gamma$.)
 
-A time discretization invariant algorithm should in particular admit a time
-continuous limit i.\,e. when the discretization timestep goes to $0$.  This
+The natural framework to study this phenomenon is Continuous time
+reinforcement learning (Sec.~\ref{sec:framework}) \cite{cont_rl,
+adv_upd}. Formally, the effect of a single action vanishes when the
+discretization timestep becomes infinitesimal: there is no
+continuous-time $Q$-function. 
+
+A time discretization invariant algorithm should in particular admit a
+continuous-time
+limit when the discretization timestep goes to $0$.  This
 leads to precise design choices in term of agent architecture, exploration
-policy and learning rates scalings.  The resulting algorithm is shown to
-provide better invariance to time discretization on many environments than
-vanilla DQN or DDPG (Sec.~\ref{sec:exp}).  On a new environment, as soon as the
+policy, and learning rates scalings.  The resulting algorithm is shown to
+provide better invariance to time discretization than
+vanilla DQN or DDPG, on many environments (Sec.~\ref{sec:exp}).  On a new environment, as soon as the
 order of magnitude of the time discretization is known, our analysis readily
 provides relevant scalings for a number of hyperparameters.
 
 
 Our contribution is threefold:
 \begin{itemize} 
-\item We show that the Q-function collapses to the V-function in near-continuous time, and thus that
-    standard Q-learning is ill-behaved in this setting.
+\item Building on \cite{adv_upd}, we formally show that the $Q$-function collapses to the $V$-function in near-continuous time, and thus that
+    standard $Q$-learning is ill-behaved in this setting.
   \item Our analysis of limit properties in near continuous environments leads to a robust off-policy algorithm. In particular,
-    it provides insights on how to design architectures, constraint exploration, and scale learning rates.
-  \item We empirically show that standard Q-learning methods are not robust to changes in time discretization, and that our algorithm provides notable gains in that domain.
+    it provides insights on how to design architectures, constrain exploration, and scale learning rates.
+  \item We empirically show that standard $Q$-learning methods are not
+  robust to changes in time discretization, exhibiting degraded performance, while our algorithm provides
+  substantial robustness in that domain.
 \end{itemize}
 
 
