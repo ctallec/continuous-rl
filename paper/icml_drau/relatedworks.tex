@@ -1,9 +1,9 @@
 %! TEX root = icml_drau.tex
-\section{Related work}
+\section{Related Work}
 \label{sec:related}
 
 Our approach builds on \cite{adv_upd}, who identified the collapse of
-Q-learning for small time steps and, as a solution, suggested the Advantage
+$Q$-learning for small time steps and, as a solution, suggested the Advantage
 Updating algorithm, with proper $\deltat$ scalings for the $V$ part and
 the advantage part; testing was only done on a quadratic-linear problem.
 
@@ -14,7 +14,7 @@ learn the normalization itself, thanks to the parameterization
 \eqref{eq:Aparam}. Second, we test Advantage Updating for the first time on a
 variety on RL environments using deep networks, establishing Deep
 Advantage Updating as a viable algorithm in this setting.  Third,
-we provide formal proofs in a general setting for the collapse of Q-learning when $\deltat\to
+we provide formal proofs in a general setting for the collapse of $Q$-learning when $\deltat\to
 0$, and for the non-collapse of Advantage Updating with the proper scalings.
 Fourth, we also discuss how to obtain $\deltat$-invariant exploration. Fifth, we
 provide stringent experimental tests of the actual robustness to changing
@@ -22,7 +22,7 @@ $\deltat$.
 %  \cite{adv_upd} already separated the learning procedure of the
 % value and advantage functions, and introduced proper scalings between the two
 % components. We extend on \cite{adv_upd} in three directions. We provide a
-% formal argument on why the advantage contribution of the Q-function is of order
+% formal argument on why the advantage contribution of the $Q$-function is of order
 % $\bigO(\deltat)$, irrelevant of the stochasticity of the environment, in a quite
 % general framework. We show that, provided with well suited learning rates and
 % exploration method, Advantage updating provide near invariance to change of time
@@ -30,10 +30,11 @@ $\deltat$.
 % reinforcement learning, while not using the true gradient of the residual error.
 
 \TODO{Somewhere else: Say that Actor-critic has no problem when $\deltat\to 0$? With SGD
-but not with RMSProp, and needs robust exploration}
+but not with RMSProp, and needs robust exploration, and limited to
+on-policy}
 
 More recently, \cite{dueling_nets} also introduced a parameterization separating
-the value and the advantage components of the Q-function. Contrary to
+the value and the advantage components of the $Q$-function. Contrary to
 \cite{adv_upd}'s Advantage Updating, learning is still done in a standard
 way on the $Q$-function obtained from adding these two components. Thus this
 approach reparameterizes $Q$ but does not change scalings
