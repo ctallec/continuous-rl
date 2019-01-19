@@ -1,5 +1,5 @@
 %! TEX root = icml_drau.tex
-\section{Reinforcement learning with a continuous time limit}
+\section{Reinforcement Learning with a Continuous-Time Limit}
 
 We now define a discrete algorithm with a well-defined continuous-time
 limit.  It relies on three elements: defining and learning a quantity
@@ -129,7 +129,7 @@ In the spirit of~\cite{dueling_nets}, this condition is enforced by writing $A$ 
 With this parameterization, one can hope to learn an approximation of $A^\pi$,
 from which a proper ranking of actions can be derived for any $\deltat$.
 
-\subsection{Timestep-invariant exploration}
+\subsection{Timestep-Invariant Exploration}
 \label{subsec:explo}
 
 To obtain a timestep-invariant RL algorithm, a timestep-invariant
@@ -200,7 +200,7 @@ this policy tend to solutions of the deterministic equation
 where the expectation cancels the exploration noise. The proof is given in the
 supplementary material. \TODO{Is there a stronger theorm? Should we talk more about that?}
 
-\subsection{Algorithms}
+\subsection{Algorithms for Deep Advantage Updating}
 \label{subsec:algorithm}
 \begin{algorithm}[ht]
   \caption{Deep Advantage Updating (Discrete actions)}
@@ -214,17 +214,18 @@ the true $A^\pi_\deltat$
 and $V^\pi_\deltat$ of a near-continuous MDP with greedy exploitation
 policy $\pi(s) \deq
 \text{argmax}_{a'}A^\pi_\deltat(s, a')$
-satisfy the Bellman equation
+are the unique solution to the Bellman and identifiability equations
 \begin{align}
-	V^{\pi}_\deltat(s) + \deltat A^{\pi}_\deltat(s, a) &= r\deltat + \gamma^{\deltat}  \E_{s'} V^{\pi}_\deltat(s')\label{eq:bellman_A}\\
+	V^{\pi}_\deltat(s) + \deltat\, A^{\pi}_\deltat(s, a) &=
+	r\,\deltat + \gamma^{\deltat}  \,\E_{s'} V^{\pi}_\deltat(s')\label{eq:bellman_A}\\
 	A^{\pi}_\deltat(s, \pi(s)) &= 0\label{eq:max_A}.
 \end{align}
-\TODO{cite Baird or argue this is a simple rewriting?} and $V_{\theta}$
+as seen in \ref{subsec:reparam}. Then $V_{\theta}$
 and $A_{\psi}$ are trained to approximately solve this equation.
 
 Maximization over actions in $\pi$ is implemented exactly for discrete actions,
 and approximated by a policy neural network $\pi_\phi(s)$, trained to maximize $A(s,
-\pi_\phi(s))$ for continuous actions. This is similar to
+\pi_\phi(s))$ for continuous actions. This point is similar to
 \cite{ddpg}.
 
 Eq.~\eqref{eq:max_A}
@@ -235,9 +236,12 @@ corresponding squared residual is minimized by an approximate gradient descent.
 The update equations when learning from a transition $(s, a, r, s')$, either from
 an exploratory trajectory or from a replay buffer~\cite{dqn}, are
 \begin{align}
-	\delta Q_\deltat &\leftarrow A(s, a) \deltat - \left(r \deltat + \gamma^{\deltat} V(s') - V(s)\right)\\
-	\theta_\deltat &\leftarrow \theta_\deltat + \eta^V_\deltat \partial_{\theta} V(s) \frac{\delta Q_\deltat}{\deltat}\\
-	\psi_\deltat &\leftarrow \psi_\deltat + \eta^A_\deltat \partial_{\psi} A(s, a) \frac{\delta Q_\deltat}{\deltat}.
+	\delta Q_\deltat &\leftarrow A(s, a)\, \deltat - \left(r
+	\,\deltat + \gamma^{\deltat}\, V(s') - V(s)\right)\\
+	\theta_\deltat &\leftarrow \theta_\deltat + \eta^V_\deltat
+	\,\partial_{\theta} V(s) \,\frac{\delta Q_\deltat}{\deltat}\\
+	\psi_\deltat &\leftarrow \psi_\deltat + \eta^A_\deltat
+	\,\partial_{\psi} A(s, a) \,\frac{\delta Q_\deltat}{\deltat}.
 	\label{eq:approx_bellman_A}
 \end{align} 
 where the $\eta$'s are learning rates.
@@ -248,6 +252,8 @@ limit are derived next.
 % to obtain a well defined continuous time limit, the learning rates can be rewritten as
 % $\eta^i_\deltat = \alpha^i \deltat$, where $\alpha^1$ and $\alpha^2$ are independant
 % of $\deltat$.
+
+\TODO{say somewhere around here that we assume $\deltat$ is known}
 
 \subsection{Scaling the Learning Rates}
 \label{subsec:lr}
