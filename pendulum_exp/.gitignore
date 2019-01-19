@@ -6,3 +6,5 @@ monitor.py
 videos
 video
 logs_titanic
+*.png
+local_logs
