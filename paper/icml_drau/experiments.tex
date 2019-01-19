@@ -27,11 +27,14 @@ normalized epochs (physical time), i.e. the true number of epochs multiplied by 
 discretization timestep.
 
 
-\paragraph{Qualitative experiments: Visualizing policies and values}
-To provide qualitative results, and check that robustness to time
-discretization is provided both in term of raw return results, but also in term
-of convergence of approximate value function and policies, we first provide results on the simple pendulum environment
-from the OpenAI Gym classic control suite.  This environment's state space is of dimension $2$. A visualization of both the learnt value and policy functions is obtained by plotting for each point of the phase diagram $(\theta, \dot{\theta})$ its value and policy. results are presented in
+\paragraph{Qualitative experiments: Visualizing policies and values.}
+To provide qualitative results, and check robustness to time
+discretization both in terms of raw return results and in terms
+of convergence of the approximate value function and policies, we first provide results on the simple pendulum environment
+from the OpenAI Gym classic control suite.  Its state space is of
+dimension $2$. We visualize both the learnt value and policy functions by
+plotting, for each point of the phase diagram $(\theta, \dot{\theta})$,
+its value and policy. The results are presented in
 Fig.~\ref{fig:pend} for the policy function and in Fig.\TODO{ref} in Supplementary \TODO{ref} for the value function.
 
 We observe the learnt policy at several instants in physical time (or normalized epochs) during training, for various time discretizations $\deltat$, for both DAU and DDPG. With DAU, the agent's policy quickly converges for every time discretization without specific hyperparameter tuning. On the contrary, with DDPG, the agent is only able to learn for the two highest time discretization, and learning gets harder as $\deltat$ decreases.
