@@ -68,10 +68,10 @@ The discretized $Q$-function rewrites as
 A natural way to approximate $V^\pi_\deltat$ and $A^\pi_\deltat$ is to apply
 \emph{Sarsa} or $Q$-learning to a reparameterized $Q$-function approximator
 \begin{equation}
-	Q_\Theta(s, a) = V_{\theta}(s) + \deltat A_{\psi}(s, a).
+	Q_\Theta(s, a) \deq V_{\theta}(s) + \deltat A_{\psi}(s, a).
 \end{equation}
-with $\Theta = (\theta, \pi)$. To avoid cumbersome notation, in what follows,
-parameter indices are dropped.  At initialization, if both $V_{\theta}$ and
+with $\Theta \deq (\theta, \psi)$. (To avoid cumbersome notation, 
+parameter indices are dropped in what follows.)  At initialization, if both $V_{\theta}$ and
 $A_{\psi}$ are initialized independantly of $\deltat$, this parameterization
 provides reasonable scaling of the contribution of actions versus states
 in $Q$.
