@@ -316,18 +316,25 @@ When the timestep tends to $0$, one converges to the other.
 Contrary to the value function, the action-value function $Q$ is ill-defined
 for continuous-time MDPs. More precisely, the $Q$-function  collapses to the
 $V$-function when $\deltat \rightarrow 0$. In near continuous time, the effect of
-individual actions on the $Q$-function is of order $\bigO(\deltat)$. This makes
-deriving a ranking of action from an approximate $Q$-function difficult.
+individual actions on the $Q$-function is of order $\bigO(\deltat)$. This
+will make 
+ranking of actions difficult, especially with an approximate
+$Q$-function.
+This argument appears informally in \cite{adv_upd}.
 Formally:
 \begin{theorem}
-Let $\pi$ be a deterministic policy such that for all $\deltat$, $V^\pi_\deltat$ is continuously
-differentiable, then, for all $s, a$,
+  \label{th:q-cont}
+The action-value function of a near-continuous MDP is related to its
+value function via
+% Let $\pi$ be a deterministic policy such that for all $\deltat$, $V^\pi_\deltat$ is continuously
+% differentiable, then, for all $s, a$,
 \begin{equation}
 	\label{eq:q-discr}
 	Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO\left(\deltat\right)
 \end{equation}
-
-  \label{th:q-cont}
+when $\deltat \to 0$ for every $(s,a)$, under suitable technical
+assumptions
+\TODO{ref appendix}.
 \end{theorem}
 % Consider a discretization of Eq.~\eqref{eq:cont_bell} with time interval
 % $\deltat \ll~1$, Ito's lemma yield
@@ -340,9 +347,10 @@ differentiable, then, for all $s, a$,
 % 		    \label{eq:Q_cont}
                       %   \end{align}
 
-A consequence of Theorem \ref{th:q-cont} is that in exact continuous time,
-$Q^\pi$ does not bear any information on the ranking of actions, and
-thus cannot be used to select actions that yields higher future returns. There is no time continuous $Q$-learning.
+As a consequence, in exact continuous time,
+$Q^\pi$ is equal to $V^\pi$:  it does not bear \emph{any} information on the ranking of actions, and
+thus cannot be used to select actions that yields higher future returns.
+There is no time continuous $Q$-learning.
 
 \begin{proof}
 Bellman equation for the discretized $Q$-function yields
