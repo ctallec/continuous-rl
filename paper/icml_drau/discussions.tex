@@ -8,21 +8,25 @@ simple locomotion tasks.  However on certain environments, there is still
 room for improvment. In what follows, we identify some of the issues
 that could explain this theoretical/practical discrepancy.
 
-\paragraph{Regularity of the value function}~In all of our proofs, $V^\pi$ is
-assumed to be continuously differentiable for all $\pi$.  This is a strong
-hypothesis that is not always verified in practice. Very simple environments
-break this hypothesis, such as for instance, the pendulum swing up environment,
-with pendulum height as reward and torque as action.  Indeed, assume that $\pi$
-is the optimal policy for the pendulum swing up environment, with state
-representation $(\theta, \dot{\theta})$. The state space for this environment
+\paragraph{Smoothness of the value function.} In all of our proofs, $V^\pi$ is
+assumed to be continuously differentiable for all $\pi$.  This %is a strong
+hypothesis is not always satisfied in practice. Very simple environments
+break this hypothesis, such as the pendulum swing-up environment,
+with pendulum height as reward and torque as action.  Indeed, 
+% assume that $\pi$
+% is the optimal policy for the pendulum swing-up environment, with state
+% representation $(\theta, \dot{\theta})$. 
+the state space $(\theta, \dot{\theta})$ for this environment
 can be partitioned into two subspaces $\mathcal{G}$ and $\mathcal{B}$, with
-$\mathcal{G}$ the subspace where when following the optimal policy, the
-pendulum can be swang up without crossing the $y$-axis, and $\mathcal{B}$ where
-it have to cross the $y$-axis. The difference of V-function between a point in
+$\mathcal{G}$ the subspace where the optimal policy 
+can swing up the pendulum without crossing the $y$-axis, and $\mathcal{B}$ where
+it has to cross the $y$-axis. The difference of $V$-function between a point in
 $\mathcal{G}$ and a point in $\mathcal{B}$ is lower bounded by a finite
-quantity $M$. Besides, one can find two points $s_1 \in \mathcal{G}$ and $s_2 \in \mathcal{B}$
-such that $s_1$ and $s_2$ are arbitrarily close. Consequently, $V^\pi$ is
-discontinuous on the frontier, which results in non infinitesimal advantages
+quantity. 
+%Besides, one can find two points $s_1 \in \mathcal{G}$ and $s_2 \in \mathcal{B}$
+%such that $s_1$ and $s_2$ are arbitrarily close.
+Consequently, $V^\pi$ is
+discontinuous on the frontier between $\mathcal{G}$ and $\mathcal{B}$, which results in non infinitesimal advantages
 for actions taken on the frontier. \TODO{Non infinitesimal advantages are found,
 	more generally, as soon as a given policy has different regimes, depending on
 	where it starts in state space. For such policies, at the frontier between two regimes,
