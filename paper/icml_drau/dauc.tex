@@ -4,7 +4,7 @@
 	\STATE $\theta$ and $\psi$, parameters of
 	$V_{\theta}$ and $\bar{A}_{\psi}$.
 	\STATE $\pi^{\text{explore}}$ and $\nu_\deltat$ defining an exploration policy.
-	\STATE \textbf{opt}$_1$, \textbf{opt}$_2$, $\alpha_1 \deltat$ and $\alpha_2 \deltat$ optimizers and learning rates.
+	\STATE \textbf{opt}$_1$, \textbf{opt}$_2$, $\alpha^V \deltat$ and $\alpha^V \deltat$ optimizers and learning rates.
 	\STATE $\mathcal{D}$, buffer of transitions $(s, a, r, d, s')$, with $d$ the episode termination signal.
 	\STATE $\deltat$ and $\gamma$, time discretization and discount factor.
 	\STATE \textbf{nb\_epochs} number of epochs.
@@ -26,8 +26,8 @@
 	\STATE $\tilde{Q^i} \gets r^i\deltat + (1 - d^i) \gamma^{\deltat} V_{\theta}(s'^i)$
 	\STATE $\Delta \theta \gets \frac{1}{N}\sum\limits_{i=1}^N  \frac{\left(Q^i - \tilde{Q^i}\right)\partial_{\theta} V_{\theta}(s^i)}{\deltat}$
 	\STATE $\Delta \psi \gets \frac{1}{N}\sum\limits_{i=1}^N \frac{\left(Q^i - \tilde{Q^i}\right)\partial_{\psi} \left(\bar{A}_{\psi}(s^i, a^i) - \max\limits_{a'}\bar{A}_{\psi}(s^i, a')\right) }{\deltat}$
-	\STATE Update $\theta$ with \textbf{opt}$_1$, $\Delta \theta$ and learning rate $\alpha_1 \deltat$.
-	\STATE Update $\psi$ with \textbf{opt}$_2$, $\Delta \psi$ and learning rate $\alpha_2 \deltat$.
+	\STATE Update $\theta$ with \textbf{opt}$_1$, $\Delta \theta$ and learning rate $\alpha^V \deltat$.
+	\STATE Update $\psi$ with \textbf{opt}$_2$, $\Delta \psi$ and learning rate $\alpha^A \deltat$.
 	\ENDFOR
 	\ENDFOR
 \end{algorithmic}

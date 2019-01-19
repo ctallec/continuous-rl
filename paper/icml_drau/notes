@@ -1,0 +1,10 @@
+
+(dt=order of magnitude of the advantage)
+
+discuter choix du dt
+
+continuity effect, not the same as multiscale. NOt really linked to multiscale (pb even for environments with a single scale), we and Baird treat it just by considerations of physical homogeneity of the algorithm
+
+discussion : autres sources de non-invariance (buffer, non-observable+LSTM, RMSProp)
+
+ACTOR-CRITIC!

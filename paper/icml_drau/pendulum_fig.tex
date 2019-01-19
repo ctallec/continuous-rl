@@ -1,23 +1,7 @@
 %! TEX root = icml_drau.tex
 \newcommand{\iw}{1cm}
-\begin{figure*}[!ht]
-	\begin{tabular}{c|c}
-		DDPG & AU \\
-		\hline
-		\begin{tabular}{l|lllll}
-			$\delta t = 0.01$ & \includegraphics[width=\iw]{figs_data/pendulum/0.01/ddpg_act_2.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.01/ddpg_act_4.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.01/ddpg_act_6.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.01/ddpg_act_8.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.01/ddpg_act_10.png} \\
-			$\delta t = 0.005$ &\includegraphics[width=\iw]{figs_data/pendulum/0.005/ddpg_act_4.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.005/ddpg_act_8.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.005/ddpg_act_12.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.005/ddpg_act_16.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.005/ddpg_act_20.png} \\
-			$\delta t = 0.002$ &\includegraphics[width=\iw]{figs_data/pendulum/0.002/ddpg_act_10.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.002/ddpg_act_20.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.002/ddpg_act_30.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.002/ddpg_act_40.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.002/ddpg_act_50.png} \\
-			$\delta t = 0.001$ &\includegraphics[width=\iw]{figs_data/pendulum/0.001/ddpg_act_20.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.001/ddpg_act_40.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.001/ddpg_act_60.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.001/ddpg_act_80.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.001/ddpg_act_100.png} \\
-			$\delta t = 0.0005$ &\includegraphics[width=\iw]{figs_data/pendulum/0.0005/ddpg_act_40.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.0005/ddpg_act_80.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.0005/ddpg_act_120.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.0005/ddpg_act_160.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.0005/ddpg_act_200.png}
-		\end{tabular} &
-		\begin{tabular}{lllll}
-			 \includegraphics[width=\iw]{figs_data/pendulum/0.01/au_act_2.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.01/au_act_4.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.01/au_act_6.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.01/au_act_8.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.01/au_act_10.png} \\
-			\includegraphics[width=\iw]{figs_data/pendulum/0.005/au_act_4.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.005/au_act_8.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.005/au_act_12.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.005/au_act_16.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.005/au_act_20.png} \\
-			\includegraphics[width=\iw]{figs_data/pendulum/0.002/au_act_10.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.002/au_act_20.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.002/au_act_30.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.002/au_act_40.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.002/au_act_50.png} \\
-			\includegraphics[width=\iw]{figs_data/pendulum/0.001/au_act_20.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.001/au_act_40.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.001/au_act_60.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.001/au_act_80.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.001/au_act_100.png} \\
-			\includegraphics[width=\iw]{figs_data/pendulum/0.0005/au_act_40.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.0005/au_act_80.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.0005/au_act_120.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.0005/au_act_160.png} &\includegraphics[width=\iw]{figs_data/pendulum/0.0005/au_act_200.png}
-		\end{tabular}
-	\end{tabular}
-	\caption{Policies obtained by DDPG and AU at different macroscopic instants of training. Each image represents the policy learnt by the policy network, with $x$-axis representing angle, and $y$-axis angular velocity. The lighter the pixel, the closer to $1$ the action, the darker, the closer to $-1$.}
+\begin{figure*}[ht]
+	\includegraphics[width=\textwidth]{figs_data/pendulum_fig.pdf}
+	\caption{Policies obtained by DDPG and AU at different instants in physical time (or normalized epochs) of training on the pendulum swing-up environment. Each image represents the policy learnt by the policy network, with $x$-axis representing angle, and $y$-axis angular velocity. The lighter the pixel, the closer to $1$ the action, the darker, the closer to $-1$.}
+        \label{fig:pend}
 \end{figure*}

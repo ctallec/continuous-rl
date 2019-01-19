@@ -1,5 +1,5 @@
 """Setup optimizer."""
-from torch.optim import SGD, RMSprop
+from torch.optim import SGD, RMSprop, Adam
 
 def setup_optimizer(
         params,
@@ -12,3 +12,5 @@ def setup_optimizer(
         return RMSprop(params, lr * dt, alpha=1 - dt, weight_decay=weight_decay)
     elif opt_name == 'sgd':
         return SGD(params, lr * dt * inverse_gradient_magnitude, weight_decay=weight_decay)
+    elif opt_name == 'adam':
+        return Adam(params)
