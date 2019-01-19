@@ -38,10 +38,14 @@ a rescaled version of the advantage function, as the difference between between
 $Q^\pi_\deltat(s, a)$ and $V^\pi_\deltat(s)$ is of order
 $\bigO(\deltat)$. This amounts to splitting $Q$ into value and advantage,
 and observing that these scale very differently when $\deltat\to 0$.
-%Contrary to the action state value function,
-This
+
+Contrary to the action state value function,
+this
 rescaled advantage function converges when $\deltat\to 0$
-to an action-dependent quantity which, if it can be learned, contains the necessary information for policy improvement:
+to an action-dependent quantity which, if it can be learned, contains the
+necessary information for policy improvement \TODO{See Thm... in the appendix; we
+should put the theorem in the appendix, because otherwise the theorem is
+just a paraphrase of the previous sentence}.
 
 
 % \LB{In next equation, tiny detail but I would write $\frac{1}{\deltat}(r\deltat+...)$, easier to read.}
@@ -51,14 +55,14 @@ to an action-dependent quantity which, if it can be learned, contains the necess
 %          &+\frac{\text{tr}\left(\Sigma^T(s, a)\partial^2_{s^2}V^\pi(s) \Sigma(s,a)\right)}{2} + O(\deltat)\nonumber.
 % \end{align}
 
-  \begin{theorem}
-    There exists $A^\pi(s, a)$ such that for all $a, s$:
-    \begin{equation}
-      A^\pi_\deltat(s, a) \rightarrow_{\deltat \rightarrow 0} A^\pi(s, a)
-    \end{equation}
-    Moreover, $A^\pi$ contains all the necessary information for policy improvement. The policy $\pi$ optimal if and only if $A^\pi(s, \pi(s)) = \max_{a'}A^\pi(s, a')$ for all $s \in {\cal S}$.
-    \TODO{Is this true? What is true? Is this real life? We should probably add a reasonable hypothesis, for example $\pi_\deltat^* \rightarrow \pi^*$}
-  \end{theorem}
+%   \begin{theorem}
+%     There exists $A^\pi(s, a)$ such that for all $a, s$:
+%     \begin{equation}
+%       A^\pi_\deltat(s, a) \rightarrow_{\deltat \rightarrow 0} A^\pi(s, a)
+%     \end{equation}
+%     Moreover, $A^\pi$ contains all the necessary information for policy improvement. The policy $\pi$ optimal if and only if $A^\pi(s, \pi(s)) = \max_{a'}A^\pi(s, a')$ for all $s \in {\cal S}$.
+%     \TODO{Is this true? What is true? Is this real life? We should probably add a reasonable hypothesis, for example $\pi_\deltat^* \rightarrow \pi^*$}
+%   \end{theorem}
 
 The discretized $Q$-function rewrites as
 \begin{equation}
@@ -72,7 +76,7 @@ A natural way to approximate $V^\pi_\deltat$ and $A^\pi_\deltat$ is to apply
 \end{equation}
 with $\Theta \deq (\theta, \psi)$. (To avoid cumbersome notation, 
 parameter indices are dropped in what follows.)  At initialization, if both $V_{\theta}$ and
-$A_{\psi}$ are initialized independantly of $\deltat$, this parameterization
+$A_{\psi}$ are initialized independently of $\deltat$, this parameterization
 provides reasonable scaling of the contribution of actions versus states
 in $Q$.
 Our goal is for $V_\theta$ to approximate $V^\pi_\deltat$ and for
@@ -80,21 +84,27 @@ $A_{\psi}$ to approximate $A^\pi_\deltat$.
 
 
 %\TODO{CT and LB are fighting each other about the importance which should be given to the next paragraph. A impartial judge should give his opinion. (CT is wrong)}
-Still, this reparameterization does not, on its own, guarantee that
-when $Q$ correctly approximates $Q^\pi_\deltat$, $A$ approximates $A^\pi_\deltat$\footnote{
-	Ensuring that $A$ does not differ from $A^\pi_\deltat$ by a state dependent function only affects
-	$A$'s interpretability. Indeed, for any function $f$, the ranking of actions given by
-	$A^\pi_\deltat(s, \cdot)$ and $A^\pi_\deltat(s, \cdot) + f(s)$ is
-	the same. \TODO{still unclear why we'd care about identifiability}
-}.
+Still, this reparameterization does not, on its own, guarantee that $A$
+correctly approximates $A^\pi_\deltat$ if
+$Q$ approximates $Q^\pi_\deltat$% \footnote{
+% 	Ensuring that $A$ does not differ from $A^\pi_\deltat$ by a state dependent function only affects
+% 	$A$'s interpretability. Indeed, for any function $f$, the ranking of actions given by
+% 	$A^\pi_\deltat(s, \cdot)$ and $A^\pi_\deltat(s, \cdot) + f(s)$ is
+% 	the same. \TODO{still unclear why we'd care about identifiability}
+%}
+.
 Indeed, for any given pair $(V,\,A)$, the pair $(V(s) -
 f(s),\,A(s,a)+f(s)/\deltat)$ (for an arbitrary $f$)
 % \begin{align}
 % 	\tilde{V}(s) &= V(s) - f(s),\qquad
 % 	\tilde{A}(s, a) = A(s, a) + \frac{f(s)}{\deltat}
 % \end{align}
-yields the exact same $Q$ function. Consequently, $Q$ can correctly approximate
-$Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
+yields the exact same $Q$ function. This new $A$ still defines %the same $Q$ and
+the same ranking of actions, yet this phenomenon might cause
+numerical problems or instability of $A$ when $\deltat\to 0$, and prevents direct
+interpretation of the learned $A$.
+% Consequently, $Q$ can correctly approximate
+% $Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
 To enforce identifiability of $A$, one must enforce the consistency equation
 \begin{equation}
 	Q^\pi_\deltat(s, \pi(s)) - V^\pi_\deltat(s) = 0
@@ -115,7 +125,7 @@ In the spirit of~\cite{dueling_nets}, this condition is enforced by writing $A$ 
 \label{eq:Aparam}
 	A(s, a) \deq \bar{A}(s, a) - \bar{A}(s, \pi(s)).
 \end{equation}
-With this parameterization, one can hope to learn an approximation of $A^\pi_\deltat$,
+With this parameterization, one can hope to learn an approximation of $A^\pi$,
 from which a proper ranking of actions can be derived for any $\deltat$.
 
 \subsection{Time invariant exploration}
