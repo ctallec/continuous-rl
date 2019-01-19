@@ -7,17 +7,8 @@ that still contains information on action rankings in the limit, using
 exploration methods with a meaningful limit, and scaling learning rates
 to induce well-behaved parameter trajectories when $\deltat$ goes to $0$.
 
-As seen above, there is no continuous time limit to Q-learning. In
-continuous time, $Q^\pi$ is independent of actions and can thus not be
-used to select promising actions.  In near-continuous time,
-$Q^\pi_\deltat$ still depends on actions, and could still be used to
-choose promising actions under the current policy. However, when
-approximating $Q^\pi_\deltat$, if the approximation error is much bigger
-than $\bigO(\deltat)$, approximation errors dominates, and the ranking of
-actions given by the approximation is likely to be erroneous.
-
-% When the approximate Q-function is initialized, if the effect of
-% actions on the Q-function is order of magnitudes higher than what it should be,
+% When the approximate $Q$-function is initialized, if the effect of
+% actions on the $Q$-function is order of magnitudes higher than what it should be,
 % approximating $Q^\pi_\deltat$ is likely to be difficult.
 %Besides, the error is likely
 %to be further propagated when the equation used to update our approximate $Q$
@@ -26,17 +17,31 @@ actions given by the approximation is likely to be erroneous.
 
 \subsection{Advantage Updating}
 \label{subsec:reparam}
+
+As seen above, there is no continuous time limit to $Q$-learning, because
+$Q^\pi$ becomes independent of actions and thus cannot be
+used to select actions.  In near-continuous time,
+$Q^\pi_\deltat$ still depends on actions, and could still be used to
+choose actions. However, when
+approximating $Q^\pi_\deltat$, if the approximation error is much larger
+than $\bigO(\deltat)$, this error dominates, the ranking of
+actions given by the approximated $Q^\pi_\deltat$ is likely to be erroneous.
+
 To define an object which contains the same information on actions as
-$Q^\pi_\deltat$, but admits an action dependant continuous time limit, it is
+$Q^\pi_\deltat$, but admits a learnable action-dependent limit, it is
 natural to define \cite{adv_upd}
 \begin{align}
 	A^\pi_\deltat(s, a) &\mathdef \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat},
     \label{eq:adv}
 \end{align}
 a rescaled version of the advantage function, as the difference between between
-$Q^\pi_\deltat(s, a)$ and $V^\pi_\deltat(s)$ is of order $\bigO(\deltat)$.
-Contrary to the action state value function, the rescaled advantage function converges when $\deltat$ goes to $0$
-to an action dependent quantity which contains the necessary information for policy improvement:
+$Q^\pi_\deltat(s, a)$ and $V^\pi_\deltat(s)$ is of order
+$\bigO(\deltat)$. This amounts to splitting $Q$ into value and advantage,
+and observing that these scale very differently when $\deltat\to 0$.
+%Contrary to the action state value function,
+This
+rescaled advantage function converges when $\deltat\to 0$
+to an action-dependent quantity which, if it can be learned, contains the necessary information for policy improvement:
 
 
 % \LB{In next equation, tiny detail but I would write $\frac{1}{\deltat}(r\deltat+...)$, easier to read.}
@@ -55,13 +60,13 @@ to an action dependent quantity which contains the necessary information for pol
     \TODO{Is this true? What is true? Is this real life? We should probably add a reasonable hypothesis, for example $\pi_\deltat^* \rightarrow \pi^*$}
   \end{theorem}
 
-The discretized Q-function can be rewritten as
+The discretized $Q$-function rewrites as
 \begin{equation}
 	Q^\pi_\deltat(s, a) = V^\pi_\deltat(s) + \deltat A^\pi_\deltat(s, a).
 	\label{eq:reparam_q_pi}
 \end{equation}
 A natural way of approximating $V^\pi_\deltat$ and $A^\pi_\deltat$ is to apply
-\emph{Sarsa} or Q-learning to a reparameterized Q-function approximator
+\emph{Sarsa} or $Q$-learning to a reparameterized $Q$-function approximator
 \begin{equation}
 	Q_\Theta(s, a) = V_{\theta}(s) + \deltat A_{\psi}(s, a).
 \end{equation}
@@ -176,7 +181,7 @@ supplementary material. \TODO{Is there a stronger theorm? Should we talk more ab
 	\input{dauc.tex}
 \end{algorithm}
 
-To learn $V_{\theta}$ and $A_{\psi}$, variants of Q-learning for continuous and
+To learn $V_{\theta}$ and $A_{\psi}$, variants of $Q$-learning for continuous and
 discrete action spaces are used. In details, $V_{\theta}$ and $A_{\psi}$ are learnt
 using approximate version of the following bellman equation, which holds for the true $A^\pi_\deltat$
 and $V^\pi_\deltat$, with a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi_\deltat(s, a')$
