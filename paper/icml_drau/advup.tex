@@ -1,21 +1,21 @@
 %! TEX root = icml_drau.tex
 \section{Reinforcement learning with a continuous time limit}
 
-In what follows, a discrete algorithm with a well defined time continuous
-limit is defined. The algorithm relies on three elements, namely, defining and
-learning a quantity that contains some information on the ranking of actions
-while admitting a time continuous limit, defining exploration methods that
-admit a continuous time limit and defining learning rates that induce well
-behaved parameter trajectories when $\deltat$ goes to $0$.
+We now define a discrete algorithm with a well-defined continuous-time
+limit.  It relies on three elements: defining and learning a quantity
+that still contains information on action rankings in the limit, using
+exploration methods with a meaningful limit, and scaling learning rates
+to induce well-behaved parameter trajectories when $\deltat$ goes to $0$.
 
-As seen in Sec.~\ref{sec:framework}, there is no continuous time limit to
-Q-learning. In continuous time, $Q^\pi$ is independent of actions and can thus
-not be used to select promising actions.  In near continuous time, $Q^\pi_\deltat$
-still depends on actions, and can still be used to choose promising actions
-under the current policy. However, when approximating $Q^\pi_\deltat$, if the
-approximation error is much bigger than $\bigO(\deltat)$, approximation errors
-dominates, and the ranking of actions given by the approximation is likely to
-be erroneous.
+As seen above, there is no continuous time limit to Q-learning. In
+continuous time, $Q^\pi$ is independent of actions and can thus not be
+used to select promising actions.  In near-continuous time,
+$Q^\pi_\deltat$ still depends on actions, and could still be used to
+choose promising actions under the current policy. However, when
+approximating $Q^\pi_\deltat$, if the approximation error is much bigger
+than $\bigO(\deltat)$, approximation errors dominates, and the ranking of
+actions given by the approximation is likely to be erroneous.
+
 % When the approximate Q-function is initialized, if the effect of
 % actions on the Q-function is order of magnitudes higher than what it should be,
 % approximating $Q^\pi_\deltat$ is likely to be difficult.
