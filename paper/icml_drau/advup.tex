@@ -171,12 +171,11 @@ exploration scheme by taking
 $z_\deltat$ to be a discretization of an $|\mathcal{A}|$-dimensional
 continuous OU process, and setting
 \begin{equation}
-  \pi^\text{explore}(s_t, z_t)\deq \text{argmax}_{a'} \left(Q(s, a') + z_t[a']\right)
+  \pi^\text{explore}(s_t, z_t)\deq \text{argmax}_{a'} \left(A(s, a') + z_t[a']\right)
 \end{equation}
 where $z_t[a']$ denotes the $a'$-th component of $z_t$. Namely, we
-perturb $Q$-values by a random process. The resulting exploration scheme
-converges in continuous time,
-and is non trivial for most $Q$'s.
+perturb advantage values by a random process. The resulting exploration scheme
+converges in continuous time to a nontrivial limit.
 
 Contrary to this discrete action exploration scheme, $\varepsilon$-greedy
 exploration is likely to not explore, i.e. to collapse to a deterministic
