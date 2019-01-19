@@ -2,10 +2,11 @@
 \section{Related Work}
 \label{sec:related}
 
-Our approach builds on \cite{adv_upd}, who identified the collapse of
+Our approach builds on \cite{adv_upd},  who identified the collapse of
 $Q$-learning for small time steps and, as a solution, suggested the Advantage
 Updating algorithm, with proper $\deltat$ scalings for the $V$ part and
 the advantage part; testing was only done on a quadratic-linear problem.
+\TODO{mention that Baird did not experimentally study robustness}
 
 We expand on \cite{adv_upd} in several directions. First, we modify the
 algorithm by
@@ -52,7 +53,7 @@ multiscale RL approaches: indeed the issue arises even if there
 is only one timescale in the environment. Arguably, a small
 $\deltat$ can be seen as a mismatch between the algorithm's
 timescale and the physical system's timescale, but the collapse of the
-$Q$ function to the $V$ function is an intrinsic mathematical phenomenon from time
+$Q$ function to the $V$ function is an intrinsic mathematical phenomenon \TODO{arising} from time
 continuity, and cannot obviously be addressed via existing multiscale
 techniques. \TODO{cite something!}
 
