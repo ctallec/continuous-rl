@@ -222,9 +222,9 @@ satisfy the Bellman equation
 \TODO{cite Baird or argue this is a simple rewriting?} and $V_{\theta}$
 and $A_{\psi}$ are trained to approximately solve this equation.
 
-Maximization over actions is implemented exactly in the discrete actions case,
+Maximization over actions in $\pi$ is implemented exactly for discrete actions,
 and approximated by a policy neural network $\pi_\phi(s)$, trained to maximize $A(s,
-\pi_\phi(s))$ in the continuous case.  This is similar to what is done in
+\pi_\phi(s))$ for continuous actions. This is similar to
 \cite{ddpg}.
 
 Eq.~\eqref{eq:max_A}
@@ -233,20 +233,23 @@ $A_\psi(s, a) = \bar{A}_\psi(s, a) - \bar{A}_\psi(s, \pi(s))$, described
 in~\ref{subsec:reparam}.  To approximately verify~\eqref{eq:bellman_A}, the
 corresponding squared residual is minimized by an approximate gradient descent.
 The update equations when learning from a transition $(s, a, r, s')$, either from
-an exploratory trajectory or from a replay buffer~\cite{dqn} are
+an exploratory trajectory or from a replay buffer~\cite{dqn}, are
 \begin{align}
 	\delta Q_\deltat &\leftarrow A(s, a) \deltat - \left(r \deltat + \gamma^{\deltat} V(s') - V(s)\right)\\
 	\theta_\deltat &\leftarrow \theta_\deltat + \eta^V_\deltat \partial_{\theta} V(s) \frac{\delta Q_\deltat}{\deltat}\\
 	\psi_\deltat &\leftarrow \psi_\deltat + \eta^A_\deltat \partial_{\psi} A(s, a) \frac{\delta Q_\deltat}{\deltat}.
 	\label{eq:approx_bellman_A}
 \end{align} 
-where $\eta$'s are learning rates.
-Appropriate scalings for the learning rates $\eta^V_\deltat$ and $\eta^A_\deltat$ in term of $\deltat$ to obtain a well defined continuous limit are derived in the following section.
+where the $\eta$'s are learning rates.
+Appropriate scalings for the learning rates $\eta^V_\deltat$ and
+$\eta^A_\deltat$ in term of $\deltat$ to obtain a well defined continuous
+limit are derived next.
 % As we will see in the following section,
 % to obtain a well defined continuous time limit, the learning rates can be rewritten as
 % $\eta^i_\deltat = \alpha^i \deltat$, where $\alpha^1$ and $\alpha^2$ are independant
 % of $\deltat$.
-\subsection{Learning rates scalings}
+
+\subsection{Scaling the Learning Rates}
 \label{subsec:lr}
 \input{pendulum_fig.tex}
 For the discrete algorithm to admit a continuous time limit, the trajectories
