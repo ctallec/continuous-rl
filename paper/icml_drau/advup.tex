@@ -50,7 +50,7 @@ just a paraphrase of the previous sentence}.
 
 % \LB{In next equation, tiny detail but I would write $\frac{1}{\deltat}(r\deltat+...)$, easier to read.}
 % \begin{align}
-% 	A^\pi_\deltat(s, a)=&\reward(s, a)+\frac{\gamma^{\deltat}\E_{\delta s \sim \delta s(s, a)}V^\pi_\deltat(s + \delta s)-V^\pi_\deltat(s)}{\deltat}\nonumber\\
+% 	A^\pi_\deltat(s, a)=&\reward(s, a)+\frac{\gamma^{\deltat}\E_{\deltas \sim \deltas(s, a)}V^\pi_\deltat(s + \deltas)-V^\pi_\deltat(s)}{\deltat}\nonumber\\
 % 	=&\reward(s, a)+\log(\gamma) V^\pi(s)+\partial_s V^\pi(s)f(s, a)\nonumber\\
 %          &+\frac{\text{tr}\left(\Sigma^T(s, a)\partial^2_{s^2}V^\pi(s) \Sigma(s,a)\right)}{2} + O(\deltat)\nonumber.
 % \end{align}
@@ -260,28 +260,34 @@ limit are derived next.
 \input{pendulum_fig.tex}
 For the discrete algorithm to admit a continuous time limit, the trajectories
 of parameters must converge to well defined trajectories as $\deltat$ goes to
-$0$.  Intuitively, this means that optimization steps should not be too large,
-in which case parameter trajectories could diverge in a single gradient step,
-or too small, in which case the trajectories would converge to single points as
+$0$.  The optimization steps should not be too large,
+in which case parameter trajectories could jump in a single gradient step,
+or too small, in which case the trajectories would become stationary as
 $\deltat$ goes to $0$.  This in turn imposes conditions on the scalings of the
 learning rates of algorithms robust to changes of the tine discretization.
 
-The updates equations on $\theta$ and $\psi$ are described in
-Eq.~\eqref{eq:approx_bellman_A}.  To have parameter steps that do not explode or shrink to $0$ too
+The updates of $\theta$ and $\psi$ are described in
+\eqref{eq:approx_bellman_A}.  To have parameter updates that do not explode or shrink to $0$ too
 fast as $\deltat \rightarrow 0$, both $\delta \theta$ and
-$\delta \psi$ should verify stochastic differential equations, and notably
+$\delta \psi$ should verify stochastic differential equations in the
+limit, and notably,
 have a deterministic component of order $\deltat$. As $\deltat$ goes to $0$,
-updates are rephrased as
+a Taylor expansion yields (with $\deltas\deq s'-s$)
 \begin{align}
-	\delta Q_\deltat &= A(s, a)\deltat - r\deltat - \log(\gamma) V(s)\deltat - \partial_s V(s) \delta s\nonumber \\&- \frac{(\delta s)^T \partial_{s^2}^2 V(s) \delta s}{2} + \smallo\left(\deltat\right)\\
-	\delta \theta_\deltat &= \eta^V_\deltat \partial_{\theta} V(s) \frac{\delta Q_\deltat}{\deltat} + \smallo\left(\eta^V_\deltat\right)\\
-	\delta \psi_\deltat &= \eta^A_\deltat \partial_{\psi} A(s) \frac{\delta Q_\deltat}{\deltat} + \smallo\left(\eta^A_\deltat\right).
+	\delta Q_\deltat &= A(s, a)\,\deltat - r\,\deltat - \log(\gamma)
+	\,V(s)\,\deltat - \partial_s V(s) \,\deltas\nonumber \\&- \frac{(\deltas)^T \partial_{s}^2 V(s) \deltas}{2} + \smallo\left(\deltat\right)\\
+	\delta \theta_\deltat &= \eta^V_\deltat \partial_{\theta} V(s)
+	\frac{\delta Q_\deltat}{\deltat} \\%+ \smallo\left(\eta^V_\deltat\right)\\
+	\delta \psi_\deltat &= \eta^A_\deltat \partial_{\psi} A(s)
+	\frac{\delta Q_\deltat}{\deltat} %+ \smallo\left(\eta^A_\deltat\right).
 \end{align}
 
+If we set 
+$\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
+\deltat$, the parameter updates will follow a Euler discretization scheme
+for a continuous-time equation, thus presumably converging. This is
+actually the only possibility; more precisely,
 
-For parameter updates to follow a SDE, one must
-have $\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
-\deltat$. More precisely
 \begin{theorem}
 	\TODO{We need a bit more details: we probably want to assume that states and actions are
 	drawn from a single fixed trajectory, and that we are learning for a fixed, constant policy.}
