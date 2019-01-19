@@ -18,11 +18,13 @@ as well as scaled learning rates, for DDPG and DQN. \TODO{NDY not
 convincing: precisely because DDPG and DQN are not invariant, they might
 benefit from a different scaling.}
 
-Let us stress that quantities shown are rescaled to make comparison possible. For example,
-return results are given in term of discretized return $R_\deltat$ as defined in Eq. \eqref{eq:discretized-return},\footnote{This mostly amounts to scaling rewards
-by a factor $\deltat$ when this scaling is not naturally done in the environment. Environment specific
+Let us stress that the quantities plotted are rescaled to make comparison
+possible across different timesteps. For example,
+return results are given in term of discretized return $R_\deltat$ as defined in \eqref{eq:discretized-return},\footnote{This mostly amounts to scaling rewards
+by a factor $\deltat$ when this scaling is not naturally done in the environment. Environment-specific
 details are given in the supplementary material.} and, most notably, time elapsed is always given in
-normalized epochs, i.e. the true number of epochs multiplied by the discretization timestep.
+normalized epochs (physical time), i.e. the true number of epochs multiplied by the
+discretization timestep.
 
 
 \paragraph{Qualitative experiments: Visualizing policies and values}
