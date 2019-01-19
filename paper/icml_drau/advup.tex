@@ -1,23 +1,14 @@
 %! TEX root = icml_drau.tex
 \section{Reinforcement learning with a continuous time limit}
 
-In what follows, a discrete algorithm with a well defined time continuous
-limit is defined. The algorithm relies on three elements, namely, defining and
-learning a quantity that contains some information on the ranking of actions
-while admitting a time continuous limit, defining exploration methods that
-admit a continuous time limit and defining learning rates that induce well
-behaved parameter trajectories when $\deltat$ goes to $0$.
+We now define a discrete algorithm with a well-defined continuous-time
+limit.  It relies on three elements: defining and learning a quantity
+that still contains information on action rankings in the limit, using
+exploration methods with a meaningful limit, and scaling learning rates
+to induce well-behaved parameter trajectories when $\deltat$ goes to $0$.
 
-As seen in Sec.~\ref{sec:framework}, there is no continuous time limit to
-Q-learning. In continuous time, $Q^\pi$ is independent of actions and can thus
-not be used to select promising actions.  In near continuous time, $Q^\pi_\deltat$
-still depends on actions, and can still be used to choose promising actions
-under the current policy. However, when approximating $Q^\pi_\deltat$, if the
-approximation error is much bigger than $\bigO(\deltat)$, approximation errors
-dominates, and the ranking of actions given by the approximation is likely to
-be erroneous.
-% When the approximate Q-function is initialized, if the effect of
-% actions on the Q-function is order of magnitudes higher than what it should be,
+% When the approximate $Q$-function is initialized, if the effect of
+% actions on the $Q$-function is order of magnitudes higher than what it should be,
 % approximating $Q^\pi_\deltat$ is likely to be difficult.
 %Besides, the error is likely
 %to be further propagated when the equation used to update our approximate $Q$
@@ -26,17 +17,35 @@ be erroneous.
 
 \subsection{Advantage Updating}
 \label{subsec:reparam}
+
+As seen above, there is no continuous time limit to $Q$-learning, because
+$Q^\pi$ becomes independent of actions and thus cannot be
+used to select actions.  In near-continuous time,
+$Q^\pi_\deltat$ still depends on actions, and could still be used to
+choose actions. However, when
+approximating $Q^\pi_\deltat$, if the approximation error is much larger
+than $\bigO(\deltat)$, this error dominates, the ranking of
+actions given by the approximated $Q^\pi_\deltat$ is likely to be erroneous.
+
 To define an object which contains the same information on actions as
-$Q^\pi_\deltat$, but admits an action dependant continuous time limit, it is
+$Q^\pi_\deltat$, but admits a learnable action-dependent limit, it is
 natural to define \cite{adv_upd}
 \begin{align}
 	A^\pi_\deltat(s, a) &\mathdef \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat},
     \label{eq:adv}
 \end{align}
-a rescaled version of the advantage function \cite{adv_upd}, as the difference between between
-$Q^\pi_\deltat(s, a)$ and $V^\pi\deltat(s)$ is of order $\bigO(\deltat)$.
-Contrary to the action state value function, the rescaled advantage function converges when $\deltat$ goes to $0$
-to an action dependent quantity which contains the necessary information for policy improvement:
+a rescaled version of the advantage function, as the difference between between
+$Q^\pi_\deltat(s, a)$ and $V^\pi_\deltat(s)$ is of order
+$\bigO(\deltat)$. This amounts to splitting $Q$ into value and advantage,
+and observing that these scale very differently when $\deltat\to 0$.
+
+Contrary to the action state value function,
+this
+rescaled advantage function converges when $\deltat\to 0$
+to an action-dependent quantity which, if it can be learned, contains the
+necessary information for policy improvement \TODO{See Thm... in the appendix; we
+should put the theorem in the appendix, because otherwise the theorem is
+just a paraphrase of the previous sentence}.
 
 
 % \LB{In next equation, tiny detail but I would write $\frac{1}{\deltat}(r\deltat+...)$, easier to read.}
@@ -46,47 +55,56 @@ to an action dependent quantity which contains the necessary information for pol
 %          &+\frac{\text{tr}\left(\Sigma^T(s, a)\partial^2_{s^2}V^\pi(s) \Sigma(s,a)\right)}{2} + O(\deltat)\nonumber.
 % \end{align}
 
-  \begin{theorem}
-    There exists $A^\pi(s, a)$ such that for all $a, s$:
-    \begin{equation}
-      A^\pi_\deltat(s, a) \rightarrow_{\deltat \rightarrow 0} A^\pi(s, a)
-    \end{equation}
-    Moreover, $A^\pi$ contains all the necessary information for policy improvement. The policy $\pi$ optimal if and only if $A^\pi(s, \pi(s)) = \max_{a'}A^\pi(s, a')$ for all $s \in {\cal S}$.
-    \TODO{Is this true? What is true? Is this real life? We should probably add a reasonable hypothesis, for example $\pi_\deltat^* \rightarrow \pi^*$}
-  \end{theorem}
+%   \begin{theorem}
+%     There exists $A^\pi(s, a)$ such that for all $a, s$:
+%     \begin{equation}
+%       A^\pi_\deltat(s, a) \rightarrow_{\deltat \rightarrow 0} A^\pi(s, a)
+%     \end{equation}
+%     Moreover, $A^\pi$ contains all the necessary information for policy improvement. The policy $\pi$ optimal if and only if $A^\pi(s, \pi(s)) = \max_{a'}A^\pi(s, a')$ for all $s \in {\cal S}$.
+%     \TODO{Is this true? What is true? Is this real life? We should probably add a reasonable hypothesis, for example $\pi_\deltat^* \rightarrow \pi^*$}
+%   \end{theorem}
 
-The discretized Q-function can be rewritten as
+The discretized $Q$-function rewrites as
 \begin{equation}
 	Q^\pi_\deltat(s, a) = V^\pi_\deltat(s) + \deltat A^\pi_\deltat(s, a).
 	\label{eq:reparam_q_pi}
 \end{equation}
-A natural way of approximating $V^\pi_\deltat$ and $A^\pi_\deltat$ is to apply
-\emph{Sarsa} or Q-learning to a reparameterized Q-function approximator
+A natural way to approximate $V^\pi_\deltat$ and $A^\pi_\deltat$ is to apply
+\emph{Sarsa} or $Q$-learning to a reparameterized $Q$-function approximator
 \begin{equation}
-	Q_\Theta(s, a) = V_{\theta}(s) + \deltat A_{\psi}(s, a).
+	Q_\Theta(s, a) \deq V_{\theta}(s) + \deltat A_{\psi}(s, a).
 \end{equation}
-with $\Theta = (\theta, \pi)$. To avoid cumbersome notations, in what follows,
-parameter indices are dropped.  At initialization, if both $V_{\theta}$ and
-$A_{\psi}$ are initialized independantly of $\deltat$, this parameterization
-reasonably scales the contribution of actions relative to states in the value
-of $Q$.  Our goal is for $V_\theta$ to approximate $V^\pi_\deltat$ and for
+with $\Theta \deq (\theta, \psi)$. (To avoid cumbersome notation, 
+parameter indices are dropped in what follows.)  At initialization, if both $V_{\theta}$ and
+$A_{\psi}$ are initialized independently of $\deltat$, this parameterization
+provides reasonable scaling of the contribution of actions versus states
+in $Q$.
+Our goal is for $V_\theta$ to approximate $V^\pi_\deltat$ and for
 $A_{\psi}$ to approximate $A^\pi_\deltat$.
 
 
 %\TODO{CT and LB are fighting each other about the importance which should be given to the next paragraph. A impartial judge should give his opinion. (CT is wrong)}
-However, the proposed reparameterization does not, on its own, guarantee that
-when $Q$ correctly approximates $Q^\pi_\deltat$, $A$ approximates $A^\pi_\deltat$\footnote{
-	Ensuring that $A$ do not differ from $A^\pi_\deltat$ by a state dependent function only affects
-	$A$'s interpretability. Indeed, for any function $f$, the ranking of actions given by
-	$A^\pi_\deltat(s, \cdot)$ and $A^\pi_\deltat(s, \cdot) + f(s)$ is the same.
-}.
-Indeed, for any given pair $V$, $A$,
-\begin{align}
-	\tilde{V}(s) &= V(s) - f(s)\\
-	\tilde{A}(s, a) &= A(s, a) + \frac{f(s)}{\deltat}
-\end{align}
-yields the exact same $Q$ function. Consequently, $Q$ can correctly approximate
-$Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
+Still, this reparameterization does not, on its own, guarantee that $A$
+correctly approximates $A^\pi_\deltat$ if
+$Q$ approximates $Q^\pi_\deltat$% \footnote{
+% 	Ensuring that $A$ does not differ from $A^\pi_\deltat$ by a state dependent function only affects
+% 	$A$'s interpretability. Indeed, for any function $f$, the ranking of actions given by
+% 	$A^\pi_\deltat(s, \cdot)$ and $A^\pi_\deltat(s, \cdot) + f(s)$ is
+% 	the same. \TODO{still unclear why we'd care about identifiability}
+%}
+.
+Indeed, for any given pair $(V,\,A)$, the pair $(V(s) -
+f(s),\,A(s,a)+f(s)/\deltat)$ (for an arbitrary $f$)
+% \begin{align}
+% 	\tilde{V}(s) &= V(s) - f(s),\qquad
+% 	\tilde{A}(s, a) = A(s, a) + \frac{f(s)}{\deltat}
+% \end{align}
+yields the exact same $Q$ function. This new $A$ still defines %the same $Q$ and
+the same ranking of actions, yet this phenomenon might cause
+numerical problems or instability of $A$ when $\deltat\to 0$, and prevents direct
+interpretation of the learned $A$.
+% Consequently, $Q$ can correctly approximate
+% $Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
 To enforce identifiability of $A$, one must enforce the consistency equation
 \begin{equation}
 	Q^\pi_\deltat(s, \pi(s)) - V^\pi_\deltat(s) = 0
@@ -95,7 +113,9 @@ on the approximate $A$ and $V$. This translates to
 \begin{equation}
 	A(s, \pi(s)) = 0.
 \end{equation}
-With this additional constraint, if $Q = Q^\pi_\deltat$, then $A = A^\pi_\deltat$ and $V = V^\pi_\deltat$.
+With this additional constraint, if $Q = Q^\pi_\deltat$, then $A =
+A^\pi_\deltat$ and $V = V^\pi_\deltat$: indeed \TODO{keep or  leave as
+an exercise?}
 \begin{align}
 	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat}\\
 		    &= \frac{Q(s,a) - Q(s, \pi(s))}{\deltat}\\
@@ -104,27 +124,26 @@ With this additional constraint, if $Q = Q^\pi_\deltat$, then $A = A^\pi_\deltat
 In the spirit of~\cite{dueling_nets}, this condition is enforced by writing $A$ as
 \begin{equation}
 \label{eq:Aparam}
-	A(s, a) = \bar{A}(s, a) - \bar{A}(s, \pi(s)).
+	A(s, a) \deq \bar{A}(s, a) - \bar{A}(s, \pi(s)).
 \end{equation}
-With this parameterization, one can hope to learn an approximation of $A^\pi_\deltat$,
-from which a proper hiearchy of actions can be derived for any $\deltat$.
+With this parameterization, one can hope to learn an approximation of $A^\pi$,
+from which a proper ranking of actions can be derived for any $\deltat$.
 
 \subsection{Time invariant exploration}
 \label{subsec:explo}
-To obtain a time invariant reinforcement learning algorithm, a time invariant
+To obtain a time invariant RL algorithm, a time invariant
 exploration scheme is required. 
-\cite{ddpg} already introduces an exploration scheme for continuous actions, which consists in adding an
-\emph{Ornstein-Uhlenbeck}~\cite{orn-uhl} process (OU process) to actions, that is naturally time
-discretization invariant. Formally, it is defined as
+\cite{ddpg} already introduces a time discretization invariant exploration scheme for continuous actions, which consists in adding an
+\emph{Ornstein-Uhlenbeck}~\cite{orn-uhl} process (OU process) to actions. Formally, it is defined as
 \begin{equation}
 	\pi^\text{explore}(s^k_\deltat, z^k_\deltat) = \pi(s^k_\deltat) + z^k_\deltat
 \end{equation}
-with $z^k_\deltat$ the discretization of a time continuous OU process, defined as
+with $z^k_\deltat$ the discretization of a time continuous OU process, 
 \begin{equation}
-	dz_t = - z_t \theta dt + \sigma \dbt.
+	dz_t = - z_t \kappa dt + \sigma \dbt.
 	\label{eq:orn_uhl}
 \end{equation}
-where $B_t$ is a brownian motion. Resulting discretized trajectories converge
+where $B_t$ is a brownian motion, $\kappa$ a stiffness parameter and $\sigma$ a noise scaling parameter. Resulting discretized trajectories converge
 to non trivial continuous time trajectories.
 
 This exploration can be extended to schemes of the form
@@ -157,9 +176,9 @@ Contrary to this discrete action exploration scheme, $\varepsilon$-greedy
 exploration is likely to not explore, i.e. to collapse to a deterministic
 policy when $\deltat$ goes to $0$. Indeed, one can prove that in a near
 continuous deterministic environment, the exploration policy resulting from
-applying $\varepsilon$ greedy exploration to a constant exploitation policy
+applying $\varepsilon$-greedy exploration to a constant exploitation policy
 converges to a determinist policy as $\deltat$ goes to $0$. More precisely, let
-$(a_\deltat)$ a sequence of i.i.d. actions of distribution $p_A$, (for instance
+$(a_\deltat)$ be a sequence of i.i.d. actions of distribution drawn from $p_A$, (for instance
 the sequence of actions generated by $\varepsilon$-greedy exploration on a
 constant policy). Then, as $\deltat$ goes to $0$, trajectories generated by
 interacting with the environment using the $a$'s converge to solutions of
@@ -167,17 +186,17 @@ interacting with the environment using the $a$'s converge to solutions of
 	ds_t = \E_{a\sim p_A}\left[F(s_t, a)\right]dt
 \end{equation}
 where the expectation cancels the exploration noise. The proof is given in the
-supplementary material.
+supplementary material. \TODO{Is there a stronger theorm? Should we talk more about that?}
 
 \subsection{Algorithms}
 \label{subsec:algorithm}
 \begin{algorithm}[ht]
-	\caption{Deep Advantage Updating (Discrete actions)}
+  \caption{Deep Advantage Updating (Discrete actions)}
+  \label{alg:dau}
 	\input{dauc.tex}
-	\label{alg:dau}
 \end{algorithm}
 
-To learn $V_{\theta}$ and $A_{\psi}$, variants of Q-learning for continuous and
+To learn $V_{\theta}$ and $A_{\psi}$, variants of $Q$-learning for continuous and
 discrete action spaces are used. In details, $V_{\theta}$ and $A_{\psi}$ are learnt
 using approximate version of the following bellman equation, which holds for the true $A^\pi_\deltat$
 and $V^\pi_\deltat$, with a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi_\deltat(s, a')$
@@ -247,7 +266,7 @@ have $\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
 		\item If $\beta < 1$, parameters grow arbitrarily large in a single timestep as $\deltat$
 			goes to $0$.
 		\item If $\beta > 1$, parameter trajectories shrink to a single point as 
-			$\deltat$ goes to $0$.
+			$\deltat$ goes to $0$. \TODO{Is that clear}
 	\end{itemize}
 	\label{th:cont-params}
 \end{theorem}
@@ -259,15 +278,8 @@ have $\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
 % 	d\theta_t &= (\alpha^V Fdt  + D \dbt)\partial_{\theta} V(s_t)\nonumber\\
 % 	d\psi_t &= (\alpha^A Fdt  + D \dbt)\partial_{\psi} A(s_t, a_t)\nonumber.
 % \end{align}
-The full algorithm can now be derived.
+The full algorithm, that is referred to as \emph{Deep Advantage Updating} (DAU), can now be derived.
 Pseudocode for the discrete actions algorithm is given in Alg.~\ref{alg:dau}.
 Pseudocode for the continuous actions algorithm is given in the supplementary
 material.
-\TODO{Be careful when using RMSprop. When you are facing a stochastic environment
-	RMSprop evaluates the second momentum of gradients and rescale gradients by its
-	square root. This second momentum will
-	be of order $\frac{1}{\deltat}$, due to the stochasticity in the environment. Consequently
-	all gradient steps are multiplied by $\sqrt{\deltat}$, and learning rates need only be
-multiplied by $\sqrt{\deltat}$ instead of $\deltat$. Taking batches of size proportional to $\frac{1}{\deltat}$
-applies a similar fix.}
 

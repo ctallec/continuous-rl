@@ -18,6 +18,13 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
         'approximate_advantage': 'advup',
         'approximate_value': 'ddpg',
     }
+    ref_dts = {
+        "ant": .05,
+        "bipedal_walker": .02,
+        "cartpole": .02,
+        "continuous_pendulum": .05,
+        "half_cheetah": .05
+    }
     dts = sorted(list(set([s.args['dt'] for s in expdata._settings])))
 #    lss = [(0, ()), (0, (5, 1)), (0, (5, 5)), (0, (5, 10)), (0, (1, 5)), (0, (1, 10))]
 #    dt_dict = {dt: ls for dt, ls in zip(dts, lss)}
@@ -33,13 +40,17 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
     fig, axes = plt.subplots(nlines, ncol, figsize=(5.*ncol, 4.*nlines))
 
     first = True
-    for key, ax in zip(key_list, axes.flat):
-        ax.set_title(key)
+    for key, ax in zip(key_list, axes.flat if nlines > 1 else [axes]):
+        # ax.set_title(key)
 
         for setting in sorted(expdata._settings, key=lambda s: s.args['dt']):
             args = setting.args
             dt = args['dt']
-#            print(dt)
+            nb_steps = args['nb_steps']
+            nb_envs = args['nb_train_env']
+            ref_dt = ref_dts[args['env_id']]
+            tmint = mint * nb_steps * nb_envs / 3600
+            tmaxt = maxt * nb_steps * nb_envs / 3600
             algo = args["algo"]
             label = f"{algolabeldict[algo]}; dt={dt:.0e}"
             # linestyle = dt_dict[dt]
@@ -75,14 +86,14 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 ysmoothed = gaussian_filter1d(yinterp, sigma=kernelsize)
 
                 sigma = np.sqrt(gaussian_filter1d((yinterp - ysmoothed) ** 2, sigma=kernelsize))
-                x = dt * x
-                y = dt * ysmoothed
-                sigma = dt * sigma
+                x = dt * nb_steps * nb_envs * x / 3600
+                y = dt / ref_dt * ysmoothed
+                sigma = dt * sigma / ref_dt
 
                 if first:
                     ax.legend()
-                ax.set_xlim(mint, maxt)
-                ax.set_xlabel("Physical time")
+                ax.set_xlim(tmint, tmaxt)
+                ax.set_xlabel("Physical time (hours)")
                 ax.set_ylabel("Scaled return")
                 ax.plot(x, y, label=label, c=c, alpha=alpha, linestyle=linestyle, linewidth=linewidth)
                 ax.fill_between(x, y-sigma, y+sigma, facecolor=c, alpha=0.2)
@@ -92,18 +103,14 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 x = np.linspace(min(xdata), max(xdata), 400)
                 y = interp1d(xdata, ydata, kind='cubic')(x)
                 std = interp1d(xdata, std_data, kind='cubic')(x)
-                x = x * dt
-                y = y * dt
-                std = std * dt
-                ax.set_xlim(mint, maxt)
-                ax.set_xlabel("Physical time")
+                x = dt * nb_steps * nb_envs * x / 3600
+                y = y * dt / ref_dt
+                std = std * dt / ref_dt
+                ax.set_xlim(tmint, tmaxt)
+                ax.set_xlabel("Physical time (hours)")
                 ax.set_ylabel("Scaled return")
                 ax.plot(x, y, label=label, c=c, alpha=alpha, linestyle=linestyle, linewidth=linewidth)
                 ax.fill_between(x, y - std, y + std, facecolor=c, alpha=0.2)
-
-
-                ax.set_xlim(mint, maxt)
-                ax.set_xlabel("Physical time")
                 # ax.fill_between(x, y - std / 2, y + std / 2, facecolor=c, alpha=0.2)
         first = False
 

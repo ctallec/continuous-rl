@@ -39,13 +39,18 @@ algorithm \TODO{kind of} converges to a continuous time limit, it is still not
 time discretization invariant, as the freshness of samples in the buffer will
 vary with the time discretization.
 A different choice would be to scale the size of the buffer by a factor of
-$\frac{1}{\deltat}$. This would amount to always learning on the same time physical interval of
+$\frac{1}{\deltat}$. This would amount to always learning on the same physical time interval of
 the trajectory. Our analysis, however, does not cover this case.
 
-\paragraph{Near continuous time reinforcement learning and RMSprop}~Be careful
-when using RMSprop. When you are facing a stochastic environment RMSprop
-evaluates the second momentum of gradients and rescale gradients by its square
-root. This second momentum will be of order δt 1 , due to the stochasticity in
-the environment.  Consequently all √ gradient steps are multiplied by δt, and
-learning rates need √ only be multiplied by δt instead of δt. Taking batches of
-size proportional to δt 1 applies a similar fix.
+\paragraph{Near continuous time reinforcement learning and RMSprop}~RMSprop~\cite{rmsprop}
+estimates a batched version of the second momentum of gradients using moving
+averages, and divides gradient steps by the square root of this estimate. In
+deterministic environments, gradient noise typically scales as $\bigO(1)$ in
+term of $\deltat$, as seen in Eq.~\eqref{eq:approx_bellman_A}.  Consequently, RMSprop
+preconditioning have no effect on the order of magnitude of required learning
+rates. However, in near continuous stochastic environments, as in
+Eq.~\ref{eq:sde}, variance of the gradient noise typically scales as
+$\bigO\left(\frac{1}{\deltat}\right)$. If batch size does not depend on
+$\deltat$, RMSprop preconditioning thus multiplies gradients by a factor $\bigO(\sqrt{\deltat})$,
+and learning rates need only be scaled as $\alpha \sqrt{\deltat}$ instead of
+$\alpha \deltat$.

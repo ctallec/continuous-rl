@@ -16,5 +16,5 @@ runlist = loader_leonard(args.logdir, args.exp_name, start_date=start_date, stop
 
 expdata = ExperimentData(runlist)
 
-plot_learning_curves(expdata, ['Return', 'Return'], args.exp_name, mint=args.min_t, maxt=args.max_t, gtype=args.std_type + "_std")
+plot_learning_curves(expdata, ['Return'], args.exp_name, mint=args.min_t, maxt=args.max_t, gtype=args.std_type + "_std")
 expdata.repr_rawlogs("Return", 5)
