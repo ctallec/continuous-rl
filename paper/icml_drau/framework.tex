@@ -272,43 +272,44 @@ classical deep $Q$-learning baselines.
 
 
 \paragraph{Value function.}
-
-
-The definition of the return Eq.~\eqref{eq:continuous-return}, yields the
-following definition of the continuous value function
+The return \eqref{eq:continuous-return} yields the
+following continuous-time value function
 \begin{align}
-  V^\pi(s) =& \E_{\tau\sim\pi}\left[R(\tau) \mid s_0 = s\right]\\
-  =& \E_{\tau\sim\pi}\left[\int\limits_{0}^\infty \gamma^{t} r(s_t, a_t) dt \mid s_0 = s\right].
+  V^\pi(s) &= \E_{\tau\sim\pi}\left[R(\tau) \mid s_0 = s\right]\\
+  &= \E_{\tau\sim\pi}\left[\int\limits_{0}^\infty \gamma^{t} r(s_t, a_t) dt \mid s_0 = s\right].
 \end{align}
-The corresponding discretization for time discretization $\deltat$ is
+Meanwhile, the value function (in the ordinary sense) of the discrete MDP ${\cal
+M}_\deltat$ is
 \begin{align}
-  V^\pi_\deltat(s) =& \E_{\tau\sim\pi}\left[R_\deltat(\tau) \mid s_0 = s\right]\\
-  =& \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty \gamma^{k\deltat}r(s^k_{\deltat}, a^k_{\deltat})\deltat \mid s_0 = s\right]
+  V^\pi_\deltat(s) &= \E_{\tau\sim\pi}\left[R_\deltat(\tau) \mid s_0 = s\right]\\
+  &= \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty \gamma^{k\deltat}r(s^k_{\deltat}, a^k_{\deltat})\deltat \mid s_0 = s\right]
 \end{align}
-which fits the usual definition of the discrete V-function for $\gamma_\deltat$ and
-$r_\deltat$ defined in \eqref{eq:def-gamma}.
-The discretized value function follows the Bellman equation\footnote{
+% which fits the usual definition of the discrete V-function for $\gamma_\deltat$ and
+% $r_\deltat$ defined in \eqref{eq:def-gamma}.
+which obeys the Bellman equation
+\footnote{
 If the continuous MDP dynamic follows~\eqref{eq:diffusion}, the limit of the Bellman equation for $V^\pi_\deltat$ when $\deltat \rightarrow 0$ is the Hamilton-Jacobi-Bellman equation on $V^\pi$ \cite{cont_rl}
 \begin{equation}
   \label{eq:hamilton-jacobi-bellman}
   r + \partial_s V^\pi \cdot F = - \log(\gamma) V^\pi
-\end{equation}}
-
+\end{equation}
+}
 \begin{equation}
   \label{eq:bellman}
   V^\pi_\deltat(s) = \reward(s, \pi(s))\deltat + \gamma^{\deltat} \E_{s_{\deltat}^{k+1} | s_{\deltat}^{k} = s} V^\pi_\deltat(s_{\deltat}^{k+1})
 \end{equation}
 
-We have the following convergence theorem of the discretized value function to the continuous value function:
+When the timestep tends to $0$, one converges to the other.
   \begin{theorem}
-   For all $s \in {\cal S}$:
-    \begin{equation}
-      \label{eq:conv-value}
-      V^\pi_\deltat(s) = V^\pi(s) + \bigO(\deltat)
-    \end{equation}
     \label{th:conv-value}
+   Under suitable assumptions \TODO{ref appendix}, for all $s \in {\cal
+   S}$, one has
+    %\begin{equation}
+      %\label{eq:conv-value}
+      $V^\pi_\deltat(s) = V^\pi(s) + \bigO(\deltat)$
+    %\end{equation}
+    when $\deltat\to 0$.
   \end{theorem}
-
 
 \subsection{There is no $Q$-function in continuous time}
 
