@@ -77,9 +77,17 @@ actions. Consider the continuous \emph{Markov Decision Process} (MDP) defined by
 	\label{eq:diffusion}
 	ds = F(s, a)dt. % + \Sigma(s, a)\dbt.
               \end{equation}
-        For any $\deltat$, the discrete MDP ${\cal
+Informally, $F\colon {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
+the dynamics of the environment. The agent interacts with the environment through a deterministic policy function
+$\pi \colon {\cal S} \rightarrow {\cal A}$, so that $a=\pi(s)$. 
+For simplicity we assume here that both the dynamics and exploitation policy are
+deterministic; the exploration policy will be random, but care must be
+taken to properly define random policies with
+discrete actions in continuous time, see below.
+
+For any $\deltat>0$, we can define an MDP ${\cal
 M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
-      \gamma_\deltat\rangle$ is a discretization of the continuous MDP with
+      \gamma_\deltat\rangle$ as a discretization of the continuous MDP with
       \emph{time discretization} $\deltat$. Here the deterministic
       transition function
       $T_\deltat(s, a, s')$ is %a dirac on $s_\deltat$, where $s_\deltat$ is 
@@ -101,15 +109,7 @@ M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
       \end{equation} with
       $B_t$ a multidimensional Brownian motion and $\Sigma$ a covariance matrix. A
       formal treatment of SDEs is beyond the scope of this paper.}
-      Informally, $F\colon {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
-the dynamics of the environment. The agent interacts with the environment through a deterministic policy function
-$\pi \colon {\cal S} \rightarrow {\cal A}$. Determinism of the policy is assumed to prevent problematic definitions
-of the value function in continuous time. This is only a mild requirement, as we introduce an off-policy algorithm,
-and only impose determinism of the exploitation policy. \TODO{justify
-better or just say: for simplicity we assume that both the dynamics and
-policy are deterministic, or say the optimal policy can always be assumed
-to be deterministic.}
-% This framework covers classical control theory, as well as many usual simulated environments. TODO: not convinced that this is relevant here.
+      % This framework covers classical control theory, as well as many usual simulated environments. TODO: not convinced that this is relevant here.
 
 %      \footnote{Informally, $T_\deltat(s, a, s')$ is approximately
 %	      the probability distribution of $s + F(s, a)\deltat +
