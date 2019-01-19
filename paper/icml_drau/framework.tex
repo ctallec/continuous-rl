@@ -373,8 +373,8 @@ The dynamics \eqref{eq:diffusion} of the environment yields
   \end{align}
   Expanding $V^\pi_\deltat(s')$ into $Q^\pi_\deltat$ yields
   \begin{align}
-  Q^\pi_\deltat(s, a) &= r(s, a)\deltat + \gamma^\deltat (V^\pi_\deltat(s) + \bigO(\deltat))\\
-		      &= (1 + \bigO(\deltat)) (V^\pi_\deltat(s) + \bigO(\deltat)) + \bigO(\deltat)\\
+  Q^\pi_\deltat(s, a) &= r(s, a)\,\deltat + \gamma^\deltat (V^\pi_\deltat(s) + \bigO(\deltat))\\
+		      &= \bigO(\deltat)+(1 + \bigO(\deltat)) (V^\pi_\deltat(s) + \bigO(\deltat)) \\
 		      &= V^\pi_\deltat(s) + \bigO(\deltat).
   \end{align}
 %   Now, using Thm.~\ref{th:conv-value},
