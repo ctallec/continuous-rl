@@ -174,8 +174,8 @@ continuous OU process, and setting
   \pi^\text{explore}(s_t, z_t)\deq \text{argmax}_{a'} \left(A(s, a') + z_t[a']\right)
 \end{equation}
 where $z_t[a']$ denotes the $a'$-th component of $z_t$. Namely, we
-perturb advantage values by a random process. The resulting exploration scheme
-converges in continuous time to a nontrivial limit.
+perturb advantage values by a random process before selecting an action. The resulting scheme
+converges in continuous time to a nontrivial exploration scheme.
 
 Contrary to this discrete action exploration scheme, $\varepsilon$-greedy
 exploration is likely to not explore, i.e. to collapse to a deterministic
