@@ -75,11 +75,11 @@ Let ${\cal S} = \mathbb{R}^d$ be a set of states, and ${\cal A}$ be a set of
 actions. Consider the continuous \emph{Markov Decision Process} (MDP) defined by the differential equation %\TODO{Explain the intuition of Brownian in SDE}:
         \begin{equation}
 	\label{eq:diffusion}
-	ds_t/dt = F(s_t, a) % + \Sigma(s, a)\dbt.
+	ds_t/dt = F(s_t, a_t) % + \Sigma(s, a)\dbt.
               \end{equation}
 where $F\colon {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
 the dynamics of the environment. The agent interacts with the environment through a deterministic policy function
-$\pi \colon {\cal S} \rightarrow {\cal A}$, so that $a=\pi(s_t)$. 
+$\pi \colon {\cal S} \rightarrow {\cal A}$, so that $a_t=\pi(s_t)$. 
 For simplicity we assume here that both the dynamics and exploitation policy are
 deterministic; \footnote{
       We believe the results presented here hold more
@@ -150,18 +150,19 @@ limits when $\deltat\to 0$.
 % \end{theorem}
       
 
-\subsection{Return, discount factor and value function in near continuous time}
-\label{sec:ret-gamma-v}
+% \subsection{Return, discount factor and value function in near continuous time}
+% \label{sec:ret-gamma-v}
 
 
 
+
+\paragraph{Return and Discount Factor.}
 Suitable 
 $\deltat$-dependent scalings of the discount factor $\gamma_\deltat$
 and the reward $r_\deltat$ are as follows. These definitions fit the discrete case
 when $\deltat=1$, and provide well defined, non-trivial returns
 and value functions when $\deltat$ goes to $0$.
 
-\paragraph{Return and Discount Factor}
 For a continuous MDP and a continuous trajectory $\tau = (s_t, a_t)_t$,
 the return is defined as~\cite{cont_rl}
 \begin{equation}
@@ -223,39 +224,54 @@ r_\deltat \deq \deltat . r.
 % 	\end{equation}
 %       }
 
-      \paragraph{Number of steps / Physical time, Time horizon}
+      \paragraph{Physical time vs algorithmic time, time horizon.}
         % [[I prefer to talk about ``number of steps'' VS ``Physical time'' than microscopic/Macroscopic]]
-        In near continuous environments, there are two notions of time,
-the number of steps, or the number of actions taken, and the actual amount of time spent
-in the underlying continuous time environment, which we call the physical
-time. If $t$ is the real time and $k$ the number of steps, the two are related through $t = k \deltat$.
+        In near continuous environments, there are two notions of time:
+the algorithmic time $k$ (number of steps or actions taken), and the
+physical time $t$ (time spent
+in the underlying continuous time environment), related via
+$t=k.\deltat$.
 
-The notion of time horizon, which is, informally, the amount of time on
-which the agent optimizes its return, is only meaningful in physical
-time.
+The time horizon is, informally, the time range over
+which the agent optimizes its return.
         %Having a time horizon of $10$ steps means something very different
 %if $\deltat = 0.1$ and if $\deltat = 0.0001$.
-        A rule of thumb
-is that the time horizon of an agent with discount factor $\gamma$ is
-of order $\frac{1}{1 - \gamma}$ steps. If $\gamma_\deltat$ was left constant
-as $\deltat$ goes to $0$, the corresponding time horizon in physical time
-would write as $\frac{\deltat}{1 - \gamma}$ which goes to $0$ when
-$\deltat$ goes to $0$.
-        On the contrary, the definition of $\gamma_\deltat$ in
-Eq.~\eqref{eq:def-gamma} yields an approximately constant
-time horizon in physical time when $\deltat$ goes to $0$. Indeed,
+As a rule of thumb,
+the time horizon of an agent with discount factor $\gamma$ is
+of order $\frac{1}{1 - \gamma}$ steps; beyond that, the decay factor
+kicks in and the influence of further rewards becomes small.
+
+The definition~\eqref{eq:def-gamma} of the decay factor $\gamma_\deltat$ in
+near-continuous environments keeps the time horizon constant in
+\emph{physical} time, by making $\gamma_\deltat$ close to $1$ in
+algorithmic time. Indeed, physical time horizon is $\deltat$ times the
+algorithmic time horizon, namely
 \begin{equation}
           \label{eq:time-horizon}
           \frac{\deltat}{1-\gamma^\deltat}
-          = - \frac{1}{\log \gamma} + \bigO(\deltat)
+          %= - \frac{1}{\log \gamma} + \bigO(\deltat)
           \approx \frac{1}{1-\gamma},
         \end{equation}
-        approximately invariant to $\deltat$ when $\deltat$ goes to 0.
-      
+which is thus stable when $\deltat\to 0$.
+On the other hand,
+if $\gamma_\deltat$ was left constant
+as $\deltat$ goes to $0$, the corresponding time horizon in physical time
+would be $\approx \frac{\deltat}{1 - \gamma}$ which goes to $0$ when
+$\deltat$ goes to $0$: such an agent would be increasingly short-sighted
+as $\deltat\to 0$.
+
+In the following, we use the suitably-scaled decay factor
+\eqref{eq:def-gamma} both for Deep Advantage Updating and for the
+classical deep $Q$-learning baselines.
+%         On the contrary, the definition of $\gamma_\deltat$ in
+% Eq.~\eqref{eq:def-gamma} yields an approximately constant
+% time horizon in physical time when $\deltat$ goes to $0$. Indeed,
+%         approximately invariant to $\deltat$ when $\deltat$ goes to 0.
+%       
         
 
 
-\paragraph{Value function}
+\paragraph{Value function.}
 
 
 The definition of the return Eq.~\eqref{eq:continuous-return}, yields the
