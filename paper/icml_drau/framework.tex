@@ -156,7 +156,7 @@ limits when $\deltat\to 0$.
 
 
 
-\paragraph{Return and Discount Factor.}
+\paragraph{Return and discount factor.}
 Suitable 
 $\deltat$-dependent scalings of the discount factor $\gamma_\deltat$
 and the reward $r_\deltat$ are as follows. These definitions fit the discrete case
@@ -167,7 +167,7 @@ For a continuous MDP and a continuous trajectory $\tau = (s_t, a_t)_t$,
 the return is defined as~\cite{cont_rl}
 \begin{equation}
 \label{eq:continuous-return}
-R(\tau) \deq \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt.
+R(\tau) \deq \int_{t=0}^\infty\gamma^t\,r(s_t, a_t)\,dt.
 \end{equation}
 
 A natural time discretization is obtained  by defining the discretized
@@ -276,13 +276,15 @@ The return \eqref{eq:continuous-return} yields the
 following continuous-time value function
 \begin{align}
   V^\pi(s) &= \E_{\tau\sim\pi}\left[R(\tau) \mid s_0 = s\right]\\
-  &= \E_{\tau\sim\pi}\left[\int\limits_{0}^\infty \gamma^{t} r(s_t, a_t) dt \mid s_0 = s\right].
+  &= \E_{\tau\sim\pi}\left[\int\limits_{0}^\infty \gamma^{t}\, r(s_t,
+  a_t) \,dt \mid s_0 = s\right].
 \end{align}
 Meanwhile, the value function (in the ordinary sense) of the discrete MDP ${\cal
 M}_\deltat$ is
 \begin{align}
   V^\pi_\deltat(s) &= \E_{\tau\sim\pi}\left[R_\deltat(\tau) \mid s_0 = s\right]\\
-  &= \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty \gamma^{k\deltat}r(s^k_{\deltat}, a^k_{\deltat})\deltat \mid s_0 = s\right]
+  &= \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty
+  \gamma^{k\deltat}\,r(s^k_{\deltat}, a^k_{\deltat})\,\deltat \mid s_0 = s\right]
 \end{align}
 % which fits the usual definition of the discrete $V$-function for $\gamma_\deltat$ and
 % $r_\deltat$ defined in \eqref{eq:def-gamma}.
@@ -296,7 +298,7 @@ If the continuous MDP dynamic follows~\eqref{eq:diffusion}, the limit of the Bel
 }
 \begin{equation}
   \label{eq:bellman}
-  V^\pi_\deltat(s) = \reward(s, \pi(s))\deltat + \gamma^{\deltat} \E_{s_{\deltat}^{k+1} | s_{\deltat}^{k} = s} V^\pi_\deltat(s_{\deltat}^{k+1})
+  V^\pi_\deltat(s) = \reward(s, \pi(s))\,\deltat + \gamma^{\deltat}\, \E_{s_{\deltat}^{k+1} | s_{\deltat}^{k} = s} V^\pi_\deltat(s_{\deltat}^{k+1})
 \end{equation}
 
 When the timestep tends to $0$, one converges to the other.
@@ -330,7 +332,7 @@ value function via
 % differentiable, then, for all $s, a$,
 \begin{equation}
 	\label{eq:q-discr}
-	Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO\left(\deltat\right)
+	Q^\pi_\deltat(s, a) = V^\pi_\deltat(s) + \bigO\left(\deltat\right)
 \end{equation}
 when $\deltat \to 0$ for every $(s,a)$, under suitable technical
 assumptions.
@@ -369,18 +371,18 @@ The dynamics \eqref{eq:diffusion} of the environment yields
   F(s, a)\,\deltat + \smallo(\deltat)\\
 		    &= V^\pi_\deltat(s) + \bigO(\deltat)
   \end{align}
-  Rewriting $Q^\pi_\deltat$ yields
+  Expanding $V^\pi_\deltat(s')$ into $Q^\pi_\deltat$ yields
   \begin{align}
   Q^\pi_\deltat(s, a) &= r(s, a)\deltat + \gamma^\deltat (V^\pi_\deltat(s) + \bigO(\deltat))\\
 		      &= (1 + \bigO(\deltat)) (V^\pi_\deltat(s) + \bigO(\deltat)) + \bigO(\deltat)\\
 		      &= V^\pi_\deltat(s) + \bigO(\deltat).
   \end{align}
-  Now, using Thm.~\ref{th:conv-value},
-  \begin{align}
-  Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO(\deltat)
-  \end{align}
-  which ends the proof.
-%  But we know that $s'$ is close to $s$. If we define $\delta s = s' - s$, then:
+%   Now, using Thm.~\ref{th:conv-value},
+%   \begin{align}
+%   Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO(\deltat)
+%   \end{align}
+which ends the proof.
+% %  But we know that $s'$ is close to $s$. If we define $\delta s = s' - s$, then:
 %  \begin{equation}
 %    \E_{s'|s, a}\left[\delta s\right] = \bigO(\deltat) \quad \text{Var}(\delta s) = \bigO(\deltat)
 %  \end{equation}
