@@ -170,12 +170,12 @@ the return is defined as~\cite{cont_rl}
 R(\tau) \deq \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt.
 \end{equation}
 
-A natural time discretization is obtained  by defining the discretized return
-return $R_\delta$ for each $\deltat$ as
+A natural time discretization is obtained  by defining the discretized
+return $R_\deltat$ of the MDP $\mathcal{M}_{\deltat}$ as
 \begin{equation}
 \label{eq:discretized-return}
-R_\deltat(\tau) \deq \sum_{k=0}^\infty\gamma^{k\deltat}
-r(s_\deltat^k, a_\deltat^k)\deltat
+R_\deltat(\tau) \deq \sum_{k=0}^\infty\gamma^{k\deltat}\,
+r(s_\deltat^k, a_\deltat^k)\,\deltat
 \end{equation}
 and the discretized return will correspond to the continuous-time return
 if we set the decay factor $\gamma_\deltat$ and rewards $r_\deltat$ of
@@ -333,8 +333,7 @@ value function via
 	Q^\pi_\deltat(s, a) = V^\pi(s) + \bigO\left(\deltat\right)
 \end{equation}
 when $\deltat \to 0$ for every $(s,a)$, under suitable technical
-assumptions
-\TODO{ref appendix}.
+assumptions.
 \end{theorem}
 % Consider a discretization of Eq.~\eqref{eq:cont_bell} with time interval
 % $\deltat \ll~1$, Ito's lemma yield
@@ -353,16 +352,21 @@ thus cannot be used to select actions that yields higher future returns.
 There is no time continuous $Q$-learning.
 
 \begin{proof}
-Bellman equation for the discretized $Q$-function yields
+The discrete-time $Q$-function satisfies the Bellman equation
   \begin{align}
-    Q^\pi_\deltat(s, a) &= r(s, a)\deltat + \gamma^\deltat \E_{s'|s, a}\left[V^\pi_\deltat(s')\right] 
+    Q^\pi_\deltat(s, a) &= r(s, a)\,\deltat + \gamma^\deltat \E_{s'|s,
+    a}\left[V^\pi_\deltat(s')\right] .
   \end{align}
-  From the environment dynamic equation, 
+The dynamics \eqref{eq:diffusion} of the environment yields
   \begin{equation}
-  s' = s + f(s, a) \deltat + \smallo(\deltat).
-  \end{equation}As $V^\pi$ is assumed to be continuously differentiable,
+  s' = s + F(s, a) \,\deltat + \smallo(\deltat).
+  \end{equation}
+  Assuming that $V^\pi_\deltat$ is continuously differentiable with
+  respect to the state, and that its derivatives are uniformly bounded, we
+  obtain,
   \begin{align}
-  V^\pi_\deltat(s') &= V^\pi_\deltat(s) + \partial_s V^\pi_\deltat(s) F(s, a)\deltat + \smallo(\deltat)\\
+  V^\pi_\deltat(s') &= V^\pi_\deltat(s) + \nabla_s V^\pi_\deltat(s)\cdot
+  F(s, a)\,\deltat + \smallo(\deltat)\\
 		    &= V^\pi_\deltat(s) + \bigO(\deltat)
   \end{align}
   Rewriting $Q^\pi_\deltat$ yields
