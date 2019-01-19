@@ -3,10 +3,9 @@
 \label{sec:exp}
 \input{lc_fig.tex}
 The experiment set that we provide here is specifically aimed at showing that
-the proposed method can operate efficiently on a wide range of time
+the proposed method DAU can operate efficiently on a wide range of time
 discretization, without specific tuning, while standard deep Q-learning
-approaches can't.  Our method, which is referred to as \emph{Deep Advantage
-Updating}\TODO{Introduce the name of the algorith, earlier}, is compared to DDPG in continuous action settings and to DQN in
+approaches can't. DAU is compared to DDPG in continuous action settings and to DQN in
 discrete action settings.
 
 In all experimental settings, we use the learning algorithm described in
@@ -25,13 +24,13 @@ normalized epochs, i.e. the true number of epochs multiplied by the discretizati
 To provide qualitative results, and check that robustness to time
 discretization is provided both in term of raw return results, but also in term
 of convergence of approximate value function and policies, we first provide results on the simple pendulum environment
-provided in the openai gym classic control suite.  In the simple pendulum environment, the state space is of dimension $2$. A visualization of both the learnt value and policy functions by plotting for each point of the phase diagram $(\theta, \dot{\theta})$ its value and policy. Qualitative results are presented in
-Fig.~\ref{fig:pend} for the policy and in Fig.\TODO{ref} in Supplementary \TODO{ref} for the value function.
+from the OpenAI Gym classic control suite.  This environment's state space is of dimension $2$. A visualization of both the learnt value and policy functions is obtained by plotting for each point of the phase diagram $(\theta, \dot{\theta})$ its value and policy. results are presented in
+Fig.~\ref{fig:pend} for the policy function and in Fig.\TODO{ref} in Supplementary \TODO{ref} for the value function.
 
 We observe the learnt policy at several instants in physical time (or normalized epochs) during training, for various time discretizations $\deltat$, for both DAU and DDPG. With DAU, the agent's policy quickly converges for every time discretization without specific hyperparameter tuning. On the contrary, with DDPG, the agent is only able to learn for the two highest time discretization, and learning gets harder as $\deltat$ decreases.
 
 \paragraph{Quantitative experiments}
-We benchmark DAU against DDPG on classic control benchmarks: Pendulum, Cartpole, BipedalWalker, Ant and Half-Cheetah environments from Open AI Gym. For Pendulum and Ant, DDPG is able to learn for the highest $\deltat$ but fails for the others, while DAU remains reasonably invariant to the time discretization. On Bipedal Walker, DDPG is never able to learn while DAU is solving the environment for every $\deltat$. On Cartpole and Half Cheetah, the results are less clear. On Cartpole, noise dominates, which makes interpretation unclear. On Half Cheetah, DAU is not clearly more invariant to time discretization than DDPG. This could be explained by the multiple suboptimal regimes that coexist in the half cheetah environment (walking on the head, walking on the back), and that DAU may fail to correctly weight the performance of each regime (as explained in the Section \ref{sec:discussions}).
+We benchmark DAU against DDPG on classic control benchmarks: Pendulum, Cartpole, BipedalWalker, Ant and Half-Cheetah environments from OpenAI Gym. For Pendulum and Ant, DDPG is able to learn for the highest $\deltat$ but fails for the others, while DAU remains reasonably invariant to the time discretization. On Bipedal Walker, DDPG is never able to learn while DAU is achieving decent performance for all the $\deltat$'s. On Cartpole and Half Cheetah, results are less clear. On Cartpole, noise dominates, which makes interpretation difficult. On Half Cheetah, DAU is not clearly more invariant to time discretization than DDPG. This could be explained by the multiple suboptimal regimes that coexist in the half cheetah environment (walking on the head, walking on the back), and that DAU may fail to correctly weight the performance of each regime (as explained in Section \ref{sec:discussions}).
 
 % \begin{figure}[h]
 %   \centering
