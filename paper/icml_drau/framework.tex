@@ -19,7 +19,9 @@ the timestep $\deltat$ is not an intrinsic parameter of the
 environment, but a constraint imposed by computational ressources, we
 would expect that decreasing $\deltat$ could only improve the performance
 of RL agents \TODO{We would remove: (though it might make optimization
-harder) It is not in the spririt of what is said here}.  RL algorithms should, at least, be resilient to a change of
+harder) It is not in the spririt of what is said here. NDY keep it.
+Anyone with a bit of experience in traditional optim would scream and say exactly
+that, if it was not included.}.  RL algorithms should, at least, be resilient to a change of
 $\deltat$, and should remain viable when $\deltat \rightarrow 0$.
 Besides, designing a time discretization invariant algorithm could
 alleviate tedious hyperparameterization by providing better defaults for
