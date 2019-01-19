@@ -284,7 +284,7 @@ M}_\deltat$ is
   V^\pi_\deltat(s) &= \E_{\tau\sim\pi}\left[R_\deltat(\tau) \mid s_0 = s\right]\\
   &= \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty \gamma^{k\deltat}r(s^k_{\deltat}, a^k_{\deltat})\deltat \mid s_0 = s\right]
 \end{align}
-% which fits the usual definition of the discrete V-function for $\gamma_\deltat$ and
+% which fits the usual definition of the discrete $V$-function for $\gamma_\deltat$ and
 % $r_\deltat$ defined in \eqref{eq:def-gamma}.
 which obeys the Bellman equation
 \footnote{
@@ -313,9 +313,9 @@ When the timestep tends to $0$, one converges to the other.
 
 \subsection{There is no $Q$-function in continuous time}
 
-Contrary to the Value function, the Action-Value function $Q$ is ill-defined
-for a continuous MDP. More precisely, the $Q$-function  collapses to the
-V-function when $\deltat \rightarrow 0$. In near continuous time, the effect of
+Contrary to the value function, the action-value function $Q$ is ill-defined
+for continuous-time MDPs. More precisely, the $Q$-function  collapses to the
+$V$-function when $\deltat \rightarrow 0$. In near continuous time, the effect of
 individual actions on the $Q$-function is of order $\bigO(\deltat)$. This makes
 deriving a ranking of action from an approximate $Q$-function difficult.
 Formally:
