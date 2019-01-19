@@ -25,28 +25,31 @@ $\mathcal{G}$ and a point in $\mathcal{B}$ is lower bounded by a finite
 quantity. 
 %Besides, one can find two points $s_1 \in \mathcal{G}$ and $s_2 \in \mathcal{B}$
 %such that $s_1$ and $s_2$ are arbitrarily close.
-Consequently, $V^\pi$ is
+Consequently, the value function is
 discontinuous on the frontier between $\mathcal{G}$ and $\mathcal{B}$, which results in non infinitesimal advantages
 for actions taken on the frontier. \TODO{Non infinitesimal advantages are found,
-	more generally, as soon as a given policy has different regimes, depending on
-	where it starts in state space. For such policies, at the frontier between two regimes,
-the value function can be discontinuous, resulting in non infinitesimal advantages.}
+more generally, as soon as a given policy has different regimes depending on
+where it starts in state space. For such policies the value
+function is typically discontinuous at the frontier between two
+regimes, resulting in non infinitesimal advantages. The
+continuous-time DAU properties would only hold almost-everywhere.}
 
 \paragraph{Memory buffer size scalings}~Thm.~\ref{th:cont-params} is stated for
 transitions sampled sequentially from a fixed infinite size sequence. In practice,
 transitions are sampled from a memory buffer, to prevent excessive correlations.
-The memory buffer used is a fixed size circular buffer, and is
-filled with samples coming from a single infinite exploratory trajectory. In
+The memory buffer used is a fixed size circular buffer, filled
+with samples from a single infinite exploratory trajectory. In
 our experiments, the same buffer size is used for all time discretization. When
 $\deltat$ goes to $0$, this corresponds to learning nearly online on the
 infinite sequence, since the buffer will only contain examples that are very
-close temporally to the end of the sequence in physical time. While the resulting
-algorithm \TODO{kind of} converges to a continuous time limit, it is still not
+close temporally to the end of the sequence in physical time. \TODO{this
+contradicts the use of the buffer against correlations} While the resulting
+algorithm converges to a continuous time limit, in the strictest sense it is not
 time discretization invariant, as the freshness of samples in the buffer will
 vary with the time discretization.
 A different choice would be to scale the size of the buffer by a factor of
 $\frac{1}{\deltat}$. This would amount to always learning on the same physical time interval of
-the trajectory. Our analysis, however, does not cover this case.
+the trajectory. Our theoretical analysis does not cover this case.
 
 \paragraph{Near continuous time reinforcement learning and RMSprop}~RMSprop~\cite{rmsprop}
 estimates a batched version of the second momentum of gradients using moving
