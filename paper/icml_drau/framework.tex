@@ -357,7 +357,7 @@ thus cannot be used to select actions with higher returns.
 There is no continuous-time $Q$-learning.
 
 \begin{proof}
-The discrete-time $Q$-function satisfies the Bellman equation
+The discrete-time $Q$-function of the MDP $\mathcal{M}_\deltat$ satisfies the Bellman equation
   \begin{align}
     Q^\pi_\deltat(s, a) &= r(s, a)\,\deltat + \gamma^\deltat \E_{s'|s,
     a}\left[V^\pi_\deltat(s')\right] .
