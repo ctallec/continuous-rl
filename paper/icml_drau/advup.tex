@@ -297,9 +297,13 @@ actually the only possibility; more precisely,
 		\item If $\beta = 1$ the discrete parameter trajectories converge to continuous parameter
 			trajectories as $\deltat$ goes to $0$.
 		\item If $\beta < 1$, parameters grow arbitrarily large in a single timestep as $\deltat$
-			goes to $0$.
-		\item If $\beta > 1$, parameter trajectories shrink to a single point as 
-			$\deltat$ goes to $0$. \TODO{Is that clear}
+			goes to $0$. \TODO{not quite true, in a single
+			step the update is bounded. But the parameters
+			become arbitrary large in an arbitrarily small
+			physical time.}
+		\item If $\beta > 1$, parameter trajectories become
+		stationary as
+			$\deltat$ goes to $0$.
 	\end{itemize}
 	\label{th:cont-params}
 \end{theorem}
@@ -311,8 +315,10 @@ actually the only possibility; more precisely,
 % 	d\theta_t &= (\alpha^V Fdt  + D \dbt)\partial_{\theta} V(s_t)\nonumber\\
 % 	d\psi_t &= (\alpha^A Fdt  + D \dbt)\partial_{\psi} A(s_t, a_t)\nonumber.
 % \end{align}
-The full algorithm, that is referred to as \emph{Deep Advantage Updating} (DAU), can now be derived.
+
+This results in a fullly specified algorithm,
+\emph{Deep Advantage Updating} (DAU).
 Pseudocode for the discrete actions algorithm is given in Alg.~\ref{alg:dau}.
-Pseudocode for the continuous actions algorithm is given in the supplementary
+Pseudocode for continuous actions is given in the supplementary
 material.
 
