@@ -290,11 +290,14 @@ M}_\deltat$ is
 % $r_\deltat$ defined in \eqref{eq:def-gamma}.
 which obeys the Bellman equation
 \footnote{
-If the continuous MDP dynamic follows~\eqref{eq:diffusion}, the limit of the Bellman equation for $V^\pi_\deltat$ when $\deltat \rightarrow 0$ is the Hamilton-Jacobi-Bellman equation on $V^\pi$ \cite{cont_rl}
-\begin{equation}
-  \label{eq:hamilton-jacobi-bellman}
-  r + \partial_s V^\pi \cdot F = - \log(\gamma) V^\pi
-\end{equation}
+If the continuous MDP follows the dynamics \eqref{eq:diffusion}, the limit of
+the Bellman equation \eqref{eq:bellman} for $V^\pi_\deltat$ when $\deltat \rightarrow 0$ is
+the \emph{Hamilton--Jacobi--Bellman} equation on $V^\pi$ \cite{cont_rl},
+namely,
+%\begin{equation}
+  %\label{eq:hamilton-jacobi-bellman}
+  $r + \nabla_s V^\pi \cdot F = - \log(\gamma) V^\pi$.
+%\end{equation}
 }
 \begin{equation}
   \label{eq:bellman}
