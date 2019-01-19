@@ -81,16 +81,26 @@ where $F\colon {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
 the dynamics of the environment. The agent interacts with the environment through a deterministic policy function
 $\pi \colon {\cal S} \rightarrow {\cal A}$, so that $a=\pi(s_t)$. 
 For simplicity we assume here that both the dynamics and exploitation policy are
-deterministic; the exploration policy will be random, but care must be
+deterministic; \footnote{
+      We believe the results presented here hold more
+      generally, assuming states
+      follow a \emph{stochastic} differential equation \begin{equation}
+	      ds = F(s, a)dt  + \Sigma(s, a)\dbt
+	      \label{eq:sde}
+      \end{equation} with
+      $B_t$ a multidimensional Brownian motion and $\Sigma$ a covariance matrix. A
+      formal treatment of SDEs is beyond the scope of this paper.}
+ the exploration policy will be random, but care must be
 taken to properly define random policies with
 discrete actions in continuous time, see below.
 
 For any $\deltat>0$, we can define an MDP ${\cal
 M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
       \gamma_\deltat\rangle$ as a discretization of the continuous MDP with
-      \emph{time discretization} $\deltat$. Here the deterministic
+      \emph{time discretization} $\deltat$. The %deterministic
       transition function
-      $T_\deltat(s, a, s')$ is %a dirac on $s_\deltat$, where $s_\deltat$ is 
+      %$T_\deltat(s, a, s')$ 
+      is %a dirac on $s_\deltat$, where $s_\deltat$ is 
       the
       state obtained
       when starting at $s_0 = s$ and maintaining $a_t=a$ constant for a time
@@ -100,16 +110,7 @@ M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
       only making observations and choosing actions every $\deltat$. The
       rewards and decay factor are specified below. We
       call such an  MDP ${\cal M}_\deltat$
-      \emph{near-continuous}.\footnote{
-      We believe the results presented here hold more
-      generallly, assuming states
-      follow a \emph{stochastic} differential equation \begin{equation}
-	      ds = F(s, a)dt  + \Sigma(s, a)\dbt
-	      \label{eq:sde}
-      \end{equation} with
-      $B_t$ a multidimensional Brownian motion and $\Sigma$ a covariance matrix. A
-      formal treatment of SDEs is beyond the scope of this paper.}
-      % This framework covers classical control theory, as well as many usual simulated environments. TODO: not convinced that this is relevant here.
+      \emph{near-continuous}.      % This framework covers classical control theory, as well as many usual simulated environments. TODO: not convinced that this is relevant here.
 
 %      \footnote{Informally, $T_\deltat(s, a, s')$ is approximately
 %	      the probability distribution of $s + F(s, a)\deltat +
@@ -118,16 +119,16 @@ M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
         %In this paper, we try to design RL methods for near continuous MDP
 %robust to the choice of $\deltat$. 
 
+By standard arguments for time discretizations of differential
+equations, for a given policy the near-continuous states converge to the
+continuous-time states when $\deltat\to 0$. \TODO{ref to appendix+formal
+statement in appendix}% We now turn to the RL-related quantities.
+
 A necessary condition for robustness of an algorithm for
 near-continuous time MDPs is 
 to remain viable when $\deltat \rightarrow 0$. Thus we will try to
 make sure the various quantities involved converge to meaningful
 limits when $\deltat\to 0$.
-
-By standard arguments for time discretizations of differential
-equations, for a given policy the near-continuous states converge to the
-continuous-time states when $\deltat\to 0$. \TODO{ref to appendix+formal
-statement in appendix} We now turn to the RL-related quantities.
 
 %         The first step in that direction is to check that the discretized
 %           trajectories converge to the continuous ones. 
@@ -154,9 +155,10 @@ statement in appendix} We now turn to the RL-related quantities.
 
 
 
-In what follows, $\deltat$-dependant scalings of the discount factor $\gamma_\deltat$
-and the reward $r_\deltat$ are given. These definitions fit the discrete case
-scenario when $\deltat=1$, and yields well defined, non trivial returns
+Suitable 
+$\deltat$-dependent scalings of the discount factor $\gamma_\deltat$
+and the reward $r_\deltat$ are as follows. These definitions fit the discrete case
+when $\deltat=1$, and provide well defined, non-trivial returns
 and value functions when $\deltat$ goes to $0$.
 
 \paragraph{Return and Discount Factor}
@@ -164,25 +166,27 @@ For a continuous MDP and a continuous trajectory $\tau = (s_t, a_t)_t$,
 the return is defined as~\cite{cont_rl}
 \begin{equation}
 \label{eq:continuous-return}
-R(\tau) = \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt.
+R(\tau) \deq \int_{t=0}^\infty\gamma^tr(s_t, a_t)dt.
 \end{equation}
 
-The natural discretization of this equation, if we want to define a discretized
-return $R_\delta$ for each $\deltat$ is:
+A natural time discretization is obtained  by defining the discretized return
+return $R_\delta$ for each $\deltat$ as
 \begin{equation}
 \label{eq:discretized-return}
-R_\deltat(\tau) = \sum_{k=0}^\infty\gamma^{k\deltat}
+R_\deltat(\tau) \deq \sum_{k=0}^\infty\gamma^{k\deltat}
 r(s_\deltat^k, a_\deltat^k)\deltat
 \end{equation}
-
-Natural definitions of $\gamma_\deltat$ and $r_\deltat$ such
-that the return defined in equation (\ref{eq:discretized-return}) corresponds
-to the discrete return for the MDP ${\cal M}_\deltat$ follow:
+and the discretized return will correspond to the continuous-time return
+if we set the decay factor $\gamma_\deltat$ and rewards $r_\deltat$ of
+the discretized MDP ${\cal M}_\deltat$ to
+% Natural definitions of $\gamma_\deltat$ and $r_\deltat$ such
+% that the return defined in equation (\ref{eq:discretized-return}) corresponds
+% to the discrete return for the MDP ${\cal M}_\deltat$ follow:
 \begin{align}
 \label{eq:def-gamma}
-\gamma_\deltat =& \gamma^\deltat\\
-\label{eq:def-reward}
-r_\deltat =& \deltat . r.
+%\label{eq:def-reward}
+\gamma_\deltat \deq \gamma^\deltat,\qquad
+r_\deltat \deq \deltat . r.
 \end{align}
 % Thus, we see that the natural discretization of a continuous MDP ${\cal M} = \langle {\cal S}, {\cal A}, T, r, \gamma\rangle$ is ${\cal M}_\deltat = \langle {\cal S}, {\cal A}, T_\deltat, r\deltat, \gamma^\deltat\rangle$.
 
@@ -266,7 +270,7 @@ The corresponding discretization for time discretization $\deltat$ is
   =& \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty \gamma^{k\deltat}r(s^k_{\deltat}, a^k_{\deltat})\deltat \mid s_0 = s\right]
 \end{align}
 which fits the usual definition of the discrete V-function for $\gamma_\deltat$ and
-$r_\deltat$ defined in~(\ref{eq:def-gamma}, \ref{eq:def-reward}).
+$r_\deltat$ defined in \eqref{eq:def-gamma}.
 The discretized value function follows the Bellman equation\footnote{
 If the continuous MDP dynamic follows~\eqref{eq:diffusion}, the limit of the Bellman equation for $V^\pi_\deltat$ when $\deltat \rightarrow 0$ is the Hamilton-Jacobi-Bellman equation on $V^\pi$ \cite{cont_rl}
 \begin{equation}
