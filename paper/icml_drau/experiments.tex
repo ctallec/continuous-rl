@@ -9,10 +9,11 @@ approaches cannot. DAU is compared to DDPG in continuous action settings and to 
 discrete action settings. \TODO{(We only test off-policy
 algorithms.)}
 
-In all experimental settings, we use the learning algorithm described in
-alg.~\ref{alg:dau} and \TODO{supplementary, algo 1}. The variant of DDPG and DQN
+In all settings, we use the learning algorithm described in
+Alg.~\ref{alg:dau} and \TODO{supplementary, algo 1}. The variants of DDPG and DQN
 used are described in the supplementary material, as well as all the hyperparameters
-used. To make comparison fair, we still use rescaled discount factor $\gamma_\deltat$ and reward $r_\deltat$  as defined in equations \TODO{ref}, as well as scaled learning rates for DDPG and DQN.
+used. To make comparison fair, we use the properly rescaled discount
+factor $\gamma_\deltat$ and reward $r_\deltat$ from \eqref{eq:def-gamma}, as well as scaled learning rates, for DDPG and DQN.
 
 Let us stress that quantities shown are rescaled to make comparison possible. For example,
 return results are given in term of discretized return $R_\deltat$ as defined in Eq. \eqref{eq:discretized-return},\footnote{This mostly amounts to scaling rewards
