@@ -75,11 +75,11 @@ Let ${\cal S} = \mathbb{R}^d$ be a set of states, and ${\cal A}$ be a set of
 actions. Consider the continuous \emph{Markov Decision Process} (MDP) defined by the differential equation %\TODO{Explain the intuition of Brownian in SDE}:
         \begin{equation}
 	\label{eq:diffusion}
-	ds = F(s, a)dt. % + \Sigma(s, a)\dbt.
+	ds_t/dt = F(s_t, a) % + \Sigma(s, a)\dbt.
               \end{equation}
-Informally, $F\colon {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
+where $F\colon {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
 the dynamics of the environment. The agent interacts with the environment through a deterministic policy function
-$\pi \colon {\cal S} \rightarrow {\cal A}$, so that $a=\pi(s)$. 
+$\pi \colon {\cal S} \rightarrow {\cal A}$, so that $a=\pi(s_t)$. 
 For simplicity we assume here that both the dynamics and exploitation policy are
 deterministic; the exploration policy will be random, but care must be
 taken to properly define random policies with
