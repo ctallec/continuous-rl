@@ -208,14 +208,20 @@ supplementary material. \TODO{Is there a stronger theorm? Should we talk more ab
 	\input{dauc.tex}
 \end{algorithm}
 
-To learn $V_{\theta}$ and $A_{\psi}$, variants of $Q$-learning for continuous and
-discrete action spaces are used. In details, $V_{\theta}$ and $A_{\psi}$ are learnt
-using approximate version of the following bellman equation, which holds for the true $A^\pi_\deltat$
-and $V^\pi_\deltat$, with a greedy exploitation policy $\pi(s) = \text{argmax}_{a'}A^\pi_\deltat(s, a')$
+$V_{\theta}$ and $A_{\psi}$ are learned by a variants of $Q$-learning for continuous and
+discrete action spaces are used. Namely, 
+the true $A^\pi_\deltat$
+and $V^\pi_\deltat$ of a near-continuous MDP with greedy exploitation
+policy $\pi(s) \deq
+\text{argmax}_{a'}A^\pi_\deltat(s, a')$
+satisfy the Bellman equation
 \begin{align}
 	V^{\pi}_\deltat(s) + \deltat A^{\pi}_\deltat(s, a) &= r\deltat + \gamma^{\deltat}  \E_{s'} V^{\pi}_\deltat(s')\label{eq:bellman_A}\\
 	A^{\pi}_\deltat(s, \pi(s)) &= 0\label{eq:max_A}.
 \end{align}
+\TODO{cite Baird or argue this is a simple rewriting?} and $V_{\theta}$
+and $A_{\psi}$ are trained to approximately solve this equation.
+
 Maximization over actions is implemented exactly in the discrete actions case,
 and approximated by a policy neural network $\pi_\phi(s)$, trained to maximize $A(s,
 \pi_\phi(s))$ in the continuous case.  This is similar to what is done in
