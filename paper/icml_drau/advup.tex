@@ -65,31 +65,34 @@ The discretized $Q$-function rewrites as
 	Q^\pi_\deltat(s, a) = V^\pi_\deltat(s) + \deltat A^\pi_\deltat(s, a).
 	\label{eq:reparam_q_pi}
 \end{equation}
-A natural way of approximating $V^\pi_\deltat$ and $A^\pi_\deltat$ is to apply
+A natural way to approximate $V^\pi_\deltat$ and $A^\pi_\deltat$ is to apply
 \emph{Sarsa} or $Q$-learning to a reparameterized $Q$-function approximator
 \begin{equation}
 	Q_\Theta(s, a) = V_{\theta}(s) + \deltat A_{\psi}(s, a).
 \end{equation}
-with $\Theta = (\theta, \pi)$. To avoid cumbersome notations, in what follows,
+with $\Theta = (\theta, \pi)$. To avoid cumbersome notation, in what follows,
 parameter indices are dropped.  At initialization, if both $V_{\theta}$ and
 $A_{\psi}$ are initialized independantly of $\deltat$, this parameterization
-reasonably scales the contribution of actions relative to states in the value
-of $Q$.  Our goal is for $V_\theta$ to approximate $V^\pi_\deltat$ and for
+provides reasonable scaling of the contribution of actions versus states
+in $Q$.
+Our goal is for $V_\theta$ to approximate $V^\pi_\deltat$ and for
 $A_{\psi}$ to approximate $A^\pi_\deltat$.
 
 
 %\TODO{CT and LB are fighting each other about the importance which should be given to the next paragraph. A impartial judge should give his opinion. (CT is wrong)}
-However, the proposed reparameterization does not, on its own, guarantee that
+Still, this reparameterization does not, on its own, guarantee that
 when $Q$ correctly approximates $Q^\pi_\deltat$, $A$ approximates $A^\pi_\deltat$\footnote{
 	Ensuring that $A$ does not differ from $A^\pi_\deltat$ by a state dependent function only affects
 	$A$'s interpretability. Indeed, for any function $f$, the ranking of actions given by
-	$A^\pi_\deltat(s, \cdot)$ and $A^\pi_\deltat(s, \cdot) + f(s)$ is the same.
+	$A^\pi_\deltat(s, \cdot)$ and $A^\pi_\deltat(s, \cdot) + f(s)$ is
+	the same. \TODO{still unclear why we'd care about identifiability}
 }.
-Indeed, for any given pair $V$, $A$,
-\begin{align}
-	\tilde{V}(s) &= V(s) - f(s)\\
-	\tilde{A}(s, a) &= A(s, a) + \frac{f(s)}{\deltat}
-\end{align}
+Indeed, for any given pair $(V,\,A)$, the pair $(V(s) -
+f(s),\,A(s,a)+f(s)/\deltat)$ (for an arbitrary $f$)
+% \begin{align}
+% 	\tilde{V}(s) &= V(s) - f(s),\qquad
+% 	\tilde{A}(s, a) = A(s, a) + \frac{f(s)}{\deltat}
+% \end{align}
 yields the exact same $Q$ function. Consequently, $Q$ can correctly approximate
 $Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
 To enforce identifiability of $A$, one must enforce the consistency equation
@@ -100,7 +103,8 @@ on the approximate $A$ and $V$. This translates to
 \begin{equation}
 	A(s, \pi(s)) = 0.
 \end{equation}
-With this additional constraint, if $Q = Q^\pi_\deltat$, then $A = A^\pi_\deltat$ and $V = V^\pi_\deltat$.
+With this additional constraint, if $Q = Q^\pi_\deltat$, then $A =
+A^\pi_\deltat$ and $V = V^\pi_\deltat$: indeed
 \begin{align}
 	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat}\\
 		    &= \frac{Q(s,a) - Q(s, \pi(s))}{\deltat}\\
@@ -109,7 +113,7 @@ With this additional constraint, if $Q = Q^\pi_\deltat$, then $A = A^\pi_\deltat
 In the spirit of~\cite{dueling_nets}, this condition is enforced by writing $A$ as
 \begin{equation}
 \label{eq:Aparam}
-	A(s, a) = \bar{A}(s, a) - \bar{A}(s, \pi(s)).
+	A(s, a) \deq \bar{A}(s, a) - \bar{A}(s, \pi(s)).
 \end{equation}
 With this parameterization, one can hope to learn an approximation of $A^\pi_\deltat$,
 from which a proper ranking of actions can be derived for any $\deltat$.
