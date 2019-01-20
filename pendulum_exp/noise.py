@@ -7,8 +7,9 @@ from convert import th_to_arr, check_tensor
 
 def setup_noise(
         noise_type: str, sigma: float, theta: float, dt: float,
-        sigma_decay: DecayFunction, **kwargs) -> Noise:
-    keywords_args = dict(sigma=sigma, theta=theta, dt=dt, sigma_decay=sigma_decay)
+        sigma_decay: DecayFunction, noscale: bool, **kwargs) -> Noise:
+    keywords_args = dict(sigma=sigma, theta=theta, dt=dt, noscale=noscale,
+                         sigma_decay=sigma_decay)
 
     if noise_type == 'parameter':
         return ParameterNoise(**keywords_args) # type: ignore
@@ -23,12 +24,17 @@ class ParameterNoise(Noise):
                  theta: float,
                  sigma: float,
                  dt: float,
+                 noscale: bool,
                  sigma_decay: Optional[Callable[[int], float]] = None) -> None:
         self._p_noise: Dict[str, Any] = {}
         self._theta = theta
         self._sigma = sigma
         self._sigma_decay = sigma_decay
-        self._dt = dt
+        ref_dt = .02
+        if noscale:
+            self._dt = ref_dt
+        else:
+            self._dt = dt
         self._count = 0
         self._device = torch.device('cpu')
 
@@ -78,12 +84,17 @@ class ActionNoise(Noise): # pylint: disable=too-few-public-methods
                  theta: float,
                  sigma: float,
                  dt: float,
+                 noscale: bool,
                  sigma_decay: Optional[Callable[[int], float]] = None) -> None:
         self.noise = torch.empty(())
         self._theta = theta
         self._sigma = sigma
         self._sigma_decay = sigma_decay
-        self._dt = dt
+        ref_dt = .02
+        if noscale:
+            self._dt = ref_dt
+        else:
+            self._dt = dt
         self._count = 0
         self._device = torch.device('cpu')
 

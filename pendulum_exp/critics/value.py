@@ -13,21 +13,29 @@ from nn import soft_update
 class ValueCritic(CompoundStateful, Critic):
     def __init__(self,
                  dt: float, gamma: float, lr: float, optimizer: str,
-                 q_function: ParametricFunction, tau: float) -> None:
+                 q_function: ParametricFunction, tau: float, noscale: bool) -> None:
         CompoundStateful.__init__(self)
         self._reference_obs: Tensor = None
         self._q_function = q_function
         self._target_q_function = copy.deepcopy(self._q_function)
         self._tau = tau
 
+        ref_dt = 0.02
+        if noscale:
+            self._gamma = gamma ** (dt / ref_dt)
+        else:
+            self._gamma = gamma
+
+        if noscale:
+            self._dt = ref_dt
+        else:
+            self._dt = dt
+
         self._q_optimizer = \
             setup_optimizer(self._q_function.parameters(),
                             opt_name=optimizer, lr=lr, dt=dt,
                             inverse_gradient_magnitude=dt,
                             weight_decay=0)
-
-        self._dt = dt
-        self._gamma = gamma
 
         self._device = 'cpu'
 
@@ -89,7 +97,7 @@ class ValueCritic(CompoundStateful, Critic):
     def configure(dt: float, gamma: float, lr: float, optimizer: str,
                   action_space: Space, observation_space: Space,
                   nb_layers: int, hidden_size: int, normalize: bool,
-                  tau: float, **kwargs):
+                  tau: float, noscale: bool, **kwargs):
         assert isinstance(observation_space, Box)
         nb_state_feats = observation_space.shape[-1]
         net_dict = dict(nb_layers=nb_layers, hidden_size=hidden_size)
@@ -104,4 +112,4 @@ class ValueCritic(CompoundStateful, Critic):
                 **net_dict)
         if normalize:
             q_function = NormalizedMLP(q_function)
-        return ValueCritic(dt, gamma, lr, optimizer, q_function, tau)
+        return ValueCritic(dt, gamma, lr, optimizer, q_function, tau, noscale)
