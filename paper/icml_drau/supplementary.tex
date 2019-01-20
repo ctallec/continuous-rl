@@ -1,0 +1,53 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Theorem}
+\input{macros.tex}
+
+\begin{document}
+\section{Proofs}
+We hereby give proofs for all the results presented in the paper.
+The first result presented is a proof of convergence for discretized
+trajectories.
+\begin{theorem}
+	Let $F: \cal{S} \times \cal{A} \rightarrow \bb{R}^n$ and
+	$\pi: \cal{S} \rightarrow \cal{A}$ be the dynamic and policy
+	functions. Assume that $s \rightarrow F(s, \pi(s))$ is 
+	$\cal{C}^1$ and $K$-lipschitz. By the 
+	a 
+
+	\label{th:traj-conv}
+\end{theorem}
+\begin{proof}
+	\input{proof_traj.tex}
+\end{proof}
+\begin{theorem}
+	Under suitable assumptions \TODO{ref appendix}, for all $s \in {\cal
+	S}$, one has
+	%\begin{equation}
+	%\label{eq:conv-value}
+	$V^\pi_\deltat(s) = V^\pi(s) + \bigO(\deltat)$
+	%\end{equation}
+	when $\deltat\to 0$.
+	\label{th:conv-value}
+\end{theorem}
+\begin{proof}
+	\input{proof_conv_value.tex}
+\end{proof}
+\begin{theorem}
+	$A^\pi_\deltat$ convergence theorem.
+\end{theorem}
+\begin{proof}
+	\input{proof_conv_adv.tex}
+\end{proof}
+\begin{theorem}
+	Discrete parameter trajectories converge to continuous trajectories.
+\end{theorem}
+\begin{proof}
+	\input{proof_conv_params.tex}
+\end{proof}
+\section{Implementation details}
+\end{document}
