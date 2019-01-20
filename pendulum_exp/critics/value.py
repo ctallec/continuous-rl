@@ -27,14 +27,15 @@ class ValueCritic(CompoundStateful, Critic):
             self._gamma = gamma
 
         if noscale:
+            dt = ref_dt
             self._dt = ref_dt
         else:
             self._dt = dt
 
         self._q_optimizer = \
             setup_optimizer(self._q_function.parameters(),
-                            opt_name=optimizer, lr=lr, dt=dt,
-                            inverse_gradient_magnitude=dt,
+                            opt_name=optimizer, lr=lr, dt=self._dt,
+                            inverse_gradient_magnitude=self._dt,
                             weight_decay=0)
 
         self._device = 'cpu'
