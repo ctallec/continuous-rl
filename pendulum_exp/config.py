@@ -17,7 +17,7 @@ def configure(args):
     noise = setup_noise(
         noise_type=args.noise_type, sigma=args.sigma,
         theta=args.theta, dt=args.dt, sigma_decay=lambda _: 1.,
-        action_space=eval_env.action_space)
+        action_space=eval_env.action_space, noscale=args.noscale)
 
     actor_type, critic_type = args.algo.split('_')
 
@@ -26,7 +26,7 @@ def configure(args):
         action_space=eval_env.action_space, observation_space=eval_env.observation_space,
         nb_layers=args.nb_layers, hidden_size=args.hidden_size,
         normalize=args.normalize_state, weight_decay=args.weight_decay, noise=noise,
-        tau=args.tau, use_reference=not args.noreference
+        tau=args.tau, use_reference=not args.noreference, noscale=args.noscale
     )
 
     critic_cls = {
