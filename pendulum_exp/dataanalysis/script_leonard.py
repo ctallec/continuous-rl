@@ -7,10 +7,10 @@ from dataloader import loader_leonard, ExperimentData
 from plots import plot_learning_curves
 
 # 
-# start_date = datetime.strptime('2019_01_14_10_22_54', "%Y_%m_%d_%H_%M_%S")
+start_date = datetime.strptime('2019_01_14_10_22_54', "%Y_%m_%d_%H_%M_%S")
 # stop_date = datetime.strptime('2019_01_14_10_22_55', "%Y_%m_%d_%H_%M_%S")
 
-start_date = 'last'
+# start_date = 'last'
 stop_date = None
 runlist = loader_leonard('/private/home/leonardb/workdir', 'mujoco_continuous', 
     start_date=start_date, stop_date=stop_date)
@@ -19,8 +19,8 @@ expdata = ExperimentData(runlist)
 
 print(expdata.deltakeys)
 
-# expdata_ant = expdata.filter_settings(lambda s: s['env_id'] == 'ant')
-# plot_learning_curves(expdata_ant, ['Return', 'Return'], 'ant', gtype='run_std', mint=0, maxt=20)
+expdata_ant = expdata.filter_settings(lambda s: s['env_id'] == 'ant')
+plot_learning_curves(expdata_ant, ['Return', 'Return'], 'ant', gtype='run_std', mint=0, maxt=20)
 
 # expdata_cartpole = expdata.filter_settings(lambda s: s['env_id'] == 'cartpole')
 # plot_learning_curves(expdata_cartpole, ['Return', 'Return'], 'cartpole', gtype='run_std', mint=0, maxt=20)

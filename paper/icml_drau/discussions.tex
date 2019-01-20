@@ -1,56 +1,67 @@
 %! TEX root = icml_drau.tex
-\section{Discussions}
+\section{Discussion}
 \label{sec:discussions}
-The method derived in this work seems yield improved robustness to time discretization on 
-various environments, e.g. pendulum swing up, or simple locomotion tasks.
-However on certain environments, there is still much room for improvment. In what follows,
-we identify some of the issues that could explain this theoretical/practical discrepancy.
 
-\paragraph{Regularity of the value function}~In all of our proofs, $V^\pi$ is
-assumed to be continuously differentiable for all $\pi$.  This is a strong
-hypothesis that is not always verified in practice. Very simple environments
-break this hypothesis, such as for instance, the pendulum swing up environment,
-with pendulum height as reward and torque as action.  Indeed, assume that $\pi$
-is the optimal policy for the pendulum swing up environment, with state
-representation $(\theta, \dot{\theta})$. The state space for this environment
+The method derived in this work seems to yield improved robustness to
+time discretization on various environments, e.g. pendulum swing up, or
+simple locomotion tasks.  However on certain environments, there is still
+room for improvment. In what follows, we identify some of the issues
+that could explain this theoretical/practical discrepancy.
+
+\paragraph{Smoothness of the value function.} In all of our proofs, $V^\pi$ is
+assumed to be continuously differentiable for all $\pi$.  This %is a strong
+hypothesis is not always satisfied in practice. Very simple environments
+break this hypothesis, such as the pendulum swing-up environment,
+with pendulum height as reward and torque as action.  Indeed, 
+% assume that $\pi$
+% is the optimal policy for the pendulum swing-up environment, with state
+% representation $(\theta, \dot{\theta})$. 
+the state space $(\theta, \dot{\theta})$ for this environment
 can be partitioned into two subspaces $\mathcal{G}$ and $\mathcal{B}$, with
-$\mathcal{G}$ the subspace where when following the optimal policy, the
-pendulum can be swang up without crossing the $y$-axis, and $\mathcal{B}$ where
-it have to cross the $y$-axis. The difference of V-function between a point in
+$\mathcal{G}$ the subspace where the optimal policy 
+can swing up the pendulum without crossing the $y$-axis, and $\mathcal{B}$ where
+it has to cross the $y$-axis. The difference of $V$-function between a point in
 $\mathcal{G}$ and a point in $\mathcal{B}$ is lower bounded by a finite
-quantity $M$. Besides, one can find two points $s_1 \in \mathcal{G}$ and $s_2 \in \mathcal{B}$
-such that $s_1$ and $s_2$ are arbitrarily close. Consequently, $V^\pi$ is
-discontinuous on the frontier, which results in non infinitesimal advantages
+quantity. 
+%Besides, one can find two points $s_1 \in \mathcal{G}$ and $s_2 \in \mathcal{B}$
+%such that $s_1$ and $s_2$ are arbitrarily close.
+Consequently, the value function is
+discontinuous on the frontier between $\mathcal{G}$ and $\mathcal{B}$, which results in non infinitesimal advantages
 for actions taken on the frontier. \TODO{Non infinitesimal advantages are found,
-	more generally, as soon as a given policy has different regimes, depending on
-	where it starts in state space. For such policies, at the frontier between two regimes,
-the value function can be discontinuous, resulting in non infinitesimal advantages.}
+more generally, as soon as a given policy has different regimes depending on
+where it starts in state space. For such policies the value
+function is typically discontinuous at the frontier between two
+regimes, resulting in non infinitesimal advantages. The
+continuous-time DAU properties would only hold almost-everywhere.}
 
 \paragraph{Memory buffer size scalings}~Thm.~\ref{th:cont-params} is stated for
 transitions sampled sequentially from a fixed infinite size sequence. In practice,
 transitions are sampled from a memory buffer, to prevent excessive correlations.
-The memory buffer used is a fixed size circular buffer, and is
-filled with samples coming from a single infinite exploratory trajectory. In
+The memory buffer used is a fixed size circular buffer, filled
+with samples from a single infinite exploratory trajectory. In
 our experiments, the same buffer size is used for all time discretization. When
 $\deltat$ goes to $0$, this corresponds to learning nearly online on the
 infinite sequence, since the buffer will only contain examples that are very
-close temporally to the end of the sequence in physical time. While the resulting
-algorithm \TODO{kind of} converges to a continuous time limit, it is still not
+close temporally to the end of the sequence in physical time. \TODO{this
+contradicts the use of the buffer against correlations} While the resulting
+algorithm converges to a continuous time limit, in the strictest sense it is not
 time discretization invariant, as the freshness of samples in the buffer will
 vary with the time discretization.
 A different choice would be to scale the size of the buffer by a factor of
 $\frac{1}{\deltat}$. This would amount to always learning on the same physical time interval of
-the trajectory. Our analysis, however, does not cover this case.
+the trajectory. Our theoretical analysis does not cover this case.
+\TODO{a bit too many details here?}
 
-\paragraph{Near continuous time reinforcement learning and RMSprop}~RMSprop~\cite{rmsprop}
-estimates a batched version of the second momentum of gradients using moving
-averages, and divides gradient steps by the square root of this estimate. In
-deterministic environments, gradient noise typically scales as $\bigO(1)$ in
-term of $\deltat$, as seen in Eq.~\eqref{eq:approx_bellman_A}.  Consequently, RMSprop
-preconditioning have no effect on the order of magnitude of required learning
-rates. However, in near continuous stochastic environments, as in
-Eq.~\ref{eq:sde}, variance of the gradient noise typically scales as
-$\bigO\left(\frac{1}{\deltat}\right)$. If batch size does not depend on
-$\deltat$, RMSprop preconditioning thus multiplies gradients by a factor $\bigO(\sqrt{\deltat})$,
-and learning rates need only be scaled as $\alpha \sqrt{\deltat}$ instead of
-$\alpha \deltat$.
+\paragraph{Near continuous time reinforcement learning and RMSprop.} RMSprop~\cite{rmsprop}
+estimates a batched version of the second moment of gradients via moving
+averages, and divides gradient steps by the square root of this estimate.
+This may interact with the learning rate scaling discussed above. In
+deterministic environments, gradients typically scale as $\bigO(1)$ in
+term of $\deltat$, as seen in \eqref{eq:approx_bellman_A}.  In that case, RMSprop
+preconditioning has no effect on the suitable order of magnitude for learning
+rates. However, in near continuous \emph{stochastic} environments (Eq.~\ref{eq:sde}), variance of the gradients typically scales as
+$\bigO\left(\frac{1}{\deltat}\right)$. With a fixed batch size,
+RMSprop will multiply gradients by a factor $\bigO(\sqrt{\deltat})$. In
+that case,
+learning rates need only be scaled as $\alpha \,\sqrt{\deltat}$ instead of
+$\alpha \,\deltat$.
