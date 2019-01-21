@@ -7,7 +7,7 @@ from dataloader import loader_leonard, ExperimentData
 from plots import plot_learning_curves
 
 # 
-start_date = datetime.strptime('2019_01_14_10_22_54', "%Y_%m_%d_%H_%M_%S")
+start_date = datetime.strptime('2019_01_20_06_09_29', "%Y_%m_%d_%H_%M_%S")
 # stop_date = datetime.strptime('2019_01_14_10_22_55', "%Y_%m_%d_%H_%M_%S")
 
 # start_date = 'last'
@@ -27,6 +27,10 @@ plot_learning_curves(expdata_ant, ['Return', 'Return'], 'ant', gtype='run_std', 
 
 expdata_cheetah = expdata.filter_settings(lambda s: s['env_id'] == 'half_cheetah')
 plot_learning_curves(expdata_cheetah, ['Return', 'Return'], 'cheetah', gtype='run_std', mint=0, maxt=20)
+
+expdata_bipedal = expdata.filter_settings(lambda s: s['env_id'] == 'bipedal_walker')
+plot_learning_curves(expdata_cheetah, ['Return'], 'bipedal_walker', gtype='run_std', mint=0, maxt=20)
+
 
 
 # expdata_tau = expdata.filter_settings(lambda s: s['algo'] == 'discrete_value')
