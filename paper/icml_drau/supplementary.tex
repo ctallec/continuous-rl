@@ -1,0 +1,72 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{xcolor}
+
+\newtheorem{theorem}{Theorem}
+\input{macros.tex}
+
+\begin{document}
+\section{Proofs}
+We hereby give proofs for all the results presented in the paper.
+The first result presented is a proof of convergence for discretized
+trajectories.
+\begin{theorem}
+	Let $F: {\cal S} \times {\cal A} \rightarrow \bb{R}^n$ and $\pi: {\cal S}
+	\rightarrow {\cal A}$ be the dynamic and policy functions. Assume that,
+	for any $a$, $s \rightarrow F(s, a)$ and $s \rightarrow F(s, \pi(s))$
+	are ${\cal C}^1$, bounded and $K$-lipschitz.  For
+	a given $s_0$, define the trajectory $(s_t)_{t\geq 0}$ as the unique
+	solution of the differential equation
+	\begin{equation}
+		\frac{ds_t}{dt} = F(s_t, \pi(s_t)).
+		\label{eq:diff}
+	\end{equation}
+	For any $\deltat > 0$, define the discretized trajectory
+	$(s_\deltat^k)_k$ recurrently as $s_\deltat^0 = s_0$,
+	$s_\deltat^{k + 1}$ is the value at time $\deltat$ of
+	the unique solution of
+	\begin{equation}
+		\frac{d\tilde{s}_t}{dt} = F(\tilde{s}_t, \pi(s_\deltat^k))
+	\end{equation}
+	with initial point $s_\deltat^k$.
+	Then, for every $t \geq 0$
+	\begin{equation}
+		\|s_t - s_\deltat^{\lfloor \frac{t}{\deltat} \rfloor}\|
+		\leq 
+	\end{equation}
+	\label{th:traj-conv}
+\end{theorem}
+\begin{proof}
+	\input{proof_traj.tex}
+\end{proof}
+\begin{theorem}
+	Under suitable assumptions \TODO{ref appendix}, for all $s \in {\cal
+	S}$, one has
+	%\begin{equation}
+	%\label{eq:conv-value}
+	$V^\pi_\deltat(s) = V^\pi(s) + \bigO(\deltat)$
+	%\end{equation}
+	when $\deltat\to 0$.
+	\label{th:conv-value}
+\end{theorem}
+\begin{proof}
+	\input{proof_conv_value.tex}
+\end{proof}
+\begin{theorem}
+	$A^\pi_\deltat$ convergence theorem.
+\end{theorem}
+\begin{proof}
+	\input{proof_conv_adv.tex}
+\end{proof}
+\begin{theorem}
+	Discrete parameter trajectories converge to continuous trajectories.
+\end{theorem}
+\begin{proof}
+	\input{proof_conv_params.tex}
+\end{proof}
+\section{Implementation details}
+\end{document}
