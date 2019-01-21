@@ -1,4 +1,4 @@
-%! TEX root = icml_drau.tex
+%! TEX root = supplementary.tex
 For any $k$, define
 \begin{equation}
 	e_\deltat^k = \|s_\deltat^k - s_{\deltat k}\|.
@@ -28,5 +28,15 @@ As $e_\deltat^0 = 0$, this translates to
 \end{align}
 Consequently,
 \begin{equation}
-	e_\deltat^\lfloor t / \deltat \rfloor \leq (e^{K(t + \deltat)} - 1) \deltat \frac{C}{K}
+	e_\deltat^{\lfloor t / \deltat \rfloor} \leq (e^{K(t + \deltat)} - 1) \deltat \frac{C}{K}.
+	\label{eq:bound_err}
+\end{equation}
+Finally, by boundedness, of $s \rightarrow F(s, \pi(s))$, there exists $C'$ such that
+\begin{equation}
+	\|s_{\deltat\lfloor t / \deltat \rfloor} - s_t \| \leq \deltat C'.
+	\label{eq:close_s}
+\end{equation}
+Combining Eq.~\eqref{eq:close_s} with Eq.~\eqref{eq:bound_err}, one can find $C''$ such that
+\begin{equation}
+	\|s_t - s_\deltat^{\lfloor t / \deltat \rfloor}\| \leq \deltat \frac{C''}{K} e^{Kt}.
 \end{equation}

@@ -33,16 +33,20 @@ trajectories.
 		\frac{d\tilde{s}_t}{dt} = F(\tilde{s}_t, \pi(s_\deltat^k))
 	\end{equation}
 	with initial point $s_\deltat^k$.
-	Then, for every $t \geq 0$
+	Then, there exists $C > 0$ such that, for every $t \geq 0$
 	\begin{equation}
 		\|s_t - s_\deltat^{\lfloor \frac{t}{\deltat} \rfloor}\|
-		\leq 
+		\leq \deltat \frac{C}{K}e^{Kt}.
 	\end{equation}
+	Notably, discretized trajectories converge pointwise to continuous trajectories.
 	\label{th:traj-conv}
 \end{theorem}
 \begin{proof}
 	\input{proof_traj.tex}
 \end{proof}
+In what follows, we will assume that the reward function $r: {\cal S} \times {\cal A} \rightarrow \bb{R}$
+is bounded, to ensure existence of $V^\pi$ and $V^\pi_\deltat$ for all $\deltat$. We further assume that
+both $V^\pi$ and $V^\pi_\deltat$ are continuously differentiable, and that 
 \begin{theorem}
 	Under suitable assumptions \TODO{ref appendix}, for all $s \in {\cal
 	S}$, one has
