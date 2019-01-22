@@ -127,8 +127,11 @@ A necessary condition for robustness of an algorithm for
 near-continuous time MDPs is 
 to remain viable when $\deltat \rightarrow 0$. Thus we will try to
 make sure the various quantities involved converge to meaningful
-limits when $\deltat\to 0$. The proofs and technical assumptions for the
-formal statements below can be found in the supplementary material.
+limits when $\deltat\to 0$. 
+
+We give semi-formal statements below; the full statements, proofs, and
+technical assumptions (typically, differentiability assumptions)
+can be found in the supplementary material.
 
 %         The first step in that direction is to check that the discretized
 %           trajectories converge to the continuous ones. 
@@ -307,15 +310,17 @@ namely,
 When the timestep tends to $0$, one converges to the other.
   \begin{theorem}
     \label{th:conv-value}
-    Assume that $r: {\cal S} \times {\cal A} \rightarrow \bb R$ is bounded, and
-    that $s \mapsto r(s, \pi(s))$ is lipschitz continuous. Then
-    for all $s \in {\cal S}$, one has
-    %\begin{equation}
-    %\label{eq:conv-value}
-    $V^\pi_\deltat(s) = V^\pi(s) + \smallo(\deltat)$
-    %\end{equation}
-    when $\deltat\to 0$.
-  \end{theorem}
+%     Assume that $r: {\cal S} \times {\cal A} \rightarrow \bb R$ is bounded, and
+%     that $s \mapsto r(s, \pi(s))$ is lipschitz continuous. Then
+%     for all $s \in {\cal S}$, one has
+%     %\begin{equation}
+%     %\label{eq:conv-value}
+%     $V^\pi_\deltat(s) = V^\pi(s) + \smallo(\deltat)$
+%     %\end{equation}
+%     when $\deltat\to 0$.
+Under suitable smoothness assumptions, $V^\pi_\deltat(s)$ converges to
+$V^\pi(s)$ when $\deltat\to 0$.
+   \end{theorem}
 
 \subsection{There is No $Q$-Function in Continuous Time}
 
@@ -330,6 +335,7 @@ This argument appears informally in \cite{adv_upd}.
 Formally:
 \begin{theorem}
   \label{th:q-cont}
+  Under suitable smoothness assumptions,
 The action-value function of a near-continuous MDP is related to its
 value function via
 % Let $\pi$ be a deterministic policy such that for all $\deltat$, $V^\pi_\deltat$ is continuously
@@ -338,8 +344,7 @@ value function via
 	\label{eq:q-discr}
 	Q^\pi_\deltat(s, a) = V^\pi_\deltat(s) + \bigO\left(\deltat\right)
 \end{equation}
-when $\deltat \to 0$ for every $(s,a)$, under suitable technical
-assumptions.
+when $\deltat \to 0$ for every $(s,a)$.
 \end{theorem}
 % Consider a discretization of Eq.~\eqref{eq:cont_bell} with time interval
 % $\deltat \ll~1$, Ito's lemma yield
