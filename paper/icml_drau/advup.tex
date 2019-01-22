@@ -116,16 +116,20 @@ A^\pi_\deltat$ and $V = V^\pi_\deltat$: indeed \TODO{keep or  leave as
 an exercise?}
 \begin{align}
 	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat}\\
-		    &= \frac{Q(s,a) - Q(s, \pi(s))}{\deltat}\\
-		    &= A(s, a).
+		    &= \frac{Q(s,a) - Q(s, \pi(s))}{\deltat}
+		    %\\ &
+		    = A(s, a).
 \end{align}
-In the spirit of~\cite{dueling_nets}, this condition is enforced by writing $A$ as
+In the spirit of~\cite{dueling_nets}, this condition is enforced by
+parameterizing $A$ through another function $\bar{A}$ and setting
 \begin{equation}
 \label{eq:Aparam}
 	A(s, a) \deq \bar{A}(s, a) - \bar{A}(s, \pi(s)).
 \end{equation}
-With this parameterization, one can hope to learn an approximation of $A^\pi$,
-from which a proper ranking of actions can be derived for any $\deltat$.
+
+This approach will lead to $\deltat$-robust algorithms for
+approximating $A^\pi$, from which a ranking of actions can be
+derived.
 
 \subsection{Timestep-Invariant Exploration}
 \label{subsec:explo}
