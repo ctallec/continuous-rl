@@ -127,7 +127,8 @@ A necessary condition for robustness of an algorithm for
 near-continuous time MDPs is 
 to remain viable when $\deltat \rightarrow 0$. Thus we will try to
 make sure the various quantities involved converge to meaningful
-limits when $\deltat\to 0$. \TODO{Formal statements are made in the following section. Proofs and technical assumptions can be found in the supplementary material.}
+limits when $\deltat\to 0$. The proofs and technical assumptions for the
+formal statements below can be found in the supplementary material.
 
 %         The first step in that direction is to check that the discretized
 %           trajectories converge to the continuous ones. 
@@ -251,7 +252,7 @@ algorithmic time horizon, namely
           %= - \frac{1}{\log \gamma} + \bigO(\deltat)
           \approx \frac{1}{1-\gamma},
         \end{equation}
-which is thus stable when $\deltat\to 0$. \TODO{We need to add that $\gamma$ is close to 1}
+which is thus stable when $\deltat\to 0$. 
 On the other hand,
 if $\gamma_\deltat$ was left constant
 as $\deltat$ goes to $0$, the corresponding time horizon in physical time
@@ -307,7 +308,7 @@ When the timestep tends to $0$, one converges to the other.
   \begin{theorem}
     \label{th:conv-value}
     Assume that $r: {\cal S} \times {\cal A} \rightarrow \bb R$ is bounded, and
-    that $s \rightarrow r(s, \pi(s))$ is lipschitz continuous, then
+    that $s \mapsto r(s, \pi(s))$ is lipschitz continuous. Then
     for all $s \in {\cal S}$, one has
     %\begin{equation}
     %\label{eq:conv-value}
