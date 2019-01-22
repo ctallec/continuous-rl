@@ -5,7 +5,8 @@ For any $k$, define
 \begin{equation}
 	e_\deltat^k = \|s_\deltat^k - s_{\deltat k}\|.
 \end{equation}
-The Taylor integral formula gives \TODO{explain piecewise $C^2$}
+Let $\tilde s_t$ be the solution of Eq.~\eqref{eq:diff_2} with initial state $s^k_\delta$. This $\tilde s_t$ is ${\cal
+C}^2$ on $[0, \deltat]$. Consequently, the Taylor integral formula gives
 \begin{align}
 	s_\deltat^{k + 1} &= s_\deltat^k + F(s_\deltat^k, \pi(s_\deltat^k)) \deltat +
 	\int_{0}^\deltat (\deltat - t) \frac{d^2 \tilde{s}_t}{dt^2} dt\\
