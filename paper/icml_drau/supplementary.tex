@@ -13,11 +13,11 @@
 
 \begin{document}
 \section{Proofs}
-We hereby give proofs for all the results presented in the paper.
+We now give proofs for all the results presented in the paper.
 The first result presented is a proof of convergence for discretized
 trajectories.
 \begin{theorem}
-	Let $F: {\cal S} \times {\cal A} \rightarrow \bb{R}^n$ and $\pi: {\cal S}
+	Let $F\from {\cal S} \times {\cal A} \rightarrow \bb{R}^n$ and $\pi\from {\cal S}
 	\rightarrow {\cal A}$ be the dynamic and policy functions. Assume that,
 	for any $a$, $s \rightarrow F(s, a)$ and $s \rightarrow F(s, \pi(s))$
 	are ${\cal C}^1$, bounded and $K$-lipschitz.  For
@@ -28,7 +28,8 @@ trajectories.
 		\label{eq:diff}
 	\end{equation}
 	For any $\deltat > 0$, define the discretized trajectory
-	$(s_\deltat^k)_k$ recurrently as $s_\deltat^0 = s_0$,
+	$(s_\deltat^k)_k$ which amounts to maintaining each action for a
+	time interval $\deltat$; it is defined by induction as $s_\deltat^0 = s_0$,
 	$s_\deltat^{k + 1}$ is the value at time $\deltat$ of
 	the unique solution of
 	\begin{equation}
@@ -40,23 +41,24 @@ trajectories.
 		\|s_t - s_\deltat^{\lfloor \frac{t}{\deltat} \rfloor}\|
 		\leq \deltat \frac{C}{K}e^{Kt}.
 	\end{equation}
-	Notably, discretized trajectories converge pointwise to continuous trajectories.
+	Therefore, discretized trajectories converge pointwise to continuous trajectories.
 	\label{th:traj-conv}
 \end{theorem}
 \begin{proof}
 	\input{proof_traj.tex}
 \end{proof}
-In what follows, we will assume that the reward function $r: {\cal S} \times {\cal A} \rightarrow \bb{R}$
+
+In what follows, we assume that the continuous-time reward function $r\from {\cal S} \times {\cal A} \rightarrow \bb{R}$
 is bounded, to ensure existence of $V^\pi$ and $V^\pi_\deltat$ for all $\deltat$
 .\begin{theorem}
-	Assume that $r: {\cal S} \times {\cal A} \rightarrow \bb R$ is bounded, and
-	that $s \rightarrow r(s, \pi(s))$ is $L_r$-lipschitz continuous, then
+	Assume that $r\from {\cal S} \times {\cal A} \rightarrow \bb R$ is bounded, and
+	that $s \rightarrow r(s, \pi(s))$ is $L_r$-Lipschitz continuous, then
 	for all $s \in {\cal S}$, one has
 	%\begin{equation}
 	%\label{eq:conv-value}
 	$V^\pi_\deltat(s) = V^\pi(s) + \smallo(\deltat)$
 	%\end{equation}
-	when $\deltat\to 0$.
+	Lhen $\deltat\to 0$.
 	\label{th:conv-value}
 \end{theorem}
 \begin{proof}
@@ -69,7 +71,7 @@ hessian of $V^\pi_\deltat$ w.r.t. $s$ are uniformly bounded in both $s$ and $\de
 We also assume convergence of $\partial_s V^\pi_\deltat(s)$ to $\partial_s V^\pi(s)$ for
 all $s$.
 \begin{theorem}
-	Under the above hypothesis, there exists $A^\pi: {\cal S} \rightarrow
+	Under the hypothesis above, there exists $A^\pi\from {\cal S} \rightarrow
 	\bb{R}$ such that $A^\pi_\deltat$ converges pointwise to $A^\pi$ as
 	$\deltat$ goes to $0$.
 \end{theorem}
