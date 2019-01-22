@@ -24,10 +24,11 @@ Therefore:
   V^\pi_\deltat(s) = \int_t \gamma^t r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t))dt + \bigO(\deltat)
 \end{align}
 
-We know have
+We now have
 \begin{align}
-  |V^\pi_\deltat(s) - V^\pi(s)|  &= | \int_{t=0}^\infty\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(\tilde s_t, \pi(s_t)) \right)dt | + \bigO(\deltat) \\
-  &= | \int_{t=0}^T\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(\tilde s_t, \pi(s_t)) \right)dt | + | \int_{t=T}^\infty\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(\tilde s_t, \pi(s_t)) \right)dt | + \bigO(\deltat)
+  |V^\pi_\deltat(s) - V^\pi(s)|  &= | \int_{t=0}^\infty\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(s_t, \pi(s_t)) \right)dt | + \bigO(\deltat) \\
+				 &= | \int_{t=0}^T\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(s_t, \pi(s_t)) \right)dt | \\
+				 &+ | \int_{t=T}^\infty\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(s_t, \pi(s_t)) \right)dt | + \bigO(\deltat)
 \end{align}
 
 The second term can be bounded by the maximum of the reward:
@@ -38,20 +39,20 @@ The second term can be bounded by the maximum of the reward:
 
 The first term can be bounded by using:
 \begin{align}
-  | \int_{t=0}^T\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(\tilde s_t, \pi(s_t)) \right)dt | \leq& \int_{t=0}^T\gamma^t L_r \| s_\deltat^t - \tilde s_\deltat^t \| dt \\
+  | \int_{t=0}^T\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(s_t, \pi(s_t)) \right)dt | \leq& \int_{t=0}^T\gamma^t L_r \| s_t - \tilde s_\deltat^t \| dt \\
   \leq& \int_{t=0}^T L_r \frac{C \deltat}{K} \exp((K + \log \gamma)t ) dt \\
   \leq&  \frac{L_r C}{K(K + \log \gamma)}\exp((K + \log \gamma)T ) \deltat
    \label{eq:v-secondpart}
 \end{align}
 We use $T = -\frac{1}{K}\log(\deltat)$. By plugging into Eq. (\ref{eq:v-firstpart}), we have:
 \begin{align}
-  | \int_{t=T}^\infty\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(\tilde s_t, \pi(s_t)) \right)dt | = \bigO( \deltat^{-\log\gamma})
+	| \int_{t=T}^\infty\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(s_t, \pi(s_t)) \right)dt | = \bigO( \deltat^{-\log\gamma})
 \end{align}
 By plugging it into equation (\ref{eq:v-secondpart}), we have:
 \begin{align}
-  | \int_{t=0}^T\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(\tilde s_t, \pi(s_t)) \right)dt | = \bigO( \deltat^{-\frac{\log\gamma}{K}})
+  | \int_{t=0}^T\gamma^t \left(r(\tilde s_\deltat^t, \pi(\tilde s_\deltat^t)) - r(s_t, \pi(s_t)) \right)dt | = \bigO( \deltat^{-\frac{\log\gamma}{K}})
 \end{align}
-By defining $a = \min(-\frac{\log\gamma}{K}, -\frac{\log\gamma}) > 1$, we have our result.
+By defining $a = \min(-\frac{\log\gamma}{K}, -\log\gamma) > 1$, we have our result.
 %%% Local Variables:
 %%% TeX-master: "icml_drau"
 %%% End:

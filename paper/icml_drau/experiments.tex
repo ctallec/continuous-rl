@@ -10,11 +10,16 @@ discrete action settings. \TODO{(We only test off-policy
 algorithms.)}
 
 In all settings, we use the learning algorithm described in
-Alg.~\ref{alg:dau} and \TODO{supplementary, algo 1}. The variants of DDPG and DQN
+Alg.~\ref{alg:dau} and supplementary, Algo 1. The variants of DDPG and DQN
 used are described in the supplementary material, as well as all the hyperparameters
-used. To make comparison fair, we use the properly rescaled discount
+used. To make comparison fair, we tested to different scalings for DDPG and DQN.
+One where we use the properly rescaled discount
 factor $\gamma_\deltat$ and reward $r_\deltat$ from \eqref{eq:def-gamma},
-as well as scaled learning rates, for DDPG and DQN. \TODO{NDY not
+as well as scaled learning rates. One where we only scaled the discount factor
+(to avoid shortsightedness), but left all other hyperaparameters constant
+across time discretizations. Experiments on the latter yielded better result
+and is presented hereby. Experiments on the first variant are presented in the
+supplementary material. \TODO{NDY not
 convincing: precisely because DDPG and DQN are not invariant, they might
 benefit from a different scaling.}
 

@@ -43,9 +43,7 @@ Contrary to the action state value function,
 this
 rescaled advantage function converges when $\deltat\to 0$
 to an action-dependent quantity which, if it can be learned, contains the
-necessary information for policy improvement \TODO{See Thm... in the appendix; we
-should put the theorem in the appendix, because otherwise the theorem is
-just a paraphrase of the previous sentence}.
+necessary information for policy improvement. A formal statement is given in the supplementary material.
 
 
 % \LB{In next equation, tiny detail but I would write $\frac{1}{\deltat}(r\deltat+...)$, easier to read.}
@@ -289,15 +287,15 @@ for a continuous-time equation, thus presumably converging. This is
 actually the only possibility; more precisely,
 
 \begin{theorem}
-	\TODO{We need a bit more details: we probably want to assume that states and actions are
-	drawn from a single fixed trajectory, and that we are learning for a fixed, constant policy.}
-	Let $\eta^V_\deltat = \alpha^V \deltat^\beta$ (resp. $\eta^A \deltat^\beta$) be the learning rate
-	of $V$ (resp. $A$), when training on a single exploratory trajectory. Then
+	\TODO{Assume a continuous action space. Let $(s_t, a_t)_{t\geq 0}$ be a
+	time continuous exploratory trajectory. Let $\pi$ be a sufficiently
+regular policy, and $\bar{A}$ and $\bar{V}$ be regular function approximators.}
+	Let $\eta^V_\deltat = \alpha^V \deltat^\beta$ (resp. $\eta^A = \alpha^A \deltat^\beta$) be the learning rate
+	of $V$ (resp. $\bar{A}$). Then, when learning on $(s_t, a_t)_{t\geq 0}$, 
 	\begin{itemize}
 		\item If $\beta = 1$ the discrete parameter trajectories converge to continuous parameter
 			trajectories as $\deltat$ goes to $0$.
-		\item If $\beta < 1$, parameters grow arbitrarily large in a single timestep as $\deltat$
-			goes to $0$. \TODO{not quite true, in a single
+		\item If $\beta < 1$, parameters grow arbitrarily large in after an arbitrarily small physical time when $\deltat$ goes to $0$. \TODO{not quite true, in a single
 			step the update is bounded. But the parameters
 			become arbitrary large in an arbitrarily small
 			physical time.}

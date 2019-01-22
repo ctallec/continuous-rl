@@ -47,12 +47,14 @@ trajectories.
 	\input{proof_traj.tex}
 \end{proof}
 In what follows, we will assume that the reward function $r: {\cal S} \times {\cal A} \rightarrow \bb{R}$
-is bounded, to ensure existence of $V^\pi$ and $V^\pi_\deltat$ for all $\deltat$.\begin{theorem}
-	Under suitable assumptions \TODO{ref appendix}, for all $s \in {\cal
-	S}$, one has
+is bounded, to ensure existence of $V^\pi$ and $V^\pi_\deltat$ for all $\deltat$
+.\begin{theorem}
+	Assume that $r: {\cal S} \times {\cal A} \rightarrow \bb R$ is bounded, and
+	that $s \rightarrow r(s, \pi(s))$ is $L_r$-lipschitz continuous, then
+	for all $s \in {\cal S}$, one has
 	%\begin{equation}
 	%\label{eq:conv-value}
-	$V^\pi_\deltat(s) = V^\pi(s) + \bigO(\deltat)$
+	$V^\pi_\deltat(s) = V^\pi(s) + \smallo(\deltat)$
 	%\end{equation}
 	when $\deltat\to 0$.
 	\label{th:conv-value}

@@ -1,2 +1,63 @@
-%! TEX root = icml_drau.tex
+%! TEX root = supplementary.tex
+Let $(s_t, a_t)_{t\geq 0}$ be the trajectory on which parameters are
+learnt. To simplify notations, define
+\begin{equation}
+	A_\psi(s, a) = \bar{A}_\psi(s, a) - \bar{A}_\psi(s, \pi(s)).
+\end{equation}
+Define $F$ as
+\begin{align}
+	F^\theta(\theta, \psi, s, a) &= \alpha^V (r(s, a) + \ln(\gamma) V_\theta(s) + \partial_s V_\theta(s) F(s, a) - A_\psi(s, a))\partial_\theta V_\theta(s)\\
+	F^\psi(\theta, \psi, s, a) &= \alpha^A (r(s, a) + \ln(\gamma) V_\theta(s) + \partial_s V_\theta(s) F(s, a) - A_\psi(s, a))\partial_\psi A_\psi(s, a).
+\end{align}
+Both $V$ and $A$ are uniformly lipschitz continuous in $\theta$ and $\psi$, thus
+$F$ is lipschitz continuous.
 
+The discrete equations for parameters updates with learning rates $\alpha^V \deltat^\beta$ and
+$\alpha^A \deltat^\beta$ are
+\begin{align}
+	\delta Q &= r(s_{k \deltat}, a_{k \deltat}) \deltat + 
+		\gamma^\deltat V_{\theta^{k}_\deltat}(s_{(k + 1)\deltat}) - 
+		V_{\theta^k_\deltat}(s_{k\deltat}) - A_\psi(s_{k \deltat}, a_{k \deltat})\\
+	\theta^{k+1}_\deltat &= \theta^k_\deltat + 
+	\alpha^V \deltat^\beta \frac{\delta Q
+	}{\deltat}\partial_\theta V_{\theta^k_\deltat}(s_{k\deltat})\\
+	\psi^{k+1}_\deltat &= \psi^k_\deltat + 
+	\alpha^A \deltat^\beta \frac{\delta Q
+	}{\deltat}
+	\partial_\psi A_{\theta^k_\deltat}(s_{k\deltat}, a_{k\deltat})
+\end{align}
+Under uniform boundedness of the hessian of $s \rightarrow V_\theta(s)$,
+one can show
+\begin{equation}
+	\begin{pmatrix}
+		\theta_\deltat^{k+1} \\
+		\psi_\deltat^{k+1}
+	\end{pmatrix} =
+	\begin{pmatrix}
+		\theta_\deltat^{k} \\
+		\psi_\deltat^{k}
+	\end{pmatrix} + \deltat^\beta F(\theta_\deltat^k, \psi_\deltat^k, s_{k \deltat}, a_{k\deltat}) + \bigO(\deltat^\beta \deltat),
+\end{equation}
+with a $\bigO$ independent of $k$. With the additional hypothesis that the gradient of
+$(s, a) \rightarrow \bar{A}_\psi(s, a)$ is uniformly bounded, we have
+\begin{itemize}
+	\item For $\beta = 1$, a proof schema similar to that of Thm.~\ref{th:traj-conv} shows that
+discrete trajectories converge pointwise to continuous trajectories defined by the differential equation
+\begin{equation}
+	\frac{d}{dt}\begin{pmatrix}
+		\theta_t \\
+		\psi_t
+	\end{pmatrix} =
+	F(\theta_t, \psi_t, s_t, a_t),
+\end{equation}
+which admits unique solutions for all initial parameters, since $F$ is uniformly lipschitz continuous.
+\item Similarly, for $\beta > 1$, the proof schema of Thm.~\ref{th:traj-conv} shows that
+discrete trajectories converge pointwise to continuous trajectories defined by the differential equation
+\begin{equation}
+	\frac{d}{dt}\begin{pmatrix}
+		\theta_t \\
+		\psi_t
+	\end{pmatrix} = 0
+\end{equation}
+and thus that trajectories shrink to a single point as $\deltat$ goes to $0$.
+\end{itemize}
