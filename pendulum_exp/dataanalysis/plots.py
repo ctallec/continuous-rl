@@ -8,7 +8,7 @@ from typing import List
 
 
 def plot_learning_curves(expdata, key_list: List[str], namefile: str,
-                         mint: float = 0, maxt: float = 100, gtype: str = 'time_std'):
+                         mint: float = 0, maxt: float = 100, gtype: str = 'time_std', maxrun=None):
     MIN_DT = 5e-4
     MAX_DT = 5e-2
     plt.style.use('ggplot')
@@ -71,7 +71,7 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
             else:
                 raise ValueError
 
-            timeseq_stats = setting.timeseq(key)
+            timeseq_stats = setting.timeseq(key, maxrun=maxrun)
             if timeseq_stats is None:
                 continue
             timeseq = timeseq_stats['mean']

@@ -3,7 +3,9 @@ import pickle as pkl
 from datetime import datetime
 from typing import List, Callable, Any
 import numpy as np
+import random
 
+import ipdb
 class ExperimentData:
     def __init__(self, runs: List['ExperimentRun']) -> None:
         # experimentrunlist = [ExperimentRun(args_file, logs_file) for args_file, logs_file in argslogs_filelist]
@@ -86,12 +88,20 @@ class ExperimentSetting:
         assert run.args == self.args
         self._runs.append(run)
 
-    def timeseq(self, key: str):
+    def timeseq(self, key: str, maxrun=None):
         # TODO
         if key not in self._runs[0].logs:
             return None
-        timeseqs = {k: [r.logs[key][k] for r in self._runs if k in r.logs[key]]
+        if maxrun is not None and maxrun < len(self._runs):
+            runlist = random.sample(self._runs, maxrun)
+        else:
+            runlist = self._runs
+        
+
+        timeseqs = {k: [r.logs[key][k] for r in runlist if k in r.logs[key]]
                     for k in self._runs[0].logs[key]}
+
+
         stats_seq = {k: {
             'mean': np.mean(t),
             'std': np.std(t),
@@ -105,6 +115,16 @@ class ExperimentSetting:
                     timeseq[k2] = {}
                 timeseq[k2][k1] = stats_seq[k1][k2]
         return timeseq
+
+    def repr_args(self, keys):
+        l = []
+        for k in keys:
+            if k in self.args:
+                l.append(f"{k}:{self.args[k]}")
+            else:
+                l.append(f"{k}:UNDEFINED")
+        return " ; ".join(l)
+            
 
 class ExperimentRun:
     def __init__(self, args_file: str, logs_file: str) -> None:
