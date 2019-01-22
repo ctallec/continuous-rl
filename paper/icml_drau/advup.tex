@@ -264,10 +264,11 @@ The update equations when learning from a transition $(s, a, r, s')$, either fro
 an exploratory trajectory or from a replay buffer~\cite{dqn}, are
 \begin{align}
 	\delta Q_\deltat &\leftarrow A(s, a)\, \deltat - \left(r
-	\,\deltat + \gamma^{\deltat}\, V(s') - V(s)\right)\\
-	\label{eq:approx_deltaQ}
+	\,\deltat + \gamma^{\deltat}\, V(s') - V(s)\right)
+	\label{eq:approx_deltaQ}\\
 	\theta_\deltat &\leftarrow \theta_\deltat + \eta^V_\deltat
-	\,\partial_{\theta} V(s) \,\frac{\delta Q_\deltat}{\deltat}\\
+	\,\partial_{\theta} V(s) \,\frac{\delta Q_\deltat}{\deltat}
+	\label{eq:approx_bellman_V}\\
 	\psi_\deltat &\leftarrow \psi_\deltat + \eta^A_\deltat
 	\,\partial_{\psi} A(s, a) \,\frac{\delta Q_\deltat}{\deltat}.
 	\label{eq:approx_bellman_A}
@@ -296,15 +297,17 @@ $0$.
 This in turn imposes conditions on the scalings of the
 learning rates of algorithms robust to changes of the time discretization.
 
-Informally, in the updates of $\theta$ and $\psi$, the quantity $\delta
+Informally, in the parameter updates
+\eqref{eq:approx_deltaQ}--\eqref{eq:approx_bellman_A}, the quantity $\delta
 Q_\deltat$ is of order $O(\deltat)$, because $s'=s+O(\deltat)$ in a
 near-continuous system. Therefore, $\delta
-Q_\deltat/\deltat$ is of order $O(1)$, so that the gradients used to
-update $\theta$ and $\psi$ are of order $O(1)$. Therefore, if the
+Q_\deltat/\deltat$ is $O(1)$, so that the gradients used to
+update $\theta$ and $\psi$ are $O(1)$. Therefore, if the
 learning rates are of order $\deltat$, one would expect 
 the parameters $\theta$ and $\psi$ to move by $O(\deltat)$ in
 each time interval $\deltat$, thus hopefully converging to smooth
-continuous-time trajectories.
+continuous-time trajectories. The next theorem formally confirms that
+learning rates of order $\deltat$ are the only possibility.
 
 % The updates of $\theta$ and $\psi$ are described in
 % \eqref{eq:approx_bellman_A}.  To have parameter updates that do not explode or shrink to $0$ too
@@ -322,12 +325,13 @@ continuous-time trajectories.
 % 	\frac{\delta Q_\deltat}{\deltat} %+ \smallo\left(\eta^A_\deltat\right).
 % \end{align}
 
-The next theorem confirms this analysis: if we set 
-$\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
-\deltat$, the parameter updates follow a Euler discretization scheme
-for a continuous-time equation and have a well-defined limit behavior. On
-the other hand, with smaller learning rates the parameters do not move,
-and can explode instantaneously with larger learning rates.
+% The next theorem confirms this analysis: with
+% $\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
+% \deltat$, the parameter updates follow a Euler discretization scheme
+% for a continuous-time equation and have a well-defined limit behavior. On
+% the other hand, with smaller learning rates the parameters do not move,
+% and can explode instantaneously with larger learning rates.\TODO{keep? or
+% just say "the next theorem confirms this"?}
 
 \begin{theorem}
 	\label{th:cont-params}
@@ -345,8 +349,10 @@ $\deltat\to 0$:
 	\begin{itemize}
 		\item If $\beta = 1$ the discrete parameter trajectories converge to continuous parameter
 			trajectories.% as $\deltat$ goes to $0$.
-		\item If $\beta>1$ the parameter trajectories become
-		stationary.% as $\deltat$ goes to $0$.
+		\item If $\beta>1$ the parameters stay at their initial
+		values.
+		%trajectories become
+		%stationary.% as $\deltat$ goes to $0$.
 		\item If $\beta < 1$, the parameters can reach infinity
 		in arbitrarily small physical time.%	parameters grow arbitrarily large in after an arbitrarily small physical time when $\deltat$ goes to $0$.
 	\end{itemize}
@@ -360,11 +366,10 @@ $\deltat\to 0$:
 % 	d\psi_t &= (\alpha^A Fdt  + D \dbt)\partial_{\psi} A(s_t, a_t)\nonumber.
 % \end{align}
 
-\TODO{Thus, the right learning rate scaling } results in a fully specified algorithm,
-\emph{Deep Advantage Updating} (DAU).
-Pseudocode for the discrete actions algorithm is given in Alg.~\ref{alg:dau}.
-Pseudocode for continuous actions is given in the supplementary
-material.
+The resulting algorithm with suitable scalings,
+\emph{Deep Advantage Updating} (DAU), is fully specified in Alg.~\ref{alg:dau} for
+discrete actions, and in the supplementary material for continuous
+actions.
 
 %%% Local Variables:
 %%% TeX-master: "icml_drau"
