@@ -28,7 +28,8 @@ If we define $f(s) \deq \E_{a \sim \pi(s)}\left[F(s, a)\right]$, then $f$ is \TO
 
   Therefore, we have $a>0$ such that $\|s_{t + \deltat} - s_t - f(s_t)\deltat\| \leq \|\xi\| + a\deltat^2$
   
-We define $\tilde s_\deltat^{k+1} \deq f(s_\deltat^k)\deltat$. We have:
+We define $\tilde s_\deltat^{k+1} \deq f(s_\deltat^k)\deltat$
+\TODO{SOMETHING MISSING}. We have:
 
 \begin{align}
   \|s_{t+(k+1)\deltat} - \tilde{s}_\deltat^{k+1}\| &\leq
@@ -58,7 +59,7 @@ But $\E\left[\|\xi\|\right] \leq \sqrt{\E\left[\|\xi\|^2\right]} \leq \sigma \de
   \BP\left(\|s_{t} - \tilde{s}_\deltat^{\lfloor t/\deltat \rfloor} \| > \varepsilon \right) & = \bigO(\sqrt \deltat)
 \end{align}
 
-Therefore, the random process $s_t$ converge in probability to $\tilde s$. Furthermore, by a similar argument than in Theorem \TODO{the first one}, we know that the discretized process $\tilde s$ converge to the continuous process defined by $\frac{ds}{dt} = f(s_t)$. We can conclude ou result.
+Therefore, the random process $s_t$ converges in probability to $\tilde s$. Furthermore, by a similar argument than in Theorem \TODO{the first one}, we know that the discretized process $\tilde s$ converge to the continuous process defined by $\frac{ds}{dt} = f(s_t)$. We can conclude ou result.
 
 % We define for all $0 \leq j \leq \lfloor t/\deltat \rfloor$: $\alpha_j = \omega (1+\deltat L_f)^j$, such that $\sum_j \alpha_j = 1$. Then, we have:
 % \begin{align}
