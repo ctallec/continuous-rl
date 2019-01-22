@@ -24,24 +24,21 @@ shortening reaction time, should only improve agent performance.
 Robustness to time discretization is especially relevant in
 \emph{near-continuous} environments, which includes most continuous
 control environments, robotics, and many video games.  
-\TODO{Remove parenthesis.} (We focus on
+We focus on
 near-continuous time because this leads to a clear framework, but the
 approach below would be relevant in any setting in which the advantage of
-any single individual action is small compared to the total return.)%, for instance, long time horizon problems.
+any single individual action is small compared to the total return.%, for instance, long time horizon problems.
 
 Standard approaches based on estimation of state-action
 value functions, such as
 \emph{Deep $Q$-learning} (DQN,~\citealt{dqn}) and \emph{Deep deterministic policy
-gradient} (DDPG,~\citealt{ddpg}) are not at all \TODO{Remove familiar?
-NDY it's not particularly familiar}robust to changes in time discretization. This is shown experimentally in Sec.~\ref{sec:exp}. 
+gradient} (DDPG,~\citealt{ddpg}) are not at all robust to changes in time discretization. This is shown experimentally in Sec.~\ref{sec:exp}. 
 Intuitively, as the discretization timestep
 decreases, the effect of individual actions on the total return decreases
 too: $Q^*(s,a)$ is the value of playing action $a$ then playing optimally,
 and if $a$ is only maintained for a very short time its advantage over
 other actions will be accordingly small. (This continuity effect occurs even with a
-well-adjusted decay factor $\gamma$.) \TODO{Really relevant in the
-introduction? NDY Yes, I predict the first thing some people would say is
-"you just put the wrong gamma, how stupid of you..."} 
+suitably adjusted decay factor $\gamma$.)
 
 The natural framework to study this phenomenon is Continuous time
 reinforcement learning (Sec.~\ref{sec:framework}) \cite{cont_rl,
@@ -49,7 +46,9 @@ adv_upd}. Formally, the effect of a single action vanishes when the
 discretization timestep becomes infinitesimal: there is no
 continuous-time $Q$-function. 
 
-\TODO{Time discretization invariant algo is never  mentioned before. Maybe start by ``We seek a time discretization invariant algorithm. It should ...''} A time discretization invariant algorithm should \TODO{remain viable when the time discretization is small and} in particular admit a
+We are looking for an algorithm that would be as invariant as possible to
+changing the discretization timestep. Such an 
+algorithm should remain viable when this timestep is small, and in particular admit a
 continuous-time
 limit when the discretization timestep goes to $0$.  This
 leads to precise design choices in term of agent architecture, exploration
@@ -67,8 +66,9 @@ Our contribution is threefold:
   \item Our analysis of limit properties in near continuous environments leads to a robust off-policy algorithm. In particular,
     it provides insights on how to design architectures, constrain exploration, and scale learning rates.
   \item We empirically show that standard $Q$-learning methods are not
-  robust to changes in time discretization, exhibiting degraded performance, while our algorithm provides
-  substantial robustness in that domain. \TODO{Remove ``in that domain''?}
+  robust to changes in time discretization, exhibiting degraded
+  performance, while our algorithm demonstrates
+  substantial robustness.
 \end{itemize}
 
 

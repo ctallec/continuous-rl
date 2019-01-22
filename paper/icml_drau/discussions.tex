@@ -52,16 +52,16 @@ $\frac{1}{\deltat}$. This would amount to always learning on the same physical t
 the trajectory. Our theoretical analysis does not cover this case.
 \TODO{a bit too many details here?}
 
-\paragraph{Near continuous time reinforcement learning and RMSprop.} RMSprop~\cite{rmsprop}
+\paragraph{Near continuous time reinforcement learning and RMSProp.} RMSProp~\cite{rmsprop}
 estimates a batched version of the second moment of gradients via moving
 averages, and divides gradient steps by the square root of this estimate.
 This may interact with the learning rate scaling discussed above. In
 deterministic environments, gradients typically scale as $\bigO(1)$ in
-term of $\deltat$, as seen in \eqref{eq:approx_bellman_A}.  In that case, RMSprop
+term of $\deltat$, as seen in \eqref{eq:approx_bellman_A}.  In that case, RMSProp
 preconditioning has no effect on the suitable order of magnitude for learning
 rates. However, in near continuous \emph{stochastic} environments (Eq.~\ref{eq:sde}), variance of the gradients typically scales as
 $\bigO\left(\frac{1}{\deltat}\right)$. With a fixed batch size,
-RMSprop will multiply gradients by a factor $\bigO(\sqrt{\deltat})$. In
+RMSProp will multiply gradients by a factor $\bigO(\sqrt{\deltat})$. In
 that case,
 learning rates need only be scaled as $\alpha \,\sqrt{\deltat}$ instead of
 $\alpha \,\deltat$.
