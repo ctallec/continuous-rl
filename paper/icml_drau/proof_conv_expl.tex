@@ -8,13 +8,13 @@
                     % &= s_t + \sum_{k=1}^{\lfloor \deltat_1/\deltat\rfloor} F(s_{t}, a_k) \deltat + \bigO(\deltat_1^2) + \bigO(\deltat) 
 \end{align}
 
-If we define $f(s) = \E_{a \sim \pi(s)}\left[F(s, a)\right]$, then $f$ is \TODO{smooth enough}. We have: 
+If we define $f(s) \deq \E_{a \sim \pi(s)}\left[F(s, a)\right]$, then $f$ is \TODO{smooth enough}. We have: 
 
   \begin{align}
     s_{t + \deltat}   & = s_t + \sum_{k=1}^{\lfloor 1/\deltat\rfloor} f(s_{t+(k-1)\deltat})\deltat^2 + \sum_{k=1}^{\lfloor 1/\deltat\rfloor} (F(s_{t+(k-1)\deltat^2}, a_k) - f(s_{t+(k-1)\deltat^2}))\deltat^2 + \bigO(\deltat^2)        \\
   \end{align}
 
-  We define $\xi = \sum_{k=1}^{\lfloor 1/\deltat\rfloor} (F(s_{t+(k-1)\deltat^2}, a_k) - f(s_{t+(k-1)\deltat^2}))\deltat^2$. We have:
+  We define $\xi \deq \sum_{k=1}^{\lfloor 1/\deltat\rfloor} (F(s_{t+(k-1)\deltat^2}, a_k) - f(s_{t+(k-1)\deltat^2}))\deltat^2$. We have:
   \begin{align}
     \E[\xi] &= 0 \\
     \E[\|\xi\|^2] &= \bigO(\deltat^3)
@@ -28,7 +28,7 @@ If we define $f(s) = \E_{a \sim \pi(s)}\left[F(s, a)\right]$, then $f$ is \TODO{
 
   Therefore, we have $a>0$ such that $\|s_{t + \deltat} - s_t - f(s_t)\deltat\| \leq \|\xi\| + a\deltat^2$
   
-We define $\tilde s_\deltat^{k+1} = f(s_\deltat^k)\deltat$. We have:
+We define $\tilde s_\deltat^{k+1} \deq f(s_\deltat^k)\deltat$. We have:
 
 \begin{align}
   \|s_{t+(k+1)\deltat} - \tilde{s}_\deltat^{k+1}\| &\leq
@@ -37,11 +37,11 @@ We define $\tilde s_\deltat^{k+1} = f(s_\deltat^k)\deltat$. We have:
 \end{align}
 where $L_f$ is the Lipschitz constant of $f$ \TODO{justify}.
 %We define $w_k = \|s_{t+k\deltat} - \tilde{s}_\deltat^{k}\|$. We have:
-By recurrence, we have:
+By induction, we have:
 \begin{align}
   w_{k+1} \leq \|\xi_k\| + a\deltat^2 + (1+L_f\deltat)\|s_{t+k\deltat} - \tilde{s}_\deltat^{k}\|w_k
 \end{align}
-By recurrence:
+By induction:
 \begin{align}
   \|s_{t} - \tilde{s}_\deltat^{\lfloor t/\deltat \rfloor} \| \leq \frac{a\deltat}{L_f}\exp(L_ft) + \sum_{j=0}^{\lfloor t/\deltat \rfloor}(1+\deltat L_f)^j\|\xi_j\|  
 \end{align}
