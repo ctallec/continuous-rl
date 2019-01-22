@@ -10,28 +10,35 @@ that could explain this theoretical/practical discrepancy.
 
 \paragraph{Smoothness of the value function.} In all of our proofs, $V^\pi$ is
 assumed to be continuously differentiable for all $\pi$.  This %is a strong
-hypothesis is not always satisfied in practice. Very simple environments
-break this hypothesis, such as the pendulum swing-up environment,
-with pendulum height as reward and torque as action.  Indeed, 
-% assume that $\pi$
-% is the optimal policy for the pendulum swing-up environment, with state
-% representation $(\theta, \dot{\theta})$. 
-the state space $(\theta, \dot{\theta})$ for this environment
-can be partitioned into two subspaces $\mathcal{G}$ and $\mathcal{B}$, with
-$\mathcal{G}$ the subspace where the optimal policy 
-can swing up the pendulum without crossing the $y$-axis, and $\mathcal{B}$ where
-it has to cross the $y$-axis. The difference of $V$-function between a point in
-$\mathcal{G}$ and a point in $\mathcal{B}$ is lower bounded by a finite
-quantity. 
-%Besides, one can find two points $s_1 \in \mathcal{G}$ and $s_2 \in \mathcal{B}$
-%such that $s_1$ and $s_2$ are arbitrarily close.
-Consequently, the value function is
-discontinuous on the frontier between $\mathcal{G}$ and $\mathcal{B}$, which results in non infinitesimal advantages
-for actions taken on the frontier. \TODO{Non infinitesimal advantages are found,
+hypothesis is not always satisfied in practice. 
+\TODO{For instance, in the pendulum swing-up environment, depending on initial
+position and momentum, the optimal policy may need to turn round a
+certain number of times before reaching the desired state. At the
+points of state space where the number of turns changes, the value is
+discontinuous.
+% Very simple environments
+% break this hypothesis, such as the pendulum swing-up environment,
+% with pendulum height as reward and torque as action.  Indeed, 
+% % assume that $\pi$
+% % is the optimal policy for the pendulum swing-up environment, with state
+% % representation $(\theta, \dot{\theta})$. 
+% the state space $(\theta, \dot{\theta})$ for this environment
+% can be partitioned into two subspaces $\mathcal{G}$ and $\mathcal{B}$, with
+% $\mathcal{G}$ the subspace where the optimal policy 
+% can swing up the pendulum without crossing the $y$-axis, and $\mathcal{B}$ where
+% it has to cross the $y$-axis. The difference of $V$-function between a point in
+% $\mathcal{G}$ and a point in $\mathcal{B}$ is lower bounded by a finite
+% quantity. 
+% %Besides, one can find two points $s_1 \in \mathcal{G}$ and $s_2 \in \mathcal{B}$
+% %such that $s_1$ and $s_2$ are arbitrarily close.
+% Consequently, the value function is
+%discontinuous on the frontier between $\mathcal{G}$ and $\mathcal{B}$, which 
+This results in non infinitesimal advantages
+for actions taken on the frontier. This occurs,
 more generally, as soon as a given policy has different regimes depending on
 where it starts in state space. For such policies the value
 function is typically discontinuous at the frontier between two
-regimes, resulting in non infinitesimal advantages. The
+regimes, resulting in non-infinitesimal advantages. The
 continuous-time DAU properties would only hold almost-everywhere.}
 
 \paragraph{Memory buffer size scalings}~Thm.~\ref{th:cont-params} is stated for
