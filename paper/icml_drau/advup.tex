@@ -286,35 +286,48 @@ limit are derived next.
 \subsection{Scaling the Learning Rates}
 \label{subsec:lr}
 \input{pendulum_fig.tex}
-For the discrete algorithm to admit a continuous time limit, the trajectories
+For the algorithm to admit a continuous-time limit, the discrete-time trajectories
 of parameters must converge to well defined trajectories as $\deltat$ goes to
-$0$.  The optimization steps should not be too large,
-in which case parameter trajectories could jump in a single gradient step,
-or too small, in which case the trajectories would become stationary as
-$\deltat$ goes to $0$.  This in turn imposes conditions on the scalings of the
-learning rates of algorithms robust to changes of the tine discretization.
+$0$.
+% The optimization steps should not be too large,
+% in which case parameter trajectories could jump in a single gradient step,
+% or too small, in which case the trajectories would become stationary as
+% $\deltat$ goes to $0$.
+This in turn imposes conditions on the scalings of the
+learning rates of algorithms robust to changes of the time discretization.
 
-The updates of $\theta$ and $\psi$ are described in
-\eqref{eq:approx_bellman_A}.  To have parameter updates that do not explode or shrink to $0$ too
-fast as $\deltat \rightarrow 0$, both $\delta \theta$ and
-$\delta \psi$ should verify stochastic differential equations in the
-limit, and notably,
-have a deterministic component of order $\deltat$. As $\deltat$ goes to $0$,
-a Taylor expansion yields (with $\deltas\deq s'-s$)
-\begin{align}
-	\delta Q_\deltat &= A(s, a)\,\deltat - r\,\deltat - \log(\gamma)
-	\,V(s)\,\deltat - \partial_s V(s) \,\deltas\nonumber \\&- \frac{(\deltas)^T \partial_{s}^2 V(s) \deltas}{2} + \smallo\left(\deltat\right)\\
-	\delta \theta_\deltat &= \eta^V_\deltat \partial_{\theta} V(s)
-	\frac{\delta Q_\deltat}{\deltat} \\%+ \smallo\left(\eta^V_\deltat\right)\\
-	\delta \psi_\deltat &= \eta^A_\deltat \partial_{\psi} A(s)
-	\frac{\delta Q_\deltat}{\deltat} %+ \smallo\left(\eta^A_\deltat\right).
-\end{align}
+Informally, in the updates of $\theta$ and $\psi$, the quantity $\delta
+Q_\deltat$ is of order $O(\deltat)$, because $s'=s+O(\deltat)$ in a
+near-continuous system. Therefore, $\delta
+Q_\deltat/\deltat$ is of order $O(1)$, so that the gradients used to
+update $\theta$ and $\psi$ are of order $O(1)$. Therefore, if the
+learning rates are of order $\deltat$, one would expect 
+the parameters $\theta$ and $\psi$ to move by $O(\deltat)$ in
+each time interval $\deltat$, thus hopefully converging to smooth
+continuous-time trajectories.
 
-If we set 
+% The updates of $\theta$ and $\psi$ are described in
+% \eqref{eq:approx_bellman_A}.  To have parameter updates that do not explode or shrink to $0$ too
+% fast as $\deltat \rightarrow 0$, both $\delta \theta$ and
+% $\delta \psi$ should verify stochastic differential equations in the
+% limit, and notably,
+% have a deterministic component of order $\deltat$. As $\deltat$ goes to $0$,
+% a Taylor expansion yields (with $\deltas\deq s'-s$)
+% \begin{align}
+% 	\delta Q_\deltat &= A(s, a)\,\deltat - r\,\deltat - \log(\gamma)
+% 	\,V(s)\,\deltat - \partial_s V(s) \,\deltas\nonumber \\&- \frac{(\deltas)^T \partial_{s}^2 V(s) \deltas}{2} + \smallo\left(\deltat\right)\\
+% 	\delta \theta_\deltat &= \eta^V_\deltat \partial_{\theta} V(s)
+% 	\frac{\delta Q_\deltat}{\deltat} \\%+ \smallo\left(\eta^V_\deltat\right)\\
+% 	\delta \psi_\deltat &= \eta^A_\deltat \partial_{\psi} A(s)
+% 	\frac{\delta Q_\deltat}{\deltat} %+ \smallo\left(\eta^A_\deltat\right).
+% \end{align}
+
+The next theorem confirms this analysis: if we set 
 $\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
-\deltat$, the parameter updates will follow a Euler discretization scheme
-for a continuous-time equation, thus presumably converging. This is
-actually the only possibility; more precisely,
+\deltat$, the parameter updates follow a Euler discretization scheme
+for a continuous-time equation and have a well-defined limit behavior. On
+the other hand, with smaller learning rates the parameters do not move,
+and can explode instantaneously with larger learning rates.
 
 \begin{theorem}
 	\label{th:cont-params}
