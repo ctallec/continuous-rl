@@ -12,10 +12,10 @@ that could explain this theoretical/practical discrepancy.
 assumed to be continuously differentiable for all $\pi$.  This %is a strong
 hypothesis is not always satisfied in practice. 
 \TODO{For instance, in the pendulum swing-up environment, depending on initial
-position and momentum, the optimal policy may need to turn round a
-certain number of times before reaching the desired state. At the
-points of state space where the number of turns changes, the value is
-discontinuous.
+position and momentum, the optimal policy needs to turn round a
+certain number of times before reaching the target state. The value
+function is discontinuous at the points of state space where the number
+of turns changes.
 % Very simple environments
 % break this hypothesis, such as the pendulum swing-up environment,
 % with pendulum height as reward and torque as action.  Indeed, 
@@ -34,32 +34,42 @@ discontinuous.
 % Consequently, the value function is
 %discontinuous on the frontier between $\mathcal{G}$ and $\mathcal{B}$, which 
 This results in non infinitesimal advantages
-for actions taken on the frontier. This occurs,
-more generally, as soon as a given policy has different regimes depending on
-where it starts in state space. For such policies the value
-function is typically discontinuous at the frontier between two
-regimes, resulting in non-infinitesimal advantages. The
-continuous-time DAU properties would only hold almost-everywhere.}
+for actions on the boundary. In such environments where a given policy
+has different regimes depending on the initial state, the continuous-time
+analysis would only hold almost-everywhere.}
+% more generally, as soon as a given policy has different regimes depending on
+% where it starts in state space. For such policies the value
+% function is typically discontinuous at the frontier between two
+% regimes, resulting in non-infinitesimal advantages. The
+% continuous-time DAU properties would only hold almost-everywhere.
 
+\TODO{
 \paragraph{Memory buffer size scalings}~Thm.~\ref{th:cont-params} is stated for
-transitions sampled sequentially from a fixed infinite size sequence. In practice,
+transitions sampled sequentially from a fixed trajectory. In practice,
 transitions are sampled from a memory buffer, to prevent excessive correlations.
-The memory buffer used is a fixed size circular buffer, filled
-with samples from a single infinite exploratory trajectory. In
-our experiments, the same buffer size is used for all time discretization. When
-$\deltat$ goes to $0$, this corresponds to learning nearly online on the
-infinite sequence, since the buffer will only contain examples that are very
-close temporally to the end of the sequence in physical time. \TODO{this
-contradicts the use of the buffer against correlations} While the resulting
-algorithm converges to a continuous time limit, in the strictest sense it is not
-time discretization invariant, as the freshness of samples in the buffer will
-vary with the time discretization.
-A different choice would be to scale the size of the buffer by a factor of
-$\frac{1}{\deltat}$. This would amount to always learning on the same physical time interval of
-the trajectory. Our theoretical analysis does not cover this case.
-\TODO{a bit too many details here?}
+We used a fixed size circular buffer, filled
+with samples from a single growing exploratory trajectory. In
+our experiments, the same buffer size is used for all time discretizations. 
+Thus the physical-time freshness of samples in the buffer varies with the
+time discretization, and in the strictest sense using a fixed-size buffer
+breaks timestep invariance. A memory-intensive option would be to use a
+buffer of size $\frac{1}{\deltat}$ (fixed physical time); our theoretical
+analysis does not cover this case.
+% When
+% $\deltat$ goes to $0$, this corresponds to learning nearly online on the
+% infinite sequence, since the buffer will only contain examples that are very
+% close temporally to the end of the sequence in physical time. \TODO{this
+% contradicts the use of the buffer against correlations} While the resulting
+% algorithm converges to a continuous time limit, in the strictest sense it is not
+% time discretization invariant, as the freshness of samples in the buffer will
+% vary with the time discretization.
+% A different choice would be to scale the size of the buffer by a factor of
+% $\frac{1}{\deltat}$. This would amount to always learning on the same physical time interval of
+% the trajectory. Our theoretical analysis does not cover this case.
+% \TODO{a bit too many details here?}
+}
 
-\paragraph{Near continuous time reinforcement learning and RMSProp.} RMSProp~\cite{rmsprop}
+\paragraph{Near-continuous reinforcement learning and RMSProp.} RMSProp~\cite{rmsprop}
 estimates a batched version of the second moment of gradients via moving
 averages, and divides gradient steps by the square root of this estimate.
 This may interact with the learning rate scaling discussed above. In
