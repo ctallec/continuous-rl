@@ -11,7 +11,8 @@
 If we define $f(s) \deq \E_{a \sim \pi(s)}\left[F(s, a)\right]$, then $f$ is \TODO{smooth enough}. We have: 
 
   \begin{align}
-    s_{t + \deltat}   & = s_t + \sum_{k=1}^{\lfloor 1/\deltat\rfloor} f(s_{t+(k-1)\deltat})\deltat^2 + \sum_{k=1}^{\lfloor 1/\deltat\rfloor} (F(s_{t+(k-1)\deltat^2}, a_k) - f(s_{t+(k-1)\deltat^2}))\deltat^2 + \bigO(\deltat^2)        \\
+    s_{t + \deltat}   & = s_t + \sum_{k=1}^{\lfloor 1/\deltat\rfloor}
+    f(s_{t+(k-1)\deltat^2})\deltat^2 + \sum_{k=1}^{\lfloor 1/\deltat\rfloor} (F(s_{t+(k-1)\deltat^2}, a_k) - f(s_{t+(k-1)\deltat^2}))\deltat^2 + \bigO(\deltat^2)        \\
   \end{align}
 
   We define $\xi \deq \sum_{k=1}^{\lfloor 1/\deltat\rfloor} (F(s_{t+(k-1)\deltat^2}, a_k) - f(s_{t+(k-1)\deltat^2}))\deltat^2$. We have:
@@ -20,7 +21,7 @@ If we define $f(s) \deq \E_{a \sim \pi(s)}\left[F(s, a)\right]$, then $f$ is \TO
     \E[\|\xi\|^2] &= \bigO(\deltat^3)
   \end{align}
 
-  Therefore:
+  Therefore: \TODO{justify by smoothness of $F$, continuity of $s_t$, etc.}
   \begin{align}
   s_{t + \deltat}  &= s_t + \sum_{k=1}^{\lfloor 1/\deltat\rfloor} \left(f(s_{t}) + \bigO(k\deltat^2)\right)\deltat^2 + \xi + \bigO(\deltat^2) \\
                       & = s_t + f(s_{t}) \deltat + \xi + \bigO(\deltat^2) 
