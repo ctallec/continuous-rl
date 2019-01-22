@@ -1,4 +1,6 @@
 %! TEX root = supplementary.tex
+The proof mostly follos the classical argument for convergence of the
+Euler scheme for differential equations.
 For any $k$, define
 \begin{equation}
 	e_\deltat^k = \|s_\deltat^k - s_{\deltat k}\|.
@@ -11,7 +13,7 @@ The Taylor integral formula gives \TODO{explain piecewise $C^2$}
 	\int_0^\deltat (\deltat - t) \frac{d^2 s_{t + \deltat k}}{dt^2} dt.
 \end{align}
 Now, both $d^2 s_t/dt^2$ and $d^2 \tilde{s}_t/dt^2$ are uniformly bounded, by
-boundedness and lipschitzianity of $s \rightarrow F(s, \pi(s))$ and $s
+boundedness and Lipschitzness of $s \rightarrow F(s, \pi(s))$ and $s
 \rightarrow F(s, \pi(s_\deltat^k))$. Consequently, there exists $C$ such that
 \begin{align}
 	e_\deltat^{k + 1} &\leq \|s_\deltat^k - s_{\deltat k}\| + \|F(s_\deltat^k, \pi(s_\deltat^k)) - F(s_{\deltat k}, \pi(s_{\deltat k}))\| \deltat + C \deltat^2\\

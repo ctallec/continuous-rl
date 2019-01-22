@@ -13,7 +13,15 @@
 
 \begin{document}
 \section{Proofs}
-We now give proofs for all the results presented in the paper.
+
+We now give proofs for all the results presented in the paper. Most
+proofs follow standard patterns from calculus and numerical schemes for
+differential equations, except for
+Theorem~\ref{thm:policyimprovement}, which uses a nice argument specific
+to reinforcement learning to prove that the continuous-time advantage
+function contains all the necessary information for policy values.
+
+
 The first result presented is a proof of convergence for discretized
 trajectories.
 \begin{theorem}
@@ -84,6 +92,7 @@ all $s$.
 
 We now show that policy improvement works with the continous time advantage function, i.e.\
 \begin{theorem}
+\label{thm:policyimprovement}
 	Let $\pi$ and $\pi'$ be two policies such that both $s \rightarrow r(s, \pi(s))$ and
 	$s \rightarrow r(s, \pi'(s))$ are continuous.
 	Assume that both $V^\pi$ and $V^{\pi'}$ are continuously differentiable.
