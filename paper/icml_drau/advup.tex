@@ -297,6 +297,7 @@ $0$.
 This in turn imposes conditions on the scalings of the
 learning rates of algorithms robust to changes of the time discretization.
 
+\TODO{
 Informally, in the parameter updates
 \eqref{eq:approx_deltaQ}--\eqref{eq:approx_bellman_A}, the quantity $\delta
 Q_\deltat$ is of order $O(\deltat)$, because $s'=s+O(\deltat)$ in a
@@ -357,6 +358,7 @@ $\deltat\to 0$:
 		in arbitrarily small physical time.%	parameters grow arbitrarily large in after an arbitrarily small physical time when $\deltat$ goes to $0$.
 	\end{itemize}
 \end{theorem}
+}
 
 % With this choice of learning rates, the limit SDEs are
 % \begin{align}
