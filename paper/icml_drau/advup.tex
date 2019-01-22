@@ -317,10 +317,12 @@ for a continuous-time equation, thus presumably converging. This is
 actually the only possibility; more precisely,
 
 \begin{theorem}
+	\label{th:cont-params}
 Let $(s_t,a_t)$ be some exploration trajectory in a near-continuous MDP. Set the learning rates to $\eta^V_\deltat =
 \alpha^V \deltat^\beta$ and $\eta^A = \alpha^A \deltat^\beta$ for some
 $\beta\geq 0$, and learn the parameters $\theta$ and $\psi$ by iterating
-\eqref{eq:approx_deltaQ}--\eqref{eq:approx_bellman_A}. Then, when
+\eqref{eq:approx_deltaQ}--\eqref{eq:approx_bellman_A} along the
+trajectory $(s_t,a_t)$. Then, when
 $\deltat\to 0$:
 % 	\TODO{Assume a continuous action space. Let $(s_t, a_t)_{t\geq 0}$ be a
 % 	time continuous exploratory trajectory. Let $\pi$ be a sufficiently
@@ -335,7 +337,6 @@ $\deltat\to 0$:
 		\item If $\beta < 1$, the parameters can reach infinity
 		in arbitrarily small physical time.%	parameters grow arbitrarily large in after an arbitrarily small physical time when $\deltat$ goes to $0$.
 	\end{itemize}
-	\label{th:cont-params}
 \end{theorem}
 
 % With this choice of learning rates, the limit SDEs are
@@ -346,7 +347,7 @@ $\deltat\to 0$:
 % 	d\psi_t &= (\alpha^A Fdt  + D \dbt)\partial_{\psi} A(s_t, a_t)\nonumber.
 % \end{align}
 
-This results in a fullly specified algorithm,
+\TODO{Thus, the right learning rate scaling } results in a fullly specified algorithm,
 \emph{Deep Advantage Updating} (DAU).
 Pseudocode for the discrete actions algorithm is given in Alg.~\ref{alg:dau}.
 Pseudocode for continuous actions is given in the supplementary
