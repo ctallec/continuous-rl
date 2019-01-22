@@ -6,9 +6,9 @@ For any $k$, define
 Taylor integral formula gives
 \begin{align}
 	s_\deltat^{k + 1} &= s_\deltat^k + F(s_\deltat^k, \pi(s_\deltat^k)) \deltat +
-	\frac{1}{2}\int\limits_{0}^\deltat (\deltat - t) \frac{d^2 \tilde{s}_t}{dt^2} dt\\
+	\int_{0}^\deltat (\deltat - t) \frac{d^2 \tilde{s}_t}{dt^2} dt\\
 	s_{\deltat(k + 1)} &= s_{\deltat k} + F(s_{\deltat k}, \pi(s_{\deltat k})) \deltat +
-	\frac{1}{2}\int\limits_0^\deltat (\deltat - t) \frac{d^2 s_{t + \deltat k}}{dt^2} dt.
+	\int_0^\deltat (\deltat - t) \frac{d^2 s_{t + \deltat k}}{dt^2} dt.
 \end{align}
 Now, both $d^2 s_t/dt^2$ and $d^2 \tilde{s}_t/dt^2$ are uniformly bounded, by
 boundedness and lipschitzianity of $s \rightarrow F(s, \pi(s))$ and $s

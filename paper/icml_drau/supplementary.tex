@@ -5,6 +5,8 @@
 \usepackage{amsthm}
 \usepackage{mathtools}
 \usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 
 \newtheorem{theorem}{Theorem}
 \input{macros.tex}
@@ -45,9 +47,7 @@ trajectories.
 	\input{proof_traj.tex}
 \end{proof}
 In what follows, we will assume that the reward function $r: {\cal S} \times {\cal A} \rightarrow \bb{R}$
-is bounded, to ensure existence of $V^\pi$ and $V^\pi_\deltat$ for all $\deltat$. We further assume that
-both $V^\pi$ and $V^\pi_\deltat$ are continuously differentiable, and that 
-\begin{theorem}
+is bounded, to ensure existence of $V^\pi$ and $V^\pi_\deltat$ for all $\deltat$.\begin{theorem}
 	Under suitable assumptions \TODO{ref appendix}, for all $s \in {\cal
 	S}$, one has
 	%\begin{equation}
@@ -60,11 +60,32 @@ both $V^\pi$ and $V^\pi_\deltat$ are continuously differentiable, and that
 \begin{proof}
 	\input{proof_conv_value.tex}
 \end{proof}
+
+For the following proof, we further assume that both $V^\pi$ and
+$V^\pi_\deltat$ are continuously differentiable, and that the gradient and
+hessian of $V^\pi_\deltat$ w.r.t. $s$ are uniformly bounded in both $s$ and $\deltat$.
+We also assume convergence of $\partial_s V^\pi_\deltat(s)$ to $\partial_s V^\pi(s)$ for
+all $s$.
 \begin{theorem}
-	$A^\pi_\deltat$ convergence theorem.
+	Under the above hypothesis, there exists $A^\pi: {\cal S} \rightarrow
+	\bb{R}$ such that $A^\pi_\deltat$ converges pointwise to $A^\pi$ as
+	$\deltat$ goes to $0$.
 \end{theorem}
 \begin{proof}
 	\input{proof_conv_adv.tex}
+\end{proof}
+
+We now show that policy improvement works with the continous time advantage function, i.e.\
+\begin{theorem}
+	Let $\pi$ and $\pi'$ be two policies such that both $s \rightarrow r(s, \pi(s))$ and
+	$s \rightarrow r(s, \pi'(s))$ are continuous.
+	Assume that both $V^\pi$ and $V^{\pi'}$ are continuously differentiable.
+	Define the advantage function for policies $\pi$ and $\pi'$ as in Eq.~\eqref{eq:adv_function}.
+
+	If for all $s$, $A^\pi(s, \pi'(s)) \geq 0$, then for all $s$, $V^\pi(s) \leq V^{\pi'}(s)$.
+\end{theorem}
+\begin{proof}
+	\input{policy_improvement.tex}
 \end{proof}
 \begin{theorem}
 	Discrete parameter trajectories converge to continuous trajectories.
@@ -80,4 +101,5 @@ both $V^\pi$ and $V^\pi_\deltat$ are continuously differentiable, and that
 	\input{proof_conv_expl.tex}
 \end{proof}
 \section{Implementation details}
+\input{impl_details.tex}
 \end{document}
