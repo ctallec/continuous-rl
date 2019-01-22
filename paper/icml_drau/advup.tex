@@ -265,6 +265,7 @@ an exploratory trajectory or from a replay buffer~\cite{dqn}, are
 \begin{align}
 	\delta Q_\deltat &\leftarrow A(s, a)\, \deltat - \left(r
 	\,\deltat + \gamma^{\deltat}\, V(s') - V(s)\right)\\
+	\label{eq:approx_deltaQ}
 	\theta_\deltat &\leftarrow \theta_\deltat + \eta^V_\deltat
 	\,\partial_{\theta} V(s) \,\frac{\delta Q_\deltat}{\deltat}\\
 	\psi_\deltat &\leftarrow \psi_\deltat + \eta^A_\deltat
@@ -316,21 +317,23 @@ for a continuous-time equation, thus presumably converging. This is
 actually the only possibility; more precisely,
 
 \begin{theorem}
-	\TODO{Assume a continuous action space. Let $(s_t, a_t)_{t\geq 0}$ be a
-	time continuous exploratory trajectory. Let $\pi$ be a sufficiently
-regular policy, and $\bar{A}$ and $\bar{V}$ be regular function approximators.}
-	Let $\eta^V_\deltat = \alpha^V \deltat^\beta$ (resp. $\eta^A = \alpha^A \deltat^\beta$) be the learning rate
-	of $V$ (resp. $\bar{A}$). Then, when learning on $(s_t, a_t)_{t\geq 0}$, 
+Let $(s_t,a_t)$ be some exploration trajectory in a near-continuous MDP. Set the learning rates to $\eta^V_\deltat =
+\alpha^V \deltat^\beta$ and $\eta^A = \alpha^A \deltat^\beta$ for some
+$\beta\geq 0$, and learn the parameters $\theta$ and $\psi$ by iterating
+\eqref{eq:approx_deltaQ}--\eqref{eq:approx_bellman_A}. Then, when
+$\deltat\to 0$:
+% 	\TODO{Assume a continuous action space. Let $(s_t, a_t)_{t\geq 0}$ be a
+% 	time continuous exploratory trajectory. Let $\pi$ be a sufficiently
+% regular policy, and $\bar{A}$ and $\bar{V}$ be regular function approximators.}
+% 	Let $\eta^V_\deltat = \alpha^V \deltat^\beta$ (resp. $\eta^A = \alpha^A \deltat^\beta$) be the learning rate
+% 	of $V$ (resp. $\bar{A}$). Then, when learning on $(s_t, a_t)_{t\geq 0}$, 
 	\begin{itemize}
 		\item If $\beta = 1$ the discrete parameter trajectories converge to continuous parameter
-			trajectories as $\deltat$ goes to $0$.
-		\item If $\beta < 1$, parameters grow arbitrarily large in after an arbitrarily small physical time when $\deltat$ goes to $0$. \TODO{not quite true, in a single
-			step the update is bounded. But the parameters
-			become arbitrary large in an arbitrarily small
-			physical time.}
-		\item If $\beta > 1$, parameter trajectories become
-		stationary as
-			$\deltat$ goes to $0$.
+			trajectories.% as $\deltat$ goes to $0$.
+		\item If $\beta>1$ the parameter trajectories become
+		stationary.% as $\deltat$ goes to $0$.
+		\item If $\beta < 1$, the parameters can reach infinity
+		in arbitrarily small physical time.%	parameters grow arbitrarily large in after an arbitrarily small physical time when $\deltat$ goes to $0$.
 	\end{itemize}
 	\label{th:cont-params}
 \end{theorem}
