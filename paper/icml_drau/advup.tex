@@ -133,9 +133,9 @@ derived.
 
 \TODO{
 \begin{theorem}
-Under suitable smoothness assumptions $A^\pi_\deltat(s,a)$ converges to a
-limit $A^\pi(s,a)$ when $\deltat\to 0$. The limit is informative about
-actions, namely, if policy $\pi'$ satisfies $V^{\pi'}>V^{\pi}$ for all states, then
+Under suitable smoothness assumptions, $A^\pi_\deltat(s,a)$ has a limit
+$A^\pi(s,a)$ when $\deltat\to 0$. The limit is informative about
+actions, namely, if a policy $\pi'$ satisfies $V^{\pi'}>V^{\pi}$ for all states, then
 $A^\pi(s,\pi'(s))>0$ for some $s$.
 \end{theorem}
 }
@@ -212,6 +212,7 @@ More precisely:%, let
 % supplementary material. \TODO{Is there a stronger theorm? Should we talk more about that?}
 
 
+\TODO{
 \begin{theorem}
 Consider a near-continuous MDP in which an agent selects an
 action according to an $\eps$-greedy policy that mixes a deterministic
@@ -224,6 +225,7 @@ d s_t/dt= (1-\eps) F(s_t,\pi(s_t))+\eps \E_{a\sim
 \pi^\text{noise}(a|s)}F(s_t,a)
 \end{equation}
 \end{theorem}
+}
 
 \subsection{Algorithms for Deep Advantage Updating}
 \label{subsec:algorithm}
@@ -233,8 +235,8 @@ d s_t/dt= (1-\eps) F(s_t,\pi(s_t))+\eps \E_{a\sim
 	\input{dauc.tex}
 \end{algorithm}
 
-$V_{\theta}$ and $A_{\psi}$ are learned by a variants of $Q$-learning for continuous and
-discrete action spaces are used. Namely, 
+We learn $V_{\theta}$ and $A_{\psi}$ via suitable variants of $Q$-learning for continuous and
+discrete action spaces. Namely, 
 the true $A^\pi_\deltat$
 and $V^\pi_\deltat$ of a near-continuous MDP with greedy exploitation
 policy $\pi(s) \deq
