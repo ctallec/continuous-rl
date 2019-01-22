@@ -67,14 +67,17 @@ is bounded, to ensure existence of $V^\pi$ and $V^\pi_\deltat$ for all $\deltat$
 
 For the following proof, we further assume that both $V^\pi$ and
 $V^\pi_\deltat$ are continuously differentiable, and that the gradient and
-hessian of $V^\pi_\deltat$ w.r.t. $s$ are uniformly bounded in both $s$ and $\deltat$.
+Hessian of $V^\pi_\deltat$ w.r.t. $s$ are uniformly bounded in both $s$ and $\deltat$.
 We also assume convergence of $\partial_s V^\pi_\deltat(s)$ to $\partial_s V^\pi(s)$ for
 all $s$.
+
 \begin{theorem}
 	Under the hypothesis above, there exists $A^\pi\from {\cal S} \rightarrow
 	\bb{R}$ such that $A^\pi_\deltat$ converges pointwise to $A^\pi$ as
-	$\deltat$ goes to $0$.
+	$\deltat$ goes to $0$. \TODO{give expression for $A^\pi$ (used
+	later + interesting per se)}
 \end{theorem}
+
 \begin{proof}
 	\input{proof_conv_adv.tex}
 \end{proof}
@@ -86,8 +89,11 @@ We now show that policy improvement works with the continous time advantage func
 	Assume that both $V^\pi$ and $V^{\pi'}$ are continuously differentiable.
 	Define the advantage function for policies $\pi$ and $\pi'$ as in Eq.~\eqref{eq:adv_function}.
 
-	If for all $s$, $A^\pi(s, \pi'(s)) \geq 0$, then for all $s$, $V^\pi(s) \leq V^{\pi'}(s)$.
+	If for all $s$, $A^\pi(s, \pi'(s)) \geq 0$, then for all $s$,
+	$V^\pi(s) \leq V^{\pi'}(s)$. \TODO{Moreover, if
+	$V^{\pi'}(s)>V^{\pi}(s)$, then $A^\pi(s,\pi'(s))>0$ for some state $s$.}
 \end{theorem}
+
 \begin{proof}
 	\input{policy_improvement.tex}
 \end{proof}
