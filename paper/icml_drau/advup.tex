@@ -131,6 +131,15 @@ This approach will lead to $\deltat$-robust algorithms for
 approximating $A^\pi_\deltat$, from which a ranking of actions can be
 derived.
 
+\TODO{
+\begin{theorem}
+Under suitable smoothness assumptions $A^\pi_\deltat(s,a)$ converges to a
+limit $A^\pi(s,a)$ when $\deltat\to 0$. The limit is informative about
+actions, namely, if policy $\pi'$ satisfies $V^{\pi'}>V^{\pi}$ for all states, then
+$A^\pi(s,\pi'(s))>0$ for some $s$.
+\end{theorem}
+}
+
 \subsection{Timestep-Invariant Exploration}
 \label{subsec:explo}
 
