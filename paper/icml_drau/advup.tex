@@ -113,7 +113,8 @@ interpretation of the learned $A_\psi$.
 % $Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
 To enforce identifiability of $A_\psi$, one must enforce the consistency equation
 \begin{equation}
-	Q^\pi_\deltat(s, \pi(s)) - V^\pi_\deltat(s) = 0
+	V^\pi_\deltat(s) = Q^\pi_\deltat(s,
+	\pi(s))
 \end{equation}
 on the approximate $A_\psi$ and $V_\theta$. This translates to
 \begin{equation}
@@ -135,7 +136,7 @@ and use $\bar{A}_\psi$ to define $A_\psi$ as
 	A_\psi(s, a) \deq \bar{A}_\psi(s, a) - \bar{A}_\psi(s, \pi(s)).
 \end{equation}
 % Rq Harsh
-With this definition, $A_\psi$ directly verifies the normalization condition.
+so that $A_\psi$ directly verifies the consistency condition.
 
 This approach will lead to $\deltat$-robust algorithms for
 approximating $A^\pi_\deltat$, from which a ranking of actions can be
@@ -146,12 +147,14 @@ derived.
 
 To obtain a timestep-invariant RL algorithm, a timestep-invariant
 exploration scheme is required. 
-For continuous actions, \cite{ddpg} already introduced a time discretization invariant exploration scheme, which consists in adding an
+For \emph{continuous} actions, \cite{ddpg} already introduced such a scheme, 
+by adding an
 \emph{Ornstein--Uhlenbeck} \cite{orn-uhl} (OU) process to actions. Formally, it is defined as
 \begin{equation}
-	\pi^\text{explore}(s^k_\deltat, z^k_\deltat) \deq \pi(s^k_\deltat) + z^k_\deltat
+	\pi^\text{explore}(s_{k\deltat}, z_{k\deltat}) \deq
+	\pi(s_{k\deltat}) + z_{k\deltat}
 \end{equation}
-with $z^k_\deltat$ the discretization of a continuous-time OU process,
+with $z_{k\deltat}$ the discretization of a continuous-time OU process,
 \begin{equation}
 	dz_t = - z_t \,\kappa\, dt + \sigma \,\dbt.
 	\label{eq:orn_uhl}
