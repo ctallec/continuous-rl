@@ -19,46 +19,23 @@ The update rule for $\theta$ is
 	\theta_\deltat^{k+1} &= \theta_\deltat^k + \alpha \deltat^\beta
 	\frac{\gamma^\deltat \theta_\deltat^k \sin((k + 1) \deltat) -
 	\theta_\deltat^k \sin(k\deltat)}{\deltat}\,\sin(k\deltat)
-	\\
-			     &= \theta_\deltat^k + \alpha \deltat^\beta
-			     \theta_\deltat^k
-			     ((\ln \gamma) \sin(k \deltat)
-			     + \cos(k
-			     \deltat)+\bigO(\deltat))\sin(k\deltat)\\
-			     &= \theta_\deltat^k(1 + \alpha \deltat^\beta
-			     ((\ln \gamma) \sin(k \deltat) + \cos(k
-			     \deltat)+\bigO(\deltat))\sin(k\deltat)).
+\end{align}
+Set $K_\deltat \deq \lfloor \deltat^{-\frac{\beta + 3}{4}}\rfloor$, then for all
+$k \leq K_\deltat$, $\smallo(k\deltat) = \smallo(1)$ and
+\begin{align}
+	\theta_\deltat^{k+1} &= \theta_\deltat^k(1 + \alpha \deltat^\beta
+	(1 + \smallo(1))\sin(k\deltat))\\
 \end{align}
 Let $\rho_\deltat^k \deq \log \theta_\deltat^k$. Then
 \begin{align}
-	\rho_\deltat^k = \rho_\deltat^k + \alpha \deltat^\beta ((\ln
-	\gamma) \sin(k \deltat) + \cos(k
-	\deltat)+\bigO(\deltat))\sin(k\deltat)+O(\deltat^{2\beta}\sin^2(k\deltat)).
+	\rho_\deltat^k = \rho_\deltat^k + \alpha
+	k\deltat^{\beta + 1} + \smallo(k\deltat^{\beta + 1}).
 \end{align}
-Then, setting $K_\deltat \deq \lfloor \deltat^{-\frac{\beta +
-3}{4}}\rfloor$ and using $\sin(k\deltat)=k\deltat+O(k^3\deltat^3)$ and
-likewise for $\cos$, we have
+Finally,
 \begin{align}
-	\rho_\deltat^{K_\deltat} &= \rho_\deltat^0 + \alpha \deltat^\beta
-	\sum\limits_{k=0}^{K_\deltat} \left(((\ln \gamma)k\deltat +
-	1+O(\deltat))k\deltat + \bigO(K_\deltat^3 \deltat^{3})
-	+\bigO(\deltat^{\beta+2}K_\deltat^2)\right)\\
-	&= \rho_\deltat^0 + \alpha \deltat^\beta
-	\sum\limits_{k=0}^{K_\deltat} ((\ln \gamma) k\deltat +
-	1)k\deltat + \bigO(K_\deltat K_\deltat^3 \deltat^{3 + \beta} +
-	K_\deltat^2 \deltat^{\beta+2}+K_\deltat^3\deltat^{2\beta+2})\\
-				 &= \rho_\deltat^0 + \alpha \deltat^\beta
-				 \sum\limits_{k=0}^{K_\deltat} ((\ln
-				 \gamma) k\deltat + 1)k\deltat +
-				 \bigO(1)\\
-				 &= \rho_\delta^0 + \alpha\deltat^{\beta
-				 + 2} \ln\gamma \frac{K_\deltat
-				 (K_\deltat + 1) (2 K_\deltat + 1)}{6} +
-				 \alpha \deltat^{\beta + 1}
-				 \frac{K_\deltat (K_\deltat + 1)}{2} +
-				 O(1)\\
-				 %K_\deltat \bigO(\deltat^{2 - 2 \beta})\\
-				 &= \alpha \frac{\deltat^{\frac{\beta - 1}{2}}}{2} + \smallo(\deltat^{\frac{\beta - 1}{2}})\\
+	\rho_\deltat^{K_\deltat} &= \rho_\deltat^0 + \alpha \frac{K_\deltat (K_\deltat + 1)}{2}\deltat^\beta + \smallo(K_\deltat^2\deltat^{\beta + 1})\\
+				 &= \rho_\delta^0 + \alpha\deltat^\frac{\beta
+					 - 1}{3} + \smallo(\deltat^\frac{\beta - 1}{3})\\
 				 &\xrightarrow[\deltat\to 0]{} +\infty.
 \end{align}
 Thus parameters diverge in an infinitesimal physical time when $\deltat$ goes to $0$.
