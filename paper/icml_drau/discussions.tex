@@ -8,13 +8,13 @@ simple locomotion tasks.  However on certain environments, there is still
 room for improvment. In what follows, we identify some of the issues
 that could explain this theoretical/practical discrepancy.
 
-\paragraph{Smoothness of the value function.} In all of our proofs, $V^\pi$ is
-assumed to be continuously differentiable for all $\pi$.  This %is a strong
+\paragraph{Smoothness of the value function.} In our proofs, $V^\pi$ is
+assumed to be continuously differentiable.  This %is a strong
 hypothesis is not always satisfied in practice. 
 For instance, in the pendulum swing-up environment, depending on initial
 position and momentum, the optimal policy may need to oscillate before
-it is able to reach the target state. The optimal value
-function is discontinuous at the frontier between states where
+reaching the target state. The optimal value
+function is discontinuous at the boundary between states where
 oscillations are needed and those where they are not.
 % Very simple environments
 % break this hypothesis, such as the pendulum swing-up environment,
@@ -67,9 +67,9 @@ analysis does not cover this case.
 % the trajectory. Our theoretical analysis does not cover this case.
 % \TODO{a bit too many details here?}
 
-\paragraph{Near-continuous reinforcement learning and RMSProp.} RMSProp~\cite{rmsprop}
-estimates a batched version of the second moment of gradients via moving
-averages, and divides gradient steps by the square root of this estimate.
+\paragraph{Near-continuous reinforcement learning and RMSProp.}
+RMSProp~\cite{rmsprop} divides gradient steps by the square root of a
+moving average estimate of the second moment of gradients.
 This may interact with the learning rate scaling discussed above. In
 deterministic environments, gradients typically scale as $\bigO(1)$ in
 term of $\deltat$, as seen in \eqref{eq:approx_bellman_A}.  In that case, RMSProp
@@ -82,4 +82,7 @@ learning rates need only be scaled as $\alpha \,\sqrt{\deltat}$ instead of
 $\alpha \,\deltat$.
 
 More generally, the continuous-time analysis should in principle be repeated for every component of  
-a system. For instance, if a recurrent model is used to handle state memory or partial observability, care should be taken that the model is able to maintain memory for a non-infinitesimal physical-time when $\deltat\to 0$ (see for instance~\citealt{chronornn}).
+a system. For instance, if a recurrent model is used to handle state
+memory or partial observability, care should be taken that the model is
+able to maintain memory for a non-infinitesimal physical-time when
+$\deltat\to 0$ (see e.g.~\citealt{chronornn}).

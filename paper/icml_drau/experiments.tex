@@ -2,19 +2,19 @@
 \section{Experiments}
 \label{sec:exp}
 \input{lc_fig.tex}
-The experiment set provided here is specifically aimed at showing that
-the proposed method DAU can operate efficiently on a wide range of time
-discretizations, without specific tuning, while standard deep Q-learning
-approaches cannot. DAU is compared to DDPG in continuous action settings and to DQN in
-discrete action settings.
-Since our focus is the study of Q-learning based off-policy methods, we do not
-compare against on-policy methods such as A3C~\cite{a3c}, PPO~\cite{ppo} or
-TRPO~\cite{trpo}.
+The experiments provided here are specifically aimed at showing that
+the proposed method, DAU, works efficiently over a wide range of time
+discretizations, without specific tuning, while standard deep $Q$-learning
+approaches do not. DAU is compared to DDPG for continuous actions and to
+DQN for
+discrete actions.
+Since we focus on Q-learning-based off-policy methods, we do not
+compare against on-policy methods (A3C~\cite{a3c}, PPO~\cite{ppo},
+TRPO~\cite{trpo}...).
 
-In all settings, we use the learning algorithm described in
-Alg.~\ref{alg:dau} and supplementary, Alg.~1. The variants of DDPG and DQN
-used are described in the supplementary material, as well as all the hyperparameters
-used. We tested two different setups for DDPG and DQN.
+In all setups, we use the algorithms described in
+Alg.~\ref{alg:dau} and Supplementary Alg.~1. The variants of DDPG and DQN
+used are described in the Supplementary, as well as all hyperparameters. We tested two different setups for DDPG and DQN.
 In one, we scaled the discount factor (to avoid shortsightedness with small $\deltat$), but
 left all other hyperparameters constant across time discretizations.
 In the other, we used the properly rescaled discount
@@ -26,7 +26,7 @@ supplementary material.
 
 Let us stress that the quantities plotted are rescaled to make comparison
 possible across different timesteps. For example,
-return results are given in term of discretized return $R_\deltat$ as defined in \eqref{eq:discretized-return},\footnote{This mostly amounts to scaling rewards
+returns are given in term of discretized return $R_\deltat$ as defined in \eqref{eq:discretized-return},\footnote{This mostly amounts to scaling rewards
 by a factor $\deltat$ when this scaling is not naturally done in the environment. Environment-specific
 details are given in the supplementary material.} and, most notably, time elapsed is always given in
 physical time, i.e. the amount of time that the agent spent interacting with the environment (this is not the computational time).
@@ -34,13 +34,13 @@ physical time, i.e. the amount of time that the agent spent interacting with the
 
 \paragraph{Qualitative experiments: Visualizing policies and values.}
 To provide qualitative results, and check robustness to time
-discretization both in terms of raw return results and in terms
+discretization both in terms of returns and in terms
 of convergence of the approximate value function and policies, we first provide results on the simple pendulum environment
-from the OpenAI Gym classic control suite.  Its state space is of
+from the OpenAI Gym classic control suite.  The state space is of
 dimension $2$. We visualize both the learnt value and policy functions by
 plotting, for each point of the phase diagram $(\theta, \dot{\theta})$,
 its value and policy. The results are presented in
-Fig.~\ref{fig:pend} (value function) and in Fig.~1, 2 and 3 in
+Fig.~\ref{fig:pend} (value function) and Figs.~1, 2,  3 in
 Supplementary.
 
 We plot the learnt policy at several instants in physical time (or

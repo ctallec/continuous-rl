@@ -111,8 +111,7 @@ on the approximate $A_\psi$ and $V_\theta$. This translates to
 	A_\psi(s, \pi(s)) = 0.
 \end{equation}
 With this additional constraint, if $Q_\Theta = Q^\pi_\deltat$, then $A_\psi =
-A^\pi_\deltat$ and $V_\theta = V^\pi_\deltat$: indeed \TODO{keep or  leave as
-an exercise?}
+A^\pi_\deltat$ and $V_\theta = V^\pi_\deltat$: indeed
 \begin{align}
 	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat}\\
 		    &= \frac{Q_\Theta(s,a) - Q_\Theta(s, \pi(s))}{\deltat}
@@ -254,7 +253,7 @@ and $A_{\psi}$ are trained to approximately solve these equations.
 
 Maximization over actions in $\pi$ is implemented exactly for discrete actions,
 and approximated by a policy neural network $\pi_\phi(s)$, trained to maximize $A_\psi(s,
-\pi_\phi(s))$ for continuous actions. This point is similar to
+\pi_\phi(s))$ for continuous actions, similarly to
 \cite{ddpg}.
 
 Eq.~\eqref{eq:max_A}
@@ -367,8 +366,8 @@ $\deltat\to 0$:
 % \end{align}
 
 The resulting algorithm with suitable scalings,
-\emph{Deep Advantage Updating} (DAU), is fully specified in Alg.~\ref{alg:dau} for
-discrete actions, and in the supplementary material for continuous
+\emph{Deep Advantage Updating} (DAU), is specified in Alg.~\ref{alg:dau} for
+discrete actions, and in the Supplementary for continuous
 actions.
 
 %%% Local Variables:
