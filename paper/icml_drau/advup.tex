@@ -188,7 +188,7 @@ exploration scheme by taking
 $z_\deltat$ to be a discretization of an $(\#\mathcal{A})$-dimensional
 continuous OU process, and setting
 \begin{equation}
-  \pi^\text{explore}(s_{k\deltat}, z_{k\deltat})\deq \text{argmax}_{a}
+  \pi^\text{explore}(s_{k\deltat}, z_{k\deltat})\deq \argmax_{a}
   \left(A_\psi(s_{k\deltat}, a) + z_{k\deltat}[a]\right)
 \end{equation}
 where $z_{k\deltat}[a]$ denotes the $a$-th component of $z_{k\deltat}$. Namely,
@@ -198,7 +198,7 @@ scheme.
 
 On the other hand,
 $\varepsilon$-greedy
-exploration is likely \emph{not} to explore, i.e. to collapse to a deterministic
+exploration is likely \emph{not} to explore, i.e., to collapse to a deterministic
 policy, when $\deltat$ goes to $0$.
 % Indeed, in a
 % near-continuous deterministic environment, %the exploration policy resulting from
