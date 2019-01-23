@@ -11,11 +11,11 @@ that could explain this theoretical/practical discrepancy.
 \paragraph{Smoothness of the value function.} In all of our proofs, $V^\pi$ is
 assumed to be continuously differentiable for all $\pi$.  This %is a strong
 hypothesis is not always satisfied in practice. 
-\TODO{For instance, in the pendulum swing-up environment, depending on initial
-position and momentum, the optimal policy needs to turn round a
-certain number of times before reaching the target state. The value
-function is discontinuous at the points of state space where the number
-of turns changes.
+For instance, in the pendulum swing-up environment, depending on initial
+position and momentum, the optimal policy may need to oscillate before
+it is able to reach the target state. The optimal value
+function is discontinuous at the frontier between states where
+oscillations are needed and those where they are not.
 % Very simple environments
 % break this hypothesis, such as the pendulum swing-up environment,
 % with pendulum height as reward and torque as action.  Indeed, 
@@ -36,7 +36,7 @@ of turns changes.
 This results in non infinitesimal advantages
 for actions on the boundary. In such environments where a given policy
 has different regimes depending on the initial state, the continuous-time
-analysis would only hold almost-everywhere.}
+analysis would only hold almost-everywhere.
 % more generally, as soon as a given policy has different regimes depending on
 % where it starts in state space. For such policies the value
 % function is typically discontinuous at the frontier between two
