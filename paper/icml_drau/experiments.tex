@@ -7,7 +7,9 @@ the proposed method DAU can operate efficiently on a wide range of time
 discretizations, without specific tuning, while standard deep Q-learning
 approaches cannot. DAU is compared to DDPG in continuous action settings and to DQN in
 discrete action settings.
-We work off-policy; this excludes methods such as \TODO{(A3C, PPO, TRPO, ...)}.
+Since our focus is the study of Q-learning based off-policy methods, we do not
+compare against on-policy methods such as A3C~\cite{a3c}, PPO~\cite{ppo} or
+TRPO~\cite{trpo}.
 
 In all settings, we use the learning algorithm described in
 Alg.~\ref{alg:dau} and supplementary, Algo 1. The variants of DDPG and DQN
@@ -39,8 +41,8 @@ from the OpenAI Gym classic control suite.  Its state space is of
 dimension $2$. We visualize both the learnt value and policy functions by
 plotting, for each point of the phase diagram $(\theta, \dot{\theta})$,
 its value and policy. The results are presented in
-Fig.~\ref{fig:pend} (policy function) and in Fig.\TODO{ref} in
-Supplementary \TODO{ref} (value function).
+Fig.~\ref{fig:pend} (value function) and in Fig.~1, 2 and 3 in
+Supplementary.
 
 We plot the learnt policy at several instants in physical time (or
 normalized epochs) during training, for various time discretizations
