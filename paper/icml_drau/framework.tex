@@ -180,7 +180,7 @@ return $R_\deltat$ of the MDP $\mathcal{M}_{\deltat}$ as
 \begin{equation}
 \label{eq:discretized-return}
 R_\deltat(\tau) \deq \sum_{k=0}^\infty\gamma^{k\deltat}\,
-r(s_\deltat^k, a_\deltat^k)\,\deltat
+r(s_{k\deltat}, a_{k\deltat})\,\deltat
 \end{equation}
 and the discretized return will correspond to the continuous-time return
 if we set the decay factor $\gamma_\deltat$ and rewards $r_\deltat$ of
@@ -231,7 +231,7 @@ r_\deltat \deq \deltat . r.
 
       \paragraph{Physical time vs algorithmic time, time horizon.}
         % [[I prefer to talk about ``number of steps'' VS ``Physical time'' than microscopic/Macroscopic]]
-        In near continuous environments, there are two notions of time:
+        In near-continuous environments, there are two notions of time:
 the algorithmic time $k$ (number of steps or actions taken), and the
 physical time $t$ (time spent
 in the underlying continuous time environment), related via
@@ -277,7 +277,7 @@ classical deep $Q$-learning baselines.
 
 
 \paragraph{Value function.}
-The return \eqref{eq:continuous-return} yields the
+The return \eqref{eq:continuous-return} leads to the
 following continuous-time value function
 \begin{align}
   V^\pi(s) &= \E_{\tau\sim\pi}\left[R(\tau) \mid s_0 = s\right]\\
@@ -289,7 +289,7 @@ M}_\deltat$ is
 \begin{align}
   V^\pi_\deltat(s) &= \E_{\tau\sim\pi}\left[R_\deltat(\tau) \mid s_0 = s\right]\\
   &= \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty
-  \gamma^{k\deltat}\,r(s^k_{\deltat}, a^k_{\deltat})\,\deltat \mid s_0 = s\right]
+  \gamma^{k\deltat}\,r(s_{k\deltat}, a_{k\deltat})\,\deltat \mid s_0 = s\right]
 \end{align}
 % which fits the usual definition of the discrete $V$-function for $\gamma_\deltat$ and
 % $r_\deltat$ defined in \eqref{eq:def-gamma}.
