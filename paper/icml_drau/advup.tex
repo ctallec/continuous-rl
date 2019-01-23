@@ -253,19 +253,19 @@ are the unique solution to the Bellman and consistency equations
 	r\,\deltat + \gamma^{\deltat}  \,\E_{s'} V^{\pi}_\deltat(s')\label{eq:bellman_A}\\
 	A^{\pi}_\deltat(s, \pi(s)) &= 0\label{eq:max_A}.
 \end{align}
-as seen in \ref{subsec:reparam}. Then $V_{\theta}$
+as seen in \ref{subsec:reparam}. Thus $V_{\theta}$
 and $A_{\psi}$ are trained to approximately solve these equations.
 
-Maximization over actions in $\pi$ is implemented exactly for discrete actions,
-and approximated by a policy neural network $\pi_\phi(s)$, trained to maximize $A_\psi(s,
-\pi_\phi(s))$ for continuous actions, similarly to
+Maximization over actions for $\pi$ is implemented exactly for discrete actions,
+and, for continuous actions, approximated by a policy neural network $\pi_\phi(s)$ trained to maximize $A_\psi(s,
+\pi_\phi(s))$, similarly to
 \cite{ddpg}.
 
 Eq.~\eqref{eq:max_A}
 is directly verified by $A_{\psi}$, owing to the reparametrization
 $A_\psi(s, a) = \bar{A}_\psi(s, a) - \bar{A}_\psi(s, \pi(s))$, described
 in~\ref{subsec:reparam}.  To approximately verify~\eqref{eq:bellman_A}, the
-corresponding squared residual is minimized by an approximate gradient descent.
+corresponding squared Bellman residual is minimized by an approximate gradient descent.
 The update equations when learning from a transition $(s, a, r, s')$, either from
 an exploratory trajectory or from a replay buffer~\cite{dqn}, are
 \begin{align}
@@ -281,7 +281,7 @@ an exploratory trajectory or from a replay buffer~\cite{dqn}, are
 \end{align} 
 where the $\eta$'s are learning rates.
 Appropriate scalings for the learning rates $\eta^V_\deltat$ and
-$\eta^A_\deltat$ in term of $\deltat$ to obtain a well defined continuous
+$\eta^A_\deltat$ in terms of $\deltat$ to obtain a well defined continuous
 limit are derived next.
 % As we will see in the following section,
 % to obtain a well defined continuous time limit, the learning rates can be rewritten as
@@ -308,7 +308,7 @@ near-continuous system. Therefore, $\delta
 Q_\deltat/\deltat$ is $O(1)$, so that the gradients used to
 update $\theta$ and $\psi$ are $O(1)$. Therefore, if the
 learning rates are of order $\deltat$, one would expect 
-the parameters $\theta$ and $\psi$ to move by $O(\deltat)$ in
+the parameters $\theta$ and $\psi$ to change by $O(\deltat)$ in
 each time interval $\deltat$, thus hopefully converging to smooth
 continuous-time trajectories. The next theorem formally confirms that
 learning rates of order $\deltat$ are the only possibility.
