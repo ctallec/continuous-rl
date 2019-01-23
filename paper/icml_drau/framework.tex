@@ -306,7 +306,8 @@ namely,
 }
 \begin{equation}
   \label{eq:bellman}
-  V^\pi_\deltat(s) = \reward(s, \pi(s))\,\deltat + \gamma^{\deltat}\, \E_{s_{\deltat}^{k+1} | s_{\deltat}^{k} = s} V^\pi_\deltat(s_{\deltat}^{k+1})
+  V^\pi_\deltat(s) = \reward(s, \pi(s))\,\deltat + \gamma^{\deltat}\,
+  \E_{s_{(k+1)\deltat} | s_{k\deltat} = s} V^\pi_\deltat(s_{(k+1)\deltat})
 \end{equation}
 
 When the timestep tends to $0$, one converges to the other.
