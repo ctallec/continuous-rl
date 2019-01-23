@@ -43,7 +43,7 @@ Contrary to the action state value function,
 this
 rescaled advantage function converges when $\deltat\to 0$
 to an action-dependent quantity which, if it can be learned, contains the
-necessary information for policy improvement. A formal statement is given in the supplementary material.
+necessary information for policy improvement (Thm.~\ref{thm:Alimit}).
 
 
 % \LB{In next equation, tiny detail but I would write $\frac{1}{\deltat}(r\deltat+...)$, easier to read.}
@@ -111,8 +111,7 @@ on the approximate $A_\psi$ and $V_\theta$. This translates to
 	A_\psi(s, \pi(s)) = 0.
 \end{equation}
 With this additional constraint, if $Q_\Theta = Q^\pi_\deltat$, then $A_\psi =
-A^\pi_\deltat$ and $V_\theta = V^\pi_\deltat$: indeed \TODO{keep or  leave as
-an exercise?}
+A^\pi_\deltat$ and $V_\theta = V^\pi_\deltat$: indeed
 \begin{align}
 	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat}\\
 		    &= \frac{Q_\Theta(s,a) - Q_\Theta(s, \pi(s))}{\deltat}
@@ -134,6 +133,7 @@ approximating $A^\pi_\deltat$, from which a ranking of actions can be
 derived.
 
 \begin{theorem}
+\label{thm:Alimit}
 Under suitable smoothness assumptions, $A^\pi_\deltat(s,a)$ has a limit
 $A^\pi(s,a)$ when $\deltat\to 0$. The limit keeps information about
 actions: namely, if a policy $\pi'$ strictly dominates $\pi$, 
@@ -253,7 +253,7 @@ and $A_{\psi}$ are trained to approximately solve these equations.
 
 Maximization over actions in $\pi$ is implemented exactly for discrete actions,
 and approximated by a policy neural network $\pi_\phi(s)$, trained to maximize $A_\psi(s,
-\pi_\phi(s))$ for continuous actions. This point is similar to
+\pi_\phi(s))$ for continuous actions, similarly to
 \cite{ddpg}.
 
 Eq.~\eqref{eq:max_A}
@@ -286,7 +286,6 @@ limit are derived next.
 \subsection{Scaling the Learning Rates}
 \label{subsec:lr}
 \input{pendulum_fig.tex}
-\TODO{
 For the algorithm to admit a continuous-time limit, the discrete-time trajectories
 of parameters must converge to well-defined trajectories as $\deltat$ goes to
 $0$.
@@ -295,7 +294,7 @@ $0$.
 % or too small, in which case the trajectories would become stationary as
 % $\deltat$ goes to $0$.
 This in turn imposes precise conditions on the scalings of the
-learning rates.}% of algorithms robust to changes of the time discretization.  }
+learning rates.% of algorithms robust to changes of the time discretization.  }
 
 Informally, in the parameter updates
 \eqref{eq:approx_deltaQ}--\eqref{eq:approx_bellman_A}, the quantity $\delta
@@ -367,8 +366,8 @@ $\deltat\to 0$:
 % \end{align}
 
 The resulting algorithm with suitable scalings,
-\emph{Deep Advantage Updating} (DAU), is fully specified in Alg.~\ref{alg:dau} for
-discrete actions, and in the supplementary material for continuous
+\emph{Deep Advantage Updating} (DAU), is specified in Alg.~\ref{alg:dau} for
+discrete actions, and in the Supplementary for continuous
 actions.
 
 %%% Local Variables:

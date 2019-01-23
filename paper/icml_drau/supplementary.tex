@@ -114,12 +114,13 @@ We now show that policy improvement works with the continous time advantage func
 	$A\colon {\cal P}_1 \times {\cal S} \times {\cal A} \rightarrow \bb R$
 	and $V\colon {\cal P}_2 \times {\cal S} \rightarrow \bb R$ be ${\cal
 	C}^2$ function approximators with bounded gradients and Hessians. Let
-	$(a_t)_{t\geq 0}$ be a ${\cal C}^1$ exploratory actions trajectory and
+	$(a_t)_{t\geq 0}$ be a ${\cal C}^1$ exploratory action trajectory and
 	$(s_t)_{t\geq 0}$ the resulting state trajectory, when starting from $s_0$ and
-	verifying Eq.~\eqref{eq:diff}.  Let $\theta^k_\deltat$ and
+	following $ds_t/dt=F(s_t,a_t)$.  Let $\theta^k_\deltat$ and
 	$\psi^k_\deltat$ be the discrete parameter trajectories resulting from
 	the gradient descent steps in the main text, with
-	learning rates $\eta^V = \alpha^V \deltat^\beta$ and $\eta^A = \alpha^A \deltat^\beta$. Then,
+	learning rates $\eta^V = \alpha^V \deltat^\beta$ and $\eta^A =
+	\alpha^A \deltat^\beta$ for some $\beta\geq 0$. Then,
 	\begin{itemize}
 		\item If $\beta = 1$ the discrete parameter trajectories converge to continuous parameter
 			trajectories as $\deltat$ goes to $0$.
