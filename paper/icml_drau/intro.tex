@@ -24,10 +24,6 @@ shortening reaction time, should only improve agent performance.
 Robustness to time discretization is especially relevant in
 \emph{near-continuous} environments, which includes most continuous
 control environments, robotics, and many video games.  
-We focus on
-near-continuous time because this leads to a clear framework, but the
-approach below would be relevant in any setting in which the advantage of
-any single individual action is small compared to the total return.%, for instance, long time horizon problems.
 
 Standard approaches based on estimation of state-action
 value functions, such as
@@ -45,6 +41,15 @@ reinforcement learning (Sec.~\ref{sec:framework}) \cite{cont_rl,
 adv_upd}. Formally, the effect of a single action vanishes when the
 discretization timestep becomes infinitesimal: there is no
 continuous-time $Q$-function. 
+
+We focus on near-continuous time because this leads to a clear framework,
+but our observations make sense in any setting in which the value
+results from a taking a large number of small individual actions. Our
+results suggest naive $Q$-learning will fail in such settings without a
+delicate balance of hyperparameter scalings.
+%the
+%advantage of any single individual action is small compared to the total
+%return.%, for instance, long time horizon problems.
 
 We are looking for an algorithm that would be as invariant as possible to
 changing the discretization timestep. Such an 
