@@ -43,7 +43,7 @@ Contrary to the action state value function,
 this
 rescaled advantage function converges when $\deltat\to 0$
 to an action-dependent quantity which, if it can be learned, contains the
-necessary information for policy improvement. A formal statement is given in the supplementary material.
+necessary information for policy improvement (Thm.~\ref{thm:Alimit}).
 
 
 % \LB{In next equation, tiny detail but I would write $\frac{1}{\deltat}(r\deltat+...)$, easier to read.}
@@ -134,6 +134,7 @@ approximating $A^\pi_\deltat$, from which a ranking of actions can be
 derived.
 
 \begin{theorem}
+\label{thm:Alimit}
 Under suitable smoothness assumptions, $A^\pi_\deltat(s,a)$ has a limit
 $A^\pi(s,a)$ when $\deltat\to 0$. The limit keeps information about
 actions: namely, if a policy $\pi'$ strictly dominates $\pi$, 
