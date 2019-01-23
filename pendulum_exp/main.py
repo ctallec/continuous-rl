@@ -27,7 +27,7 @@ def train(nb_steps: int, env: Env, policy: Policy, start_obs: Arrayable):
 
 def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
              time_limit: Optional[float] = None, eval_return: bool = False,
-             progress_bar: bool = False, video: bool = False, no_log: bool = False):
+             progress_bar: bool = False, video: bool = False, no_log: bool = False, test=False):
     """ Evaluate. """
     log_gap = int(eval_gap / dt)
     policy.eval()
@@ -50,7 +50,10 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
                            np.stack(dones, axis=0))
         info(f"At epoch {epoch}, return: {R}")
         if not no_log:
-            log("Return", R, epoch) # don't log when outputing video
+            if not test:
+                log("Return", R, epoch) # don't log when outputing video
+            else:
+                log("Return_test", R, epoch)
         if video:
             log_video("demo", epoch, np.stack(imgs, axis=0))
 
@@ -98,10 +101,13 @@ def main(args):
             eval_gap,
             time_limit,
             eval_return=e % log_gap == log_gap - 1,
+            test=False
         )
         if new_R is not None:
             # policy.observe_evaluation(new_R)
             if new_R > R:
+                evaluate(dt, e, eval_env, policy, eval_gap,
+                    time_limit, eval_return=True, test=True)
                 info(f"Saving new policy with return {new_R}")
                 state_dict = policy.state_dict()
                 state_dict["return"] = new_R

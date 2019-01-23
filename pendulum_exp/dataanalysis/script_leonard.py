@@ -22,7 +22,7 @@ def predicat_noscale(s):
 	return ('noscale' in s and s['noscale'])
 
 
-scaled = False
+scaled = True
 
 expdata = expdata.filter_settings(lambda s: (predicat_noscale(s) != scaled) or 'advantage' in s['algo'])
 
