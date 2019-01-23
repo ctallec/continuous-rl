@@ -5,12 +5,9 @@
 The experiments provided here are specifically aimed at showing that
 the proposed method, DAU, works efficiently over a wide range of time
 discretizations, without specific tuning, while standard deep $Q$-learning
-approaches do not. DAU is compared to DDPG for continuous actions and to
-DQN for
-discrete actions.
-Since we focus on $Q$-learning-like off-policy methods, we do not
-compare against on-policy methods (A3C~\cite{a3c}, PPO~\cite{ppo},
-TRPO~\cite{trpo}...).
+approaches do not. DAU is compared to DDPG for continuous actions and to DQN
+for discrete actions.  As mentionned earlier, we do not study the time
+discretization invariance of on-policy methods (A3C, PPO, TRPO...).
 
 In all setups, we use the algorithms described in
 Alg.~\ref{alg:dau} and Supplementary Alg.~1. The variants of DDPG and DQN
@@ -44,7 +41,7 @@ Fig.~\ref{fig:pend} (value function) and Figs.~1, 2,  3 in
 Supplementary.
 
 We plot the learnt policy at several instants in physical time
-(normalized epochs) during training, for various time discretizations
+during training, for various time discretizations
 $\deltat$, for both DAU and DDPG. With DAU, the agent's policy and value
 function quickly converge for every time discretization without specific
 tuning. On the contrary, with DDPG, learning of both value function and
