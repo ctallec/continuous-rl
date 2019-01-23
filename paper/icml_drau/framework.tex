@@ -118,10 +118,10 @@ M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
         %In this paper, we try to design RL methods for near continuous MDP
 %robust to the choice of $\deltat$. 
 
-By standard arguments for time discretizations of differential
-equations, for a given policy the near-continuous states converge to the
-continuous-time states when $\deltat\to 0$. \TODO{ref to appendix+formal
-statement in appendix}% We now turn to the RL-related quantities.
+% By standard arguments for time discretizations of differential
+% equations, for a given policy the near-continuous states converge to the
+% continuous-time states when $\deltat\to 0$. \TODO{ref to appendix+formal
+% statement in appendix}% We now turn to the RL-related quantities.
 
 A necessary condition for robustness of an algorithm for
 near-continuous time MDPs is 
@@ -252,7 +252,7 @@ algorithmic time horizon, namely
 \begin{equation}
           \label{eq:time-horizon}
           \frac{\deltat}{1-\gamma^\deltat}
-          %= - \frac{1}{\log \gamma} + \bigO(\deltat)
+          = - \frac{1}{\log \gamma} + \bigO(\deltat)
           \approx \frac{1}{1-\gamma},
         \end{equation}
 which is thus stable when $\deltat\to 0$. 

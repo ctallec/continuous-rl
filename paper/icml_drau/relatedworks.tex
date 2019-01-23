@@ -31,9 +31,9 @@ $\deltat$.
 % discretization. We show that Advantage updating is viable in the context of deep
 % reinforcement learning, while not using the true gradient of the residual error.
 
-\TODO{Somewhere else: Say that Actor-critic has no problem when $\deltat\to 0$? With SGD
-but not with RMSProp, and needs robust exploration, and limited to
-on-policy}
+Our study focuses on off-policy algorithms. Some on-policy algorithms, such as
+A3C \TODO{cite}, or PPO \TODO{cite} may be time discretization invariant in
+specific setups. This would require a separate study.
 
 \cite{dueling_nets} also use a parameterization separating
 the value and advantage components of the $Q$-function. But contrary to
@@ -55,8 +55,7 @@ is only one timescale in the environment. Arguably, a small
 $\deltat$ can be seen as a mismatch between the algorithm's
 timescale and the physical system's timescale, but the collapse of the
 $Q$ function to the $V$ function is an intrinsic mathematical phenomenon arising from time
-continuity, and cannot obviously be addressed via existing multiscale
-techniques. \TODO{cite something!}
+continuity.
 
 Reinforcement learning has been studied from a mathematical perspective
 when time and space are both continuous, in connection with optimal

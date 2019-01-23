@@ -43,7 +43,6 @@ analysis would only hold almost-everywhere.}
 % regimes, resulting in non-infinitesimal advantages. The
 % continuous-time DAU properties would only hold almost-everywhere.
 
-\TODO{
 \paragraph{Memory buffer size scalings}~Thm.~\ref{th:cont-params} is stated for
 transitions sampled sequentially from a fixed trajectory. In practice,
 transitions are sampled from a memory buffer, to prevent excessive correlations.
@@ -67,7 +66,6 @@ analysis does not cover this case.
 % $\frac{1}{\deltat}$. This would amount to always learning on the same physical time interval of
 % the trajectory. Our theoretical analysis does not cover this case.
 % \TODO{a bit too many details here?}
-}
 
 \paragraph{Near-continuous reinforcement learning and RMSProp.} RMSProp~\cite{rmsprop}
 estimates a batched version of the second moment of gradients via moving
@@ -83,6 +81,5 @@ that case,
 learning rates need only be scaled as $\alpha \,\sqrt{\deltat}$ instead of
 $\alpha \,\deltat$.
 
-\TODO{+ discuss the use of LSTMs to provide memory/deal with
-non-observability; Such LSTMs should take timescales into account, eg
-chrono init?}
+More generally, the continuous-time analysis should in principle be repeated for every component of  
+a system. For instance, if a recurrent model is used to handle state memory or partial observability, care should be taken that the model is able to maintain moemry for a non-infinitesimal physical-time when $\deltat\to 0$ (see for instance \TODO{chronornn}).

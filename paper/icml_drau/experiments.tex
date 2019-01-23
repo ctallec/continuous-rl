@@ -6,22 +6,21 @@ The experiment set provided here is specifically aimed at showing that
 the proposed method DAU can operate efficiently on a wide range of time
 discretizations, without specific tuning, while standard deep Q-learning
 approaches cannot. DAU is compared to DDPG in continuous action settings and to DQN in
-discrete action settings. \TODO{(We only test off-policy
-algorithms.)}
+discrete action settings.
+We work off-policy; this excludes methods such as \TODO{(A3C, PPO, TRPO, ...)}.
 
 In all settings, we use the learning algorithm described in
 Alg.~\ref{alg:dau} and supplementary, Algo 1. The variants of DDPG and DQN
 used are described in the supplementary material, as well as all the hyperparameters
-used. To make comparison fair, we tested to different scalings for DDPG and DQN.
-One where we use the properly rescaled discount
-factor $\gamma_\deltat$ and reward $r_\deltat$ from \eqref{eq:def-gamma},
-as well as scaled learning rates. One where we only scaled the discount factor
-(to avoid shortsightedness), but left all other hyperaparameters constant
-across time discretizations. Experiments on the latter yielded better result
-and is presented hereby. Experiments on the first variant are presented in the
-supplementary material. \TODO{NDY not
-convincing: precisely because DDPG and DQN are not invariant, they might
-benefit from a different scaling.}
+used. We tested two different setups for DDPG and DQN.
+In one, we scaled the discount factor (to avoid shortsightedness with small $\deltat$), but
+left all other hyperparameters constant across time discretizations.
+In the other, we used the properly rescaled discount
+factor and reward from Eq.~\eqref{eq:def-gamma},
+as well as $O(\deltat)$ learning rates for RMSProp.  The former yields slightly
+better results, and is presented in the main text. Experiments on the second
+variant are presented in the
+supplementary material.
 
 Let us stress that the quantities plotted are rescaled to make comparison
 possible across different timesteps. For example,
@@ -61,10 +60,7 @@ $\deltat$'s. On Cartpole and Half-Cheetah, the results are less clear. On
 Cartpole, noise dominates, which makes interpretation difficult. On Half-Cheetah, DAU is not clearly more invariant to time discretization than
 DDPG. This could be explained by the multiple suboptimal regimes that
 coexist in the Half-Cheetah environment (walking on the head, walking on
-the back). \TODO{Removed, was unclear: ``and that DAU may fail to correctly weight the performance of
-each regime (as explained in Section \ref{sec:discussions}).'' Anyway
-this regimes exist for all algorithms...}
-
+the back).
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=\columnwidth]{figs_data/cartpole_lc.png}

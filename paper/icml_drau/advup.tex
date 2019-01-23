@@ -131,14 +131,12 @@ This approach will lead to $\deltat$-robust algorithms for
 approximating $A^\pi_\deltat$, from which a ranking of actions can be
 derived.
 
-\TODO{
 \begin{theorem}
 Under suitable smoothness assumptions, $A^\pi_\deltat(s,a)$ has a limit
 $A^\pi(s,a)$ when $\deltat\to 0$. The limit is informative about
 actions, namely, if a policy $\pi'$ satisfies $V^{\pi'}>V^{\pi}$ for all states, then
 $A^\pi(s,\pi'(s))>0$ for some $s$.
 \end{theorem}
-}
 
 \subsection{Timestep-Invariant Exploration}
 \label{subsec:explo}
@@ -212,7 +210,6 @@ More precisely:%, let
 % supplementary material. \TODO{Is there a stronger theorm? Should we talk more about that?}
 
 
-\TODO{
 \begin{theorem}
 Consider a near-continuous MDP in which an agent selects an
 action according to an $\eps$-greedy policy that mixes a deterministic
@@ -225,7 +222,6 @@ d s_t/dt= (1-\eps) F(s_t,\pi(s_t))+\eps \E_{a\sim
 \pi^\text{noise}(a|s)}F(s_t,a)
 \end{equation}
 \end{theorem}
-}
 
 \subsection{Algorithms for Deep Advantage Updating}
 \label{subsec:algorithm}
@@ -282,11 +278,10 @@ limit are derived next.
 % $\eta^i_\deltat = \alpha^i \deltat$, where $\alpha^1$ and $\alpha^2$ are independant
 % of $\deltat$.
 
-\TODO{say somewhere around here that we assume $\deltat$ is known}
-
 \subsection{Scaling the Learning Rates}
 \label{subsec:lr}
 \input{pendulum_fig.tex}
+\TODO{
 For the algorithm to admit a continuous-time limit, the discrete-time trajectories
 of parameters must converge to well defined trajectories as $\deltat$ goes to
 $0$.
@@ -296,8 +291,8 @@ $0$.
 % $\deltat$ goes to $0$.
 This in turn imposes conditions on the scalings of the
 learning rates of algorithms robust to changes of the time discretization.
+}
 
-\TODO{
 Informally, in the parameter updates
 \eqref{eq:approx_deltaQ}--\eqref{eq:approx_bellman_A}, the quantity $\delta
 Q_\deltat$ is of order $O(\deltat)$, because $s'=s+O(\deltat)$ in a
@@ -358,7 +353,6 @@ $\deltat\to 0$:
 		in arbitrarily small physical time.%	parameters grow arbitrarily large in after an arbitrarily small physical time when $\deltat$ goes to $0$.
 	\end{itemize}
 \end{theorem}
-}
 
 % With this choice of learning rates, the limit SDEs are
 % \begin{align}
