@@ -34,7 +34,7 @@ ax.text(0, width + bot_margin, f"{MIN_DT:3.2e}", color="dimgrey", verticalalignm
 ax.text(50, width + bot_margin, f"{MAX_DT:3.2e}", color="dimgrey", verticalalignment='top', horizontalalignment='center', size=int(font_size * 2 / 3))
 ax.text(25, 3 * width + 3 * bot_margin, "Time discretization (log scale)", verticalalignment='top', horizontalalignment='center', size=int(font_size * 3 / 4), color="dimgrey")
 ax.text(-left_margin, width / 2, "DDPG", color="dimgrey", verticalalignment='center', horizontalalignment='right', size=font_size)
-ax.text(-left_margin, 2 * width + width / 2, "AU", color="dimgrey", verticalalignment='center', horizontalalignment='right', size=font_size)
+ax.text(-left_margin, 2 * width + width / 2, "DAU", color="dimgrey", verticalalignment='center', horizontalalignment='right', size=font_size)
 
 plt.imshow(line_color)
 plt.subplots_adjust(left=.2, right=.9)
