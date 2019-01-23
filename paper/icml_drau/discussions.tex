@@ -10,6 +10,12 @@ simple locomotion tasks.  However, on some environments there is still
 room for improvment. We discuss some of the issues
 that could explain this theoretical/practical discrepancy.
 
+Note that Alg.~\ref{alg:dau} requires
+knowledge of the timestep $\deltat$. In most environments, this is
+readily available, or even directly set by the practitioner: depending on
+the environment it is given by the frame rate, the maximum frequency of
+actuators or observation acquisition, etc. 
+
 \paragraph{Smoothness of the value function.} In our proofs, $V^\pi$ is
 assumed to be continuously differentiable.  This %is a strong
 hypothesis is not always satisfied in practice. 
@@ -68,12 +74,6 @@ buffer of size $\frac{1}{\deltat}$ (fixed memory in physical time).
 % $\frac{1}{\deltat}$. This would amount to always learning on the same physical time interval of
 % the trajectory. Our theoretical analysis does not cover this case.
 % \TODO{a bit too many details here?}
-
-\paragraph{Knowing $\deltat$.} Applying Alg.~\ref{alg:dau} requires
-knowledge of the timestep $\deltat$. In most environments, this is
-readily available, or even directly set by the practitioner: depending on
-the environment it is given by the frame rate, the maximum frequency of
-actuators or observation acquisition, etc. 
 
 \paragraph{Near-continuous reinforcement learning and RMSProp.}
 RMSProp~\cite{rmsprop} divides gradient steps by the square root of a
