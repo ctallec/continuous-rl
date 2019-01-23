@@ -285,15 +285,14 @@ limit are derived next.
 \input{pendulum_fig.tex}
 \TODO{
 For the algorithm to admit a continuous-time limit, the discrete-time trajectories
-of parameters must converge to well defined trajectories as $\deltat$ goes to
+of parameters must converge to well-defined trajectories as $\deltat$ goes to
 $0$.
 % The optimization steps should not be too large,
 % in which case parameter trajectories could jump in a single gradient step,
 % or too small, in which case the trajectories would become stationary as
 % $\deltat$ goes to $0$.
-This in turn imposes conditions on the scalings of the
-learning rates of algorithms robust to changes of the time discretization.
-}
+This in turn imposes precise conditions on the scalings of the
+learning rates.}% of algorithms robust to changes of the time discretization.  }
 
 Informally, in the parameter updates
 \eqref{eq:approx_deltaQ}--\eqref{eq:approx_bellman_A}, the quantity $\delta
