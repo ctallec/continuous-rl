@@ -18,7 +18,8 @@ The update rule for $\theta$ is
 \deltat) - \theta_\deltat^k \sin(k\deltat)\\
 	\theta_\deltat^{k+1} &= \theta_\deltat^k + \alpha \deltat^\beta
 	\frac{\gamma^\deltat \theta_\deltat^k \sin((k + 1) \deltat) -
-	\theta_\deltat^k \sin(k\deltat)}{\deltat}\,\sin(k\deltat)\\
+	\theta_\deltat^k \sin(k\deltat)}{\deltat}\,\sin(k\deltat)
+	\\
 			     &= \theta_\deltat^k + \alpha \deltat^\beta
 			     \theta_\deltat^k
 			     ((\ln \gamma) \sin(k \deltat)
@@ -32,7 +33,7 @@ Let $\rho_\deltat^k \deq \log \theta_\deltat^k$. Then
 \begin{align}
 	\rho_\deltat^k = \rho_\deltat^k + \alpha \deltat^\beta ((\ln
 	\gamma) \sin(k \deltat) + \cos(k
-	\deltat)+\bigO(\deltat))\sin(k\deltat)+O(\deltat^{2\beta}\sin(k\deltat)).
+	\deltat)+\bigO(\deltat))\sin(k\deltat)+O(\deltat^{2\beta}\sin^2(k\deltat)).
 \end{align}
 Then, setting $K_\deltat \deq \lfloor \deltat^{-\frac{\beta +
 3}{4}}\rfloor$ and using $\sin(k\deltat)=k\deltat+O(k^3\deltat^3)$ and
@@ -40,11 +41,12 @@ likewise for $\cos$, we have
 \begin{align}
 	\rho_\deltat^{K_\deltat} &= \rho_\deltat^0 + \alpha \deltat^\beta
 	\sum\limits_{k=0}^{K_\deltat} \left(((\ln \gamma)k\deltat +
-	1+O(\deltat))k\deltat + \bigO(K_\deltat^3 \deltat^{3})\right)\\
+	1+O(\deltat))k\deltat + \bigO(K_\deltat^3 \deltat^{3})
+	+\bigO(\deltat^{\beta+2}K_\deltat^2)\right)\\
 	&= \rho_\deltat^0 + \alpha \deltat^\beta
 	\sum\limits_{k=0}^{K_\deltat} ((\ln \gamma) k\deltat +
-	1)k\deltat + \bigO(K_\deltat K_\deltat^3 \deltat^{3 + \beta}) +
-	\bigO(K_\deltat^2 \deltat^{\beta+2})\\
+	1)k\deltat + \bigO(K_\deltat K_\deltat^3 \deltat^{3 + \beta} +
+	K_\deltat^2 \deltat^{\beta+2}+K_\deltat^3\deltat^{2\beta+2})\\
 				 &= \rho_\deltat^0 + \alpha \deltat^\beta
 				 \sum\limits_{k=0}^{K_\deltat} ((\ln
 				 \gamma) k\deltat + 1)k\deltat +
