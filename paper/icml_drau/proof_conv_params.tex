@@ -9,10 +9,9 @@ Define $F$ as
 	F^\theta(\theta, \psi, s, a) &= \alpha^V (r(s, a) + \ln(\gamma) V_\theta(s) + \partial_s V_\theta(s) F(s, a) - A_\psi(s, a))\partial_\theta V_\theta(s)\\
 	F^\psi(\theta, \psi, s, a) &= \alpha^A (r(s, a) + \ln(\gamma) V_\theta(s) + \partial_s V_\theta(s) F(s, a) - A_\psi(s, a))\partial_\psi A_\psi(s, a).
 \end{align}
-Both $V$ and $A$ are uniformly Lipschitz continuous in $\theta$ and $\psi$, thus
-$F$ is Lipschitz continuous. \TODO{need 1 more derivative assumption on
-$V, A$,
-because $F$ uses derivatives of $V, A$.}
+From the bounded Hessians and Gradients hypothesis, $V$, $A$, $\partial_s V$,
+$\partial_\theta V$ and $\partial_\psi A$ are uniformly Lipschitz continuous in
+$\theta$ and $\psi$, thus $F$ is Lipschitz continuous.
 
 The discrete equations for parameters updates with learning rates $\alpha^V \deltat^\beta$ and
 $\alpha^A \deltat^\beta$ are

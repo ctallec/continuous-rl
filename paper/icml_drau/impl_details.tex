@@ -78,7 +78,9 @@ We hereby list the hyperparameters used for each environment. Continuous actions
 \begin{itemize}
 	\item {\bf Ant (C)}: State normalization is used. Discretization range: $[0.05, 0.02, 0.01, 0.005, 0.002]$.
 	\item {\bf Cheetah (C)}: State normalization is used. Discretization range: $[0.05, 0.02, 0.01, 0.005, 0.002]$
-	\item {\bf Bipedal Walker (C)}: State normalization is used, $\alpha_2 = 0.02$. Discretization range: $[0.01, 0.005, 0.002, 0.001]$.
+	\item {\bf Bipedal Walker (C)\footnote{
+				The reward for Bipedal Walker is modified not to scale with $\deltat$. This does not introduce any change for the default setup.
+		}}: State normalization is used, $\alpha_2 = 0.02$. Discretization range: $[0.01, 0.005, 0.002, 0.001]$.
 	\item {\bf Cartpole (D)}: $\alpha_2 = 0.02$, $\tau = 0$. Discretization range: $[0.01, 0.005, 0.002, 0.001, 0.0005]$.
 	\item {\bf Pendulum (C)}: $\alpha_2 = 0.02$, $\tau = 0$. Discretization range: $[0.01, 0.005, 0.002, 0.001, 0.0005]$.
 
