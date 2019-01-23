@@ -134,8 +134,10 @@ derived.
 \begin{theorem}
 Under suitable smoothness assumptions, $A^\pi_\deltat(s,a)$ has a limit
 $A^\pi(s,a)$ when $\deltat\to 0$. The limit is informative about
-actions, namely, if a policy $\pi'$ satisfies $V^{\pi'}>V^{\pi}$ for all states, then
-$A^\pi(s,\pi'(s))>0$ for some $s$.
+actions: namely, if a policy $\pi'$ strictly dominates $\pi$, 
+%satisfies $V^{\pi'}>V^{\pi}$ for all states,
+then
+$A^\pi(s,\pi'(s))>0$ for some state $s$.
 \end{theorem}
 
 \subsection{Timestep-Invariant Exploration}
