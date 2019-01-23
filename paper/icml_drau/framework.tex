@@ -6,7 +6,7 @@ Many reinforcement learning environments are not intrinsically
 time-discrete, but discretizations of an underlying continuous-time
 environment. For instance, many simulated control environments, such as
 the Mujoco environments~\cite{ddpg} or OpenAI Gym classic control
-environments~\cite{gym}, are discretization of continuous-time control
+environments~\cite{gym}, are discretizations of continuous-time control
 problems.  In simulated environments, the time discretization is fixed by
 the simulator, and is often used to approximate an underlying
 differential equation.  In this case, the timestep may correspond to the
@@ -15,9 +15,10 @@ sensors and actuators have a fixed time precision: cameras can only
 capture a fixed amount of frames per second, and physical limitations
 prevent actuators from responding instantaneously. The quality of these
 components thus imposes a lower bound on the discretization timestep. As
-the timestep $\deltat$ is not an intrinsic parameter of the
-environment, but a constraint imposed by computational ressources, we
-would expect that decreasing $\deltat$ could only improve the performance
+the timestep $\deltat$ is 
+%not an intrinsic parameter of the environment, but
+largely a constraint imposed by computational ressources, we
+would expect that decreasing $\deltat$ would only improve the performance
 of RL agents (though it might make optimization
 harder).  RL algorithms should, at least, be resilient to a change of
 $\deltat$, and should remain viable when $\deltat \rightarrow 0$.
@@ -35,7 +36,7 @@ factor and value functions, that converge to well defined
 continous-time limits. The state-action value
 function is shown to collapse to the value function as $\deltat$ goes to $0$.
 Consequently there is no $Q$-learning in continuous time, foreshadowing
-problematic behaviors of near continuous time $Q$-learning.
+problematic behavior of $Q$-learning with small timesteps.
 %      \TODO{We should explain somwhere here that, if not invariant,
 %      harder to find good hyperparameters} DONE
 
@@ -71,14 +72,15 @@ problematic behaviors of near continuous time $Q$-learning.
       
 % TODO: For now, differential equation is the default, SDE is a footnote.
 Let ${\cal S} = \mathbb{R}^d$ be a set of states, and ${\cal A}$ be a set of
-actions. Consider the continuous \emph{Markov Decision Process} (MDP) defined by the differential equation %\TODO{Explain the intuition of Brownian in SDE}:
+actions. Consider the continuous-time \emph{Markov Decision Process} (MDP) defined by the differential equation %\TODO{Explain the intuition of Brownian in SDE}:
         \begin{equation}
 	\label{eq:diffusion}
 	ds_t/dt = F(s_t, a_t) % + \Sigma(s, a)\dbt.
               \end{equation}
 where $F\colon {\cal S}\times{\cal A}\rightarrow {\cal S}$ describes
 the dynamics of the environment. The agent interacts with the environment through a deterministic policy function
-$\pi \colon {\cal S} \rightarrow {\cal A}$, so that $a_t=\pi(s_t)$. 
+$\pi \colon {\cal S} \rightarrow {\cal A}$, so that $a_t=\pi(s_t)$;
+actions can be discrete or continuous. 
 For simplicity we assume here that both the dynamics and exploitation policy are
 deterministic; \footnote{
       We believe the results presented here hold more
@@ -90,12 +92,12 @@ deterministic; \footnote{
       $B_t$ a multidimensional Brownian motion and $\Sigma$ a covariance matrix. A
       formal treatment of SDEs is beyond the scope of this paper.}
  the exploration policy will be random, but care must be
-taken to properly define random policies with
-discrete actions in continuous time, see below.
+taken to define proper random policies 
+in continuous time, especially with discrete actions (Sec.~\ref{subsec:explo}).
 
-For any $\deltat>0$, we can define an MDP ${\cal
+For any timestep $\deltat>0$, we can define an MDP ${\cal
 M}_\deltat = \langle {\cal S}, {\cal A}, T_{\deltat}, r_\deltat,
-      \gamma_\deltat\rangle$ as a discretization of the continuous MDP with
+      \gamma_\deltat\rangle$ as a discretization of the continuous-time MDP with
       \emph{time discretization} $\deltat$. The %deterministic
       transition function of a state $s$
       %$T_\deltat(s, a, s')$ 
@@ -162,8 +164,8 @@ can be found in the supplementary material.
 \paragraph{Return and discount factor.}
 Suitable 
 $\deltat$-dependent scalings of the discount factor $\gamma_\deltat$
-and the reward $r_\deltat$ are as follows. These definitions fit the discrete case
-when $\deltat=1$, and provide well defined, non-trivial returns
+and reward $r_\deltat$ are as follows. These definitions fit the discrete case
+when $\deltat=1$, and provide well-defined, non-trivial returns
 and value functions when $\deltat$ goes to $0$.
 
 For a continuous MDP and a continuous trajectory $\tau = (s_t, a_t)_t$,
@@ -178,7 +180,7 @@ return $R_\deltat$ of the MDP $\mathcal{M}_{\deltat}$ as
 \begin{equation}
 \label{eq:discretized-return}
 R_\deltat(\tau) \deq \sum_{k=0}^\infty\gamma^{k\deltat}\,
-r(s_\deltat^k, a_\deltat^k)\,\deltat
+r(s_{k\deltat}, a_{k\deltat})\,\deltat
 \end{equation}
 and the discretized return will correspond to the continuous-time return
 if we set the decay factor $\gamma_\deltat$ and rewards $r_\deltat$ of
@@ -229,7 +231,7 @@ r_\deltat \deq \deltat . r.
 
       \paragraph{Physical time vs algorithmic time, time horizon.}
         % [[I prefer to talk about ``number of steps'' VS ``Physical time'' than microscopic/Macroscopic]]
-        In near continuous environments, there are two notions of time:
+        In near-continuous environments, there are two notions of time:
 the algorithmic time $k$ (number of steps or actions taken), and the
 physical time $t$ (time spent
 in the underlying continuous time environment), related via
@@ -275,7 +277,7 @@ classical deep $Q$-learning baselines.
 
 
 \paragraph{Value function.}
-The return \eqref{eq:continuous-return} yields the
+The return \eqref{eq:continuous-return} leads to the
 following continuous-time value function
 \begin{align}
   V^\pi(s) &= \E_{\tau\sim\pi}\left[R(\tau) \mid s_0 = s\right]\\
@@ -287,7 +289,7 @@ M}_\deltat$ is
 \begin{align}
   V^\pi_\deltat(s) &= \E_{\tau\sim\pi}\left[R_\deltat(\tau) \mid s_0 = s\right]\\
   &= \E_{\tau\sim\pi}\left[\sum\limits_{k=0}^\infty
-  \gamma^{k\deltat}\,r(s^k_{\deltat}, a^k_{\deltat})\,\deltat \mid s_0 = s\right]
+  \gamma^{k\deltat}\,r(s_{k\deltat}, a_{k\deltat})\,\deltat \mid s_0 = s\right]
 \end{align}
 % which fits the usual definition of the discrete $V$-function for $\gamma_\deltat$ and
 % $r_\deltat$ defined in \eqref{eq:def-gamma}.
@@ -304,7 +306,8 @@ namely,
 }
 \begin{equation}
   \label{eq:bellman}
-  V^\pi_\deltat(s) = \reward(s, \pi(s))\,\deltat + \gamma^{\deltat}\, \E_{s_{\deltat}^{k+1} | s_{\deltat}^{k} = s} V^\pi_\deltat(s_{\deltat}^{k+1})
+  V^\pi_\deltat(s) = \reward(s, \pi(s))\,\deltat + \gamma^{\deltat}\,
+  \E_{s_{(k+1)\deltat} | s_{k\deltat} = s} V^\pi_\deltat(s_{(k+1)\deltat})
 \end{equation}
 
 When the timestep tends to $0$, one converges to the other.

@@ -20,7 +20,7 @@ to induce well-behaved parameter trajectories when $\deltat$ goes to $0$.
 
 As seen above, there is no continuous time limit to $Q$-learning, because
 $Q^\pi$ becomes independent of actions and thus cannot be
-used to select actions.  In near-continuous time,
+used to select actions.  With small but nonzero $\deltat$,
 $Q^\pi_\deltat$ still depends on actions, and could still be used to
 choose actions. However, when
 approximating $Q^\pi_\deltat$, if the approximation error is much larger
@@ -39,11 +39,20 @@ $Q^\pi_\deltat(s, a)$ and $V^\pi_\deltat(s)$ is of order
 $\bigO(\deltat)$. This amounts to splitting $Q$ into value and advantage,
 and observing that these scale very differently when $\deltat\to 0$.
 
-Contrary to the action state value function,
+Contrary to the $Q$-function,
 this
 rescaled advantage function converges when $\deltat\to 0$
-to an action-dependent quantity which, if it can be learned, contains the
-necessary information for policy improvement (Thm.~\ref{thm:Alimit}).
+to a non-degenerate action-dependent quantity.
+
+\begin{theorem}
+\label{thm:Alimit}
+Under suitable smoothness assumptions, $A^\pi_\deltat(s,a)$ has a limit
+$A^\pi(s,a)$ when $\deltat\to 0$. The limit keeps information about
+actions: namely, if a policy $\pi'$ strictly dominates $\pi$, 
+%satisfies $V^{\pi'}>V^{\pi}$ for all states,
+then
+$A^\pi(s,\pi'(s))>0$ for some state $s$.
+\end{theorem}
 
 
 % \LB{In next equation, tiny detail but I would write $\frac{1}{\deltat}(r\deltat+...)$, easier to read.}
@@ -62,7 +71,7 @@ necessary information for policy improvement (Thm.~\ref{thm:Alimit}).
 %     \TODO{Is this true? What is true? Is this real life? We should probably add a reasonable hypothesis, for example $\pi_\deltat^* \rightarrow \pi^*$}
 %   \end{theorem}
 
-The discretized $Q$-function rewrites as
+\paragraph{Learning $A^\pi$.} The discretized $Q$-function rewrites as
 \begin{equation}
 	Q^\pi_\deltat(s, a) = V^\pi_\deltat(s) + \deltat A^\pi_\deltat(s, a).
 	\label{eq:reparam_q_pi}
@@ -96,7 +105,7 @@ f(s),\,A_\psi(s,a)+f(s)/\deltat)$ (for an arbitrary $f$)
 % 	\tilde{V}(s) &= V(s) - f(s),\qquad
 % 	\tilde{A}(s, a) = A(s, a) + \frac{f(s)}{\deltat}
 % \end{align}
-yields the exact same $Q_\Theta$ function. This new $A_\psi$ still defines %the same $Q$ and
+yields the exact same function $Q_\Theta$. This new $A_\psi$ still defines %the same $Q$ and
 the same ranking of actions, yet this phenomenon might cause
 numerical problems or instability of $A_\psi$ when $\deltat\to 0$, and prevents direct
 interpretation of the learned $A_\psi$.
@@ -104,7 +113,8 @@ interpretation of the learned $A_\psi$.
 % $Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
 To enforce identifiability of $A_\psi$, one must enforce the consistency equation
 \begin{equation}
-	Q^\pi_\deltat(s, \pi(s)) - V^\pi_\deltat(s) = 0
+	V^\pi_\deltat(s) = Q^\pi_\deltat(s,
+	\pi(s))
 \end{equation}
 on the approximate $A_\psi$ and $V_\theta$. This translates to
 \begin{equation}
@@ -126,33 +136,25 @@ and use $\bar{A}_\psi$ to define $A_\psi$ as
 	A_\psi(s, a) \deq \bar{A}_\psi(s, a) - \bar{A}_\psi(s, \pi(s)).
 \end{equation}
 % Rq Harsh
-With this definition, $A_\psi$ directly verifies the normalization condition.
+so that $A_\psi$ directly verifies the consistency condition.
 
 This approach will lead to $\deltat$-robust algorithms for
 approximating $A^\pi_\deltat$, from which a ranking of actions can be
 derived.
-
-\begin{theorem}
-\label{thm:Alimit}
-Under suitable smoothness assumptions, $A^\pi_\deltat(s,a)$ has a limit
-$A^\pi(s,a)$ when $\deltat\to 0$. The limit keeps information about
-actions: namely, if a policy $\pi'$ strictly dominates $\pi$, 
-%satisfies $V^{\pi'}>V^{\pi}$ for all states,
-then
-$A^\pi(s,\pi'(s))>0$ for some state $s$.
-\end{theorem}
 
 \subsection{Timestep-Invariant Exploration}
 \label{subsec:explo}
 
 To obtain a timestep-invariant RL algorithm, a timestep-invariant
 exploration scheme is required. 
-For continuous actions, \cite{ddpg} already introduced a time discretization invariant exploration scheme, which consists in adding an
+For \emph{continuous} actions, \cite{ddpg} already introduced such a scheme, 
+by adding an
 \emph{Ornstein--Uhlenbeck} \cite{orn-uhl} (OU) process to actions. Formally, it is defined as
 \begin{equation}
-	\pi^\text{explore}(s^k_\deltat, z^k_\deltat) \deq \pi(s^k_\deltat) + z^k_\deltat
+	\pi^\text{explore}(s_{k\deltat}, z_{k\deltat}) \deq
+	\pi(s_{k\deltat}) + z_{k\deltat}
 \end{equation}
-with $z^k_\deltat$ the discretization of a continuous-time OU process,
+with $z_{k\deltat}$ the discretization of a continuous-time OU process,
 \begin{equation}
 	dz_t = - z_t \,\kappa\, dt + \sigma \,\dbt.
 	\label{eq:orn_uhl}
