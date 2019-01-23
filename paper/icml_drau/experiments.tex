@@ -12,7 +12,7 @@ compare against on-policy methods such as A3C~\cite{a3c}, PPO~\cite{ppo} or
 TRPO~\cite{trpo}.
 
 In all settings, we use the learning algorithm described in
-Alg.~\ref{alg:dau} and supplementary, Algo 1. The variants of DDPG and DQN
+Alg.~\ref{alg:dau} and supplementary, Alg.~1. The variants of DDPG and DQN
 used are described in the supplementary material, as well as all the hyperparameters
 used. We tested two different setups for DDPG and DQN.
 In one, we scaled the discount factor (to avoid shortsightedness with small $\deltat$), but
@@ -29,8 +29,7 @@ possible across different timesteps. For example,
 return results are given in term of discretized return $R_\deltat$ as defined in \eqref{eq:discretized-return},\footnote{This mostly amounts to scaling rewards
 by a factor $\deltat$ when this scaling is not naturally done in the environment. Environment-specific
 details are given in the supplementary material.} and, most notably, time elapsed is always given in
-normalized epochs (physical time), i.e. the true number of epochs multiplied by the
-discretization timestep.
+physical time, i.e. the amount of time that the agent spent interacting with the environment (this is not the computational time).
 
 
 \paragraph{Qualitative experiments: Visualizing policies and values.}
@@ -46,23 +45,23 @@ Supplementary.
 
 We plot the learnt policy at several instants in physical time (or
 normalized epochs) during training, for various time discretizations
-$\deltat$, for both DAU and DDPG. With DAU, the agent's policy quickly
-converges for every time discretization without specific hyperparameter
-tuning. On the contrary, with DDPG, the agent is only able to learn for
-the two largest time discretizations; DDPG learning gets harder as $\deltat$ decreases.
+$\deltat$, for both DAU and DDPG. With DAU, the agent's policy and value function quickly
+converge for every time discretization without specific
+tuning. On the contrary, with DDPG, learning of both value function
+and policy greatly vary from one discretization to another.
 
 \paragraph{Quantitative experiments.}
 We benchmark DAU against DDPG on classic control benchmarks: Pendulum,
-Cartpole, BipedalWalker, Ant, and Half-Cheetah environments from OpenAI
-Gym. For Pendulum and Ant, DDPG is able to learn for the highest
-$\deltat$ but fails for the others, while DAU remains reasonably
-invariant to the time discretization. On BipedalWalker, DDPG is never
-able to learn while DAU is achieving decent performance for all the
-$\deltat$'s. On Cartpole and Half-Cheetah, the results are less clear. On
-Cartpole, noise dominates, which makes interpretation difficult. On Half-Cheetah, DAU is not clearly more invariant to time discretization than
-DDPG. This could be explained by the multiple suboptimal regimes that
-coexist in the Half-Cheetah environment (walking on the head, walking on
-the back).
+Cartpole, BipedalWalker, Ant, and Half-Cheetah environments from OpenAI Gym. On
+Pendulum, Bipedal Walker and Ant, DAU is quite robust to variations of
+$\deltat$ and displays reasonable performances in all cases. On the other hand,
+DDPG's performance varies with $\deltat$; performance are either degraded as
+$\deltat$ decreases (Ant, Cheetah), or become more variable as learning
+progresses (Pendulum) with small $\deltat$'s. On Cartpole, noise dominates,
+which makes interpretation difficult. On Half-Cheetah, DAU is not clearly
+invariant to time discretization. This could be explained by the multiple
+suboptimal regimes that coexist in the Half-Cheetah environment (walking on the
+head, walking on the back).
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=\columnwidth]{figs_data/cartpole_lc.png}
