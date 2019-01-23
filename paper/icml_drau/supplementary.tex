@@ -9,6 +9,7 @@
 \usepackage{algorithmic}
 
 \newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
 \input{macros.tex}
 
 \begin{document}
@@ -24,7 +25,7 @@ information for policy values.
 
 The first result presented is a proof of convergence for discretized
 trajectories.
-\begin{theorem}
+\begin{lemma}
 	Let $F\from {\cal S} \times {\cal A} \rightarrow \bb{R}^n$ and $\pi\from {\cal S}
 	\rightarrow {\cal A}$ be the dynamic and policy functions. Assume that,
 	for any $a$, $s \rightarrow F(s, a)$ and $s \rightarrow F(s, \pi(s))$
@@ -52,7 +53,7 @@ trajectories.
 	\end{equation}
 	Therefore, discretized trajectories converge pointwise to continuous trajectories.
 	\label{th:traj-conv}
-\end{theorem}
+\end{lemma}
 \begin{proof}
 	\input{proof_traj.tex}
 \end{proof}
@@ -67,7 +68,7 @@ is bounded, to ensure existence of $V^\pi$ and $V^\pi_\deltat$ for all $\deltat$
 	%\label{eq:conv-value}
 	$V^\pi_\deltat(s) = V^\pi(s) + \smallo(\deltat)$
 	%\end{equation}
-	Lhen $\deltat\to 0$.
+	when $\deltat\to 0$.
 	\label{th:conv-value}
 \end{theorem}
 \begin{proof}
@@ -133,8 +134,32 @@ We now show that policy improvement works with the continous time advantage func
 	\input{no_conv_beta.tex}
 \end{proof}
 
-      \begin{theorem}
-	Exploration strategy
+\begin{theorem}
+  Let $F\from {\cal S} \times {\cal A} \rightarrow \bb{R}^n$ be the dynamic, and $\pi\from {\cal S} \times {\cal A} \rightarrow [0,1]$ be the policy, such that $\pi(s, \cdot)$ is a probability distribution over ${\cal A}$. Assume that 
+  $F$ is $C^1$ with bounded derivatives, and that $\pi$ is $C^1$ and bounded.
+  For any $\deltat > 0$, define the discretized trajectory
+	$(s_\deltat^k)_k$ which amounts to sample an action from $\pi(s, \cdot)$ and maintaining each action for a
+	time interval $\deltat$; it is defined by induction as $s_\deltat^0 = s_0$,
+	$s_\deltat^{k + 1}$ is the value at time $\deltat$ of
+	the unique solution of
+	\begin{equation}
+		\frac{d\tilde{s}_t}{dt} = F(\tilde{s}_t, a_k)
+		\label{eq:diff_2}
+	\end{equation}
+	with $a_k \sim \pi(s_\deltat^k, \cdot)$ and initial point $s_\deltat^k$.
+
+        Then the
+        agent's trajectories converge when $\deltat\to 0$ to the solutions of the
+        \emph{deterministic} equation:
+        \begin{equation}
+		\frac{ds_t}{dt} = \E_{a\sim \pi(s_t, \cdot)}F(s_t, a).
+		\label{eq:diff}
+              \end{equation}
+              Notably, if $\pi$ is an epsilon greedy strategy that mixes a deterministic exploitation policy $\pi^{\text{deterministic}}$ with an action taken from a noise policy $\pi^{\text{noise}}$ with probability $\varepsilon$ at, the trajectory converge to the solutions of the equation: 
+        \begin{equation}
+          d s_t/dt= (1-\eps) F(s_t,\pi^\text{deterministic}(s_t))+\eps \E_{a\sim
+            \pi^\text{noise}(a|s)}F(s_t,a)
+	\end{equation}
 \end{theorem}
 \begin{proof}
 	\input{proof_conv_expl.tex}
