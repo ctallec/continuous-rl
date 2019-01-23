@@ -35,8 +35,6 @@ too: $Q^*(s,a)$ is the value of playing action $a$ then playing optimally,
 and if $a$ is only maintained for a very short time its advantage over
 other actions will be accordingly small. (This occurs even with a
 suitably adjusted decay factor $\gamma$.)
-
-\TODO{
 If the discretization timestep becomes infinitesimal, the effect of every
 individual action vanishes: there is no continuous-time $Q$-function
 (Thm.~\ref{th:q-cont}), hence the poor performance of $Q$-learning with
@@ -48,7 +46,7 @@ We focus on continuous time because this leads to a clear theoretical framework,
 but our observations make sense in any setting in which the value
 results from taking a large number of small individual actions. Our
 results suggest standard $Q$-learning will fail in such settings without a
-delicate balance of hyperparameter scalings and reparameterizations.}
+delicate balance of hyperparameter scalings and reparameterizations.
 %the
 %advantage of any single individual action is small compared to the total
 %return.%, for instance, long time horizon problems.
