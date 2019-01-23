@@ -8,7 +8,7 @@ discretizations, without specific tuning, while standard deep $Q$-learning
 approaches do not. DAU is compared to DDPG for continuous actions and to
 DQN for
 discrete actions.
-Since we focus on Q-learning-based off-policy methods, we do not
+Since we focus on $Q$-learning-like off-policy methods, we do not
 compare against on-policy methods (A3C~\cite{a3c}, PPO~\cite{ppo},
 TRPO~\cite{trpo}...).
 
@@ -19,17 +19,17 @@ In one, we scaled the discount factor (to avoid shortsightedness with small $\de
 left all other hyperparameters constant across time discretizations.
 In the other, we used the properly rescaled discount
 factor and reward from Eq.~\eqref{eq:def-gamma},
-as well as $O(\deltat)$ learning rates for RMSProp.  The former yields slightly
-better results, and is presented in the main text. Experiments on the second
-variant are presented in the
-supplementary material.
+as well as $O(\deltat)$ learning rates for RMSProp.  The first variant yields slightly
+better results, and is presented here, with the second variant in the
+Supplementary.
 
 Let us stress that the quantities plotted are rescaled to make comparison
 possible across different timesteps. For example,
-returns are given in term of discretized return $R_\deltat$ as defined in \eqref{eq:discretized-return},\footnote{This mostly amounts to scaling rewards
+returns are given in terms of the discretized return $R_\deltat$ as defined in \eqref{eq:discretized-return},\footnote{This mostly amounts to scaling rewards
 by a factor $\deltat$ when this scaling is not naturally done in the environment. Environment-specific
-details are given in the supplementary material.} and, most notably, time elapsed is always given in
-physical time, i.e. the amount of time that the agent spent interacting with the environment (this is not the computational time).
+details are given in the Supplementary.} and, most notably, time elapsed is always given in
+\emph{physical} time, i.e., the amount of time that the agent spent
+interacting with the environment (this is not the number of steps).
 
 
 \paragraph{Qualitative experiments: Visualizing policies and values.}
@@ -43,12 +43,12 @@ its value and policy. The results are presented in
 Fig.~\ref{fig:pend} (value function) and Figs.~1, 2,  3 in
 Supplementary.
 
-We plot the learnt policy at several instants in physical time (or
-normalized epochs) during training, for various time discretizations
-$\deltat$, for both DAU and DDPG. With DAU, the agent's policy and value function quickly
-converge for every time discretization without specific
-tuning. On the contrary, with DDPG, learning of both value function
-and policy greatly vary from one discretization to another.
+We plot the learnt policy at several instants in physical time
+(normalized epochs) during training, for various time discretizations
+$\deltat$, for both DAU and DDPG. With DAU, the agent's policy and value
+function quickly converge for every time discretization without specific
+tuning. On the contrary, with DDPG, learning of both value function and
+policy vary greatly from one discretization to another.
 
 \paragraph{Quantitative experiments.}
 We benchmark DAU against DDPG on classic control benchmarks: Pendulum,
