@@ -1,29 +1,61 @@
 %! TEX root = supplementary.tex
 We now turn to proving that when $\beta < 1$,
 trajectories can diverge instantly in physical time. 
-Consider the following actionless continuous MDP, 
+Consider the following continuous MDP, 
 \begin{equation}
 	s_t = \sin(t)
 \end{equation}
+whatever the actions,
 with reward $0$ everywhere and $0 < \gamma < 1$.
 The resulting value function is $V(s) = 0$ (since there
-are no actions, $V$ is independent of a policy).
-We consider the function approximator $V_\theta(s) = \theta s$.
+are no actions, $V$ is independent of a policy), and the advantage
+function is $0$.
+We consider the function approximator $V_\theta(s) = \theta s$ (which can
+represent the true value function).
 The update rule for $\theta$ is
 \begin{align}
-	\theta_\deltat^{k+1} &= \theta_\deltat^k + \alpha \deltat^\beta \frac{\gamma^\deltat \theta_\deltat^k \sin((k + 1) \deltat) - \theta_\deltat^k \sin(k\deltat)}{\deltat}\\
-			     &= \theta_\deltat^k + \alpha \deltat^\beta (\ln \gamma \theta_\deltat^k \sin(k \deltat) + \theta_\deltat^k \cos(k \deltat)) + \bigO(\deltat^{\beta + 1})\\
-			     &= \theta_\deltat^k(1 + \alpha \deltat^\beta (\ln \gamma \sin(k \deltat) + \cos(k \deltat))) + \bigO(\deltat^{\beta + 1}).
+\delta Q_\deltat^k &= \gamma^\deltat \theta_\deltat^k \sin((k + 1)
+\deltat) - \theta_\deltat^k \sin(k\deltat)\\
+	\theta_\deltat^{k+1} &= \theta_\deltat^k + \alpha \deltat^\beta
+	\frac{\gamma^\deltat \theta_\deltat^k \sin((k + 1) \deltat) -
+	\theta_\deltat^k \sin(k\deltat)}{\deltat}\,\sin(k\deltat)\\
+			     &= \theta_\deltat^k + \alpha \deltat^\beta
+			     ((\ln \gamma) \theta_\deltat^k \sin(k \deltat)
+			     + \theta_\deltat^k \cos(k
+			     \deltat))\sin(k\deltat) + \bigO(\deltat^{\beta + 1})\\
+			     &= \theta_\deltat^k(1 + \alpha \deltat^\beta
+			     ((\ln \gamma) \sin(k \deltat) + \cos(k
+			     \deltat))\sin(k\deltat)) + \bigO(\deltat^{\beta + 1}).
 \end{align}
-Let $\rho_\deltat^k = \log \theta_\deltat^k$,
+Let $\rho_\deltat^k \deq \log \theta_\deltat^k$. Then
 \begin{align}
-	\rho_\deltat^k = \rho_\deltat^k + \alpha \deltat^\beta (\ln \gamma \sin(k \deltat) + \cos(k \deltat)) + \bigO(\deltat^{2\beta}).
+	\rho_\deltat^k = \rho_\deltat^k + \alpha \deltat^\beta ((\ln
+	\gamma) \sin(k \deltat) + \cos(k \deltat))\sin(k\deltat) +
+	\bigO(\deltat^{\beta+1}).
 \end{align}
-Then, let $K_\deltat = \lfloor \deltat^{-\frac{\beta + 3}{4}}\rfloor$,
+Then, setting $K_\deltat \deq \lfloor \deltat^{-\frac{\beta +
+3}{4}}\rfloor$ and using $\sin(k\deltat)=k\deltat+O(k^3\deltat^3)$ and
+likewise for $\cos$, we have
 \begin{align}
-	\rho_\deltat^{K_\deltat} &= \rho_\deltat^0 + \alpha \deltat^\beta \sum\limits_{k=0}^{K_\deltat} (\ln \gamma k\deltat + 1)k\deltat + \bigO(K_\deltat K_\deltat^3 \deltat^{3 + \beta}) + \bigO(\deltat^{2\beta})\\
-				 &= \rho_\deltat^0 + \alpha \deltat^\beta \sum\limits_{k=0}^{K_\deltat} (\ln \gamma k\deltat + 1)k\deltat + \bigO(1)\\
-				 &= \rho_\delta^0 + \alpha\deltat^{\beta + 2} \ln\gamma \frac{K_\deltat (K_\deltat + 1) (2 K_\deltat + 1)}{6} + \alpha \deltat^{\beta + 1} \frac{K_\deltat (K_\deltat + 1)}{2} + \bigO(\deltat^{2 - 2 \beta})\\
+	\rho_\deltat^{K_\deltat} &= \rho_\deltat^0 + \alpha \deltat^\beta
+	\sum\limits_{k=0}^{K_\deltat} \left(((\ln \gamma)k\deltat +
+	1)k\deltat + \bigO(K_\deltat^3 \deltat^{3}) +
+	\bigO(\deltat^{\beta+1})\right)\\
+	&= \rho_\deltat^0 + \alpha \deltat^\beta
+	\sum\limits_{k=0}^{K_\deltat} ((\ln \gamma) k\deltat +
+	1)k\deltat + \bigO(K_\deltat K_\deltat^3 \deltat^{3 + \beta}) +
+	\bigO(K_\deltat \deltat^{2\beta+1})\\
+				 &= \rho_\deltat^0 + \alpha \deltat^\beta
+				 \sum\limits_{k=0}^{K_\deltat} ((\ln
+				 \gamma) k\deltat + 1)k\deltat +
+				 \bigO(1)\\
+				 &= \rho_\delta^0 + \alpha\deltat^{\beta
+				 + 2} \ln\gamma \frac{K_\deltat
+				 (K_\deltat + 1) (2 K_\deltat + 1)}{6} +
+				 \alpha \deltat^{\beta + 1}
+				 \frac{K_\deltat (K_\deltat + 1)}{2} +
+				 O(1)\\
+				 %K_\deltat \bigO(\deltat^{2 - 2 \beta})\\
 				 &= \alpha \frac{\deltat^{\frac{\beta - 1}{2}}}{2} + \smallo(\deltat^{\frac{\beta - 1}{2}})\\
 				 &\xrightarrow[\deltat\to 0]{} +\infty.
 \end{align}
