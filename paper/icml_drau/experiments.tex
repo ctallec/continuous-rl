@@ -54,14 +54,15 @@ policy vary greatly from one discretization to another.
 We benchmark DAU against DDPG on classic control benchmarks: Pendulum,
 Cartpole, BipedalWalker, Ant, and Half-Cheetah environments from OpenAI Gym. On
 Pendulum, Bipedal Walker and Ant, DAU is quite robust to variations of
-$\deltat$ and displays reasonable performances in all cases. On the other hand,
-DDPG's performance varies with $\deltat$; performance are either degraded as
-$\deltat$ decreases (Ant, Cheetah), or become more variable as learning
-progresses (Pendulum) with small $\deltat$'s. On Cartpole, noise dominates,
-which makes interpretation difficult. On Half-Cheetah, DAU is not clearly
+$\deltat$ and displays reasonable performance in all cases. On the other hand,
+DDPG's performance varies with $\deltat$; performance either degrades as
+$\deltat$ decreases (Ant, Cheetah), or becomes more variable as learning
+progresses (Pendulum) for small $\deltat$. On Cartpole, noise dominates,
+making interpretation difficult. On Half-Cheetah, DAU is not clearly
 invariant to time discretization. This could be explained by the multiple
 suboptimal regimes that coexist in the Half-Cheetah environment (walking on the
-head, walking on the back).
+head, walking on the back), which create discontinuities in the value
+function (see Discussion).
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=\columnwidth]{figs_data/cartpole_lc.png}
