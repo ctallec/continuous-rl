@@ -7,6 +7,7 @@
 \newcommand{\drho}{\!\setminus\hspace{-.75em}\rho}
 \newcommand{\ztar}{z^\mathrm{tar}}
 \newcommand{\Nnewt}{N_\mathrm{steps/Newt}}
+\newcommand{\noise}{\epsilon}
 
 \begin{document}
 \maketitle
@@ -138,6 +139,20 @@ so we can abuse notation and compute
 \begin{equation}
 B(R)\deq \E_{s_2\sim \rho} B(s_2)R(s_2)
 \end{equation}
-as the representation of $R$.
+as the representation of $R$. Then
+\begin{equation}
+V(s_1)=\langle A(s_1),B(R)\rangle
+\end{equation}
+
+I'm not too sure about this representation. The rank of $Z$ is limited to
+the dimension of the vector space, and this may cause problems. An
+infinite-dimensional representation can be used, by having $A$ and $B$
+take values in a space of $L^2$ functions over some probability space.
+Namely, the dot product is
+\begin{equation}
+z(s_1,s_2)=\E_{\noise} A(s_1,\eps)B(s_2,\eps)
+\end{equation}
+and we can use as many samples of $\noise$ as we want. Obviously this
+adds noise.
 
 \end{document}
