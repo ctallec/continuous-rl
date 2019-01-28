@@ -155,4 +155,57 @@ z(s_1,s_2)=\E_{\noise} A(s_1,\eps)B(s_2,\eps)
 and we can use as many samples of $\noise$ as we want. Obviously this
 adds noise.
 
+This computes the value functions of all rewards for a given policy.
+Obviously when changing the policy, we may not change the policy in
+several ways at once. For this we have to introduce targets (options) in
+the policy.
+
+\paragraph{All targets at once.} Let $\omega$ be an input to the policy,
+which represents its current ``target''. We want to learn a policy with
+input $\omega$, together with a function $\Omega$ that maps each state
+$s$ to a target $\Omega(s)$, such that if we follow the policy with
+target $\Omega(s)$, then we move towards $s$.
+
+Concretely, we now have a function $z(s_1,s_2;\omega)$ which corresponds
+to the inverse Laplacian of the MDP using policy $\omega$. It is learned
+as above. Then we learn the parameters of $\pi(a|s,\omega)$ and of
+$\Omega$ so as to maximize the time spent in $s$ when using policy
+$\pi(\cdot|\Omega(s))$. Concretely, policy gradient is
+\begin{equation}
+\E_{s_1\sim \mu,\,a\sim \pi(a|s_1,\Omega(s)),\,s'\sim P(s'|s_1,a)}
+\partial \ln \pi(a|s_1,\Omega(s))(\1_{s_1=s}+\gamma
+z(s',s;\Omega(s))-z(s_1,s;\Omega(s)))
+\end{equation}
+(TODO: the $\1_{s_1=s}$ becomes a Dirac in the continuous case??)
+
+I think the policy gradient above covers both the parameters of the
+policy and the parameters of $\Omega$ (we can pretend the policy takes
+$s$ as its target and that computing $\Omega$ is part of the policy).
+But this conflicts with my previous intuition that we should train
+$\Omega(s)$ to maximize $z(s',s;\Omega(s))$, which is the locally optimal
+choice. I think we are missing some terms coming from the gradients of
+$z(s_1,s;\Omega(s))$ when updating $\Omega$. TODO!! (Might be correct in
+the end. Write that we want to maximize expected time spent in $s$ for
+policy $\Omega(s)$. Write policy gradient for the policy with target $\Omega(s)$,
+seeing $\Omega$ as part of the policy. Its policy gradient involves the
+value function for policy $\Omega(s)$, which is given by $z(;\Omega(s))$,
+but it does not involves the gradients of the value function.)
+
+Problem here: $\mu$ has to be the invariant distribution of the
+$\Omega(s)$-policy, so a bit complicated to apply online, we need to keep
+the policy fixed until convergence... this implies having separate runs
+with different targets. Or find an off-policy version... 
+
+$\omega$ represents an option, but there is no risk of option collapse
+because each option has a different target.
+
+This still does not cover policies with arbitrary rewards $R$. We have to
+find a representation $\Omega(R)$. We could try to enforce linearity of
+$\Omega$, namely, train things such that the policy with parameter
+$\omega=\E_{s\sim \rho} \Omega(s)R(s)$ maximizes $R$, for every $R$ in some
+class. If the class includes Dirac, then 
+the policy with parameter
+$\Omega(s)$ indeed maximizes time spend in $s$. (This might help with the
+Dirac in the policy gradient above.)
+
 \end{document}
