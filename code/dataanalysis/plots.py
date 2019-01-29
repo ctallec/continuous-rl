@@ -1,10 +1,10 @@
 import matplotlib
-# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter1d
 from scipy.interpolate import interp1d
 from typing import List
+from os.path import join
 
 
 def plot_learning_curves(expdata, key_list: List[str], namefile: str,
@@ -116,4 +116,4 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
 
     plt.tight_layout()
     # plt.savefig(namefile+'.eps', format="eps")
-    plt.savefig(namefile+'.png', format='png', dpi=1000)
+    plt.savefig(join('plots', namefile+'.png'), format='png', dpi=1000)
