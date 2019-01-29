@@ -1,0 +1,211 @@
+\documentclass[11pt,a4paper]{article}
+\input{header.en.tex}
+
+\title{The Third Bellman Equation}
+\author{}
+
+\newcommand{\drho}{\!\setminus\hspace{-.75em}\rho}
+\newcommand{\ztar}{z^\mathrm{tar}}
+\newcommand{\Nnewt}{N_\mathrm{steps/Newt}}
+\newcommand{\noise}{\epsilon}
+
+\begin{document}
+\maketitle
+
+\paragraph{Approximating $\Delta^{-1}$ via the Bellman--Newton equation.}
+We learn an approximation $Z$ of $\Delta^{-1}$ via the Newton iteration
+(V.Pan and J.Reif, \emph{Fast and efficient parallel solution of dense
+linear systems}, 1989)
+\begin{equation}
+Z\gets 2Z-Z\Delta Z=2Z-Z^2+\gamma ZPZ
+\end{equation}
+which, if properly initialized, converges to $\Delta^{-1}$. A criterion
+for correct initialization is if $\norm{\Id-Z\Delta}<1$ where $\norm{}$
+is the operator norm. With $\Delta=\Id-\gamma P$ this is satisfied, for
+instance, with $Z=\Id$ (for $\gamma<1$).
+
+A stochastic version can be
+\begin{equation}
+Z\gets (1+\eta) Z-Z\tilde \Delta Z
+\end{equation}
+with a stochastic estimate $\tilde \Delta$ of $\Delta$ (obtained from a
+transition observed in the MDP). Usually in RL we can only sample
+transitions $s\to s'$ from some initial state $s$ distributed wrt some
+distribution $\rho$ (which we may not control). We then parameterize
+\begin{equation}
+Z_{s_1s_2}\eqd \,\E_{s_2\sim \rho} z(s_1,s_2)
+\end{equation}
+namely, $z$ is the density of $Z$ with respect to $\rho(s_2)$.
+Equivalently, in the matrix case, $Z=z\rho$ with $\rho$ the diagonal
+matrix with entries $\rho$. Then the Newton update becomes
+\begin{equation}
+z\rho\gets 2z\rho-z\rho\Delta z\rho
+\end{equation}
+which is equivalent to
+\begin{equation}
+z\gets 2z-z\rho\Delta z
+\end{equation}
+and now $\rho \Delta$ is samplable:
+\begin{equation}
+\rho\Delta=\E_{s\sim \rho,\,s'\sim P(s'|s)}
+\1_s\transp{(\1_s-\gamma\1_{s'})}
+\end{equation}
+so we can apply the stochastic version of the Newton update. Explicitly
+this is
+\begin{equation}
+z(s_1,s_2)\gets (1+\eta) z(s_1,s_2)-
+\E_{s\sim \rho,\,s'\sim P(s'|s)}z(s_1,s)\left(z(s,s_2)-\gamma
+z(s',s_2)\right)
+\end{equation}
+
+In the tabular case, we can directly implement the above for all values
+of $s_1,s_2$ each time we observe a transition $s\to s'$. (We can also
+initialize to $\Id$.)
+
+In the non-tabular case, we parameterize $z(s_1,s_2)$ by a machine
+learning model. Then, given a current value $z_0$ of $z$, we to TD-like
+steps towards the Newton update. More precisely, we define
+\begin{equation}
+\ztar\deq 2z_0-z_0\rho\Delta z_0
+\end{equation}
+and perform any number of SGD steps on the parameters of $z$ to reduce
+the error $\E_{s_1\sim \rho,\,s_2\sim \rho}
+\,(z(s_1,s_2)-\ztar(s_1,s_2))^2$, namely, we draw two states $s_1$ and
+$s_2$ according to $\rho$, a transition $s\to s'$ with $s\sim \rho$, and
+updated the parameter $\theta$ of $z$
+by
+\begin{equation}
+\theta\gets \theta+\eta \partial_\theta z(s_1,s_2)\left(
+2z_0(s_1,s_2)-z_0(s_1,s)\left(z_0(s,s_2)-\gamma z_0(s',s_2)\right)-z(s_1,s_2)
+\right)
+\end{equation}
+which is an unbiased estimate of the gradient of the error.
+
+We can sample several values of $s_1$ and $s_2$ for each sampled
+transition $s\to s'$.  The distribution used on $s_1$ and $s_2$ need not
+be the same distribution used for $s\to s'$ (though in the
+parameterization by $Z-\Id$ this will be needed).
+
+We perform $\Nnewt$ gradient steps before resetting the Bellman--Newton
+objective using the current value of $z$ (namely, $z_0\gets z$ every
+$\Nnewt$ steps). If $\Nnewt\gg 1$ and the machine learning model
+converges, and $Z_0$ is initialized to $\Id$ (namely $z_0=1/\rho(s_2)$ at
+startup) then this is guaranteed to converge.
+
+\paragraph{What to do with $Z$.} Since $V=\Delta^{-1}R$, approximating
+$\Delta^{-1}$ provides the ingredients for policy evaluation and policy
+gradient. With the representation of $\Delta^{-1}$ as
+$Z_{s_1s_2}=\E_{s_2\sim \rho} z(s_1,s_2)$, one has
+\begin{equation}
+V(s_1)=\E_{s_2\sim \rho}\, z(s_1,s_2) R(s_2)
+\end{equation}
+The representation of $V$ as an expectation may not be convenient. So if
+$V$ is explicitly needed, we may need an auxiliary neural network to
+learn $V(s_1)$ via the above (supervised learning). However, for policy
+gradient the auxiliary network is not needed. Indeed, by the policy
+gradient formula, on-policy (with $\mu$ the stationary distribution) we find
+\begin{align}
+\partial \E R&=
+\E_{s\sim \mu,s'\sim P(s'|s)} \partial \ln
+\pi(a|s) \left(
+r(s,a,s')+\gamma V(s')-V(s)
+\right)
+\\&=
+\E_{s\sim \mu,s'\sim P(s'|s),\,s_2\sim \rho} \partial \ln
+\pi(a|s) \left(
+r(s,a,s')+R(s_2)\left(\gamma z(s',s_2)-z(s,s_2)\right)
+\right)
+\end{align}
+To exploit this, two possibilities. Either work online on $s\sim \mu$,
+and use many samples from $s_2$ with a model for $R(s_2)$. Or (better),
+work online on $s_2$ with an on-policy replay buffer on $s$, and update
+several values of $s$ each time a reward is observed at $s_2$.
+
+\paragraph{All rewards at once.} The relationship between $R$ and $V$ is
+linear (for a fied policy). The generic representation of $Z$ above
+requires computing a model of $V$ for each reward we want to work with.
+We can directly exploit the linearity by parameterizing $z$ as
+\begin{equation}
+z(s_1,s_2)=\langle A(s_1),B(s_2)\rangle
+\end{equation}
+with some parameterized functions $A$ and $B$ with values in some vector
+space with dot product $\langle\cdot,\cdot\rangle$. Intuitively, $A(s_1)$
+represents the future of $s_1$, and $B(s_2)$ the past of $s_2$.
+Then we have
+\begin{equation}
+V(s_1)=\langle A(s_1),\E_{s_2\sim \rho} B(s_2)R(s_2)\rangle
+\end{equation}
+so we can abuse notation and compute
+\begin{equation}
+B(R)\deq \E_{s_2\sim \rho} B(s_2)R(s_2)
+\end{equation}
+as the representation of $R$. Then
+\begin{equation}
+V(s_1)=\langle A(s_1),B(R)\rangle
+\end{equation}
+
+I'm not too sure about this representation. The rank of $Z$ is limited to
+the dimension of the vector space, and this may cause problems. An
+infinite-dimensional representation can be used, by having $A$ and $B$
+take values in a space of $L^2$ functions over some probability space.
+Namely, the dot product is
+\begin{equation}
+z(s_1,s_2)=\E_{\noise} A(s_1,\eps)B(s_2,\eps)
+\end{equation}
+and we can use as many samples of $\noise$ as we want. Obviously this
+adds noise.
+
+This computes the value functions of all rewards for a given policy.
+Obviously when changing the policy, we may not change the policy in
+several ways at once. For this we have to introduce targets (options) in
+the policy.
+
+\paragraph{All targets at once.} Let $\omega$ be an input to the policy,
+which represents its current ``target''. We want to learn a policy with
+input $\omega$, together with a function $\Omega$ that maps each state
+$s$ to a target $\Omega(s)$, such that if we follow the policy with
+target $\Omega(s)$, then we move towards $s$.
+
+Concretely, we now have a function $z(s_1,s_2;\omega)$ which corresponds
+to the inverse Laplacian of the MDP using policy $\omega$. It is learned
+as above. Then we learn the parameters of $\pi(a|s,\omega)$ and of
+$\Omega$ so as to maximize the time spent in $s$ when using policy
+$\pi(\cdot|\Omega(s))$. Concretely, policy gradient is
+\begin{equation}
+\E_{s_1\sim \mu,\,a\sim \pi(a|s_1,\Omega(s)),\,s'\sim P(s'|s_1,a)}
+\partial \ln \pi(a|s_1,\Omega(s))(\1_{s_1=s}+\gamma
+z(s',s;\Omega(s))-z(s_1,s;\Omega(s)))
+\end{equation}
+(TODO: the $\1_{s_1=s}$ becomes a Dirac in the continuous case??)
+
+I think the policy gradient above covers both the parameters of the
+policy and the parameters of $\Omega$ (we can pretend the policy takes
+$s$ as its target and that computing $\Omega$ is part of the policy).
+But this conflicts with my previous intuition that we should train
+$\Omega(s)$ to maximize $z(s',s;\Omega(s))$, which is the locally optimal
+choice. I think we are missing some terms coming from the gradients of
+$z(s_1,s;\Omega(s))$ when updating $\Omega$. TODO!! (Might be correct in
+the end. Write that we want to maximize expected time spent in $s$ for
+policy $\Omega(s)$. Write policy gradient for the policy with target $\Omega(s)$,
+seeing $\Omega$ as part of the policy. Its policy gradient involves the
+value function for policy $\Omega(s)$, which is given by $z(;\Omega(s))$,
+but it does not involves the gradients of the value function.)
+
+Problem here: $\mu$ has to be the invariant distribution of the
+$\Omega(s)$-policy, so a bit complicated to apply online, we need to keep
+the policy fixed until convergence... this implies having separate runs
+with different targets. Or find an off-policy version... 
+
+$\omega$ represents an option, but there is no risk of option collapse
+because each option has a different target.
+
+This still does not cover policies with arbitrary rewards $R$. We have to
+find a representation $\Omega(R)$. We could try to enforce linearity of
+$\Omega$, namely, train things such that the policy with parameter
+$\omega=\E_{s\sim \rho} \Omega(s)R(s)$ maximizes $R$, for every $R$ in some
+class. If the class includes Dirac, then 
+the policy with parameter
+$\Omega(s)$ indeed maximizes time spend in $s$. (This might help with the
+Dirac in the policy gradient above.)
+
+\end{document}

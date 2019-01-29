@@ -22,7 +22,7 @@
 \input{macros.tex}
 
 % Use the following line for the initial blind version submitted for review:
-\usepackage{icml2018}
+\usepackage{icml2019}
 
 % If accepted, instead use the following line for the camera-ready submission:
 %\usepackage[accepted]{icml2018}
@@ -59,6 +59,9 @@
 \icmlsetsymbol{equal}{*}
 
 \begin{icmlauthorlist}
+	\icmlauthor{Corentin Tallec}{tau}
+	\icmlauthor{L\'eonard Blier}{tau,fair}
+	\icmlauthor{Yann Ollivier}{fair}
 %\icmlauthor{Aeiau Zzzz}{equal,to}
 %\icmlauthor{Bauiu C.~Yyyy}{equal,to,goo}
 %\icmlauthor{Cieua Vvvvv}{goo}
@@ -73,8 +76,8 @@
 %\icmlauthor{Eee Pppp}{ed}
 \end{icmlauthorlist}
 
-%\icmlaffiliation{to}{Department of Computation, University of Torontoland, Torontoland, Canada}
-%\icmlaffiliation{goo}{Googol ShallowMind, New London, Michigan, USA}
+\icmlaffiliation{tau}{TAckling the Underspecified, Universit\'e Paris Sud}
+\icmlaffiliation{fair}{Facebook Artificial Intelligence Research}
 %\icmlaffiliation{ed}{School of Computation, University of Edenborrow, Edenborrow, United Kingdom}
 %
 %\icmlcorrespondingauthor{Cieua Vvvvv}{c.vvvvv@googol.com}
@@ -110,8 +113,8 @@ sensitivity to \emph{time discretization} in near
 continuous-time environments as a critical factor; this covers, e.g., changing the number of
 frames per second, or the action frequency of the controller.
 Empirically, we find that
-Q-learning-based approaches such as
-\emph{Deep Q-learning}~\cite{dqn} and \emph{Deep Deterministic
+$Q$-learning-based approaches such as
+\emph{Deep $Q$-learning}~\cite{dqn} and \emph{Deep Deterministic
 Policy Gradient}~\cite{ddpg} %are highly sensitive to variations of time discretization and
 collapse with small time steps. Formally, we prove that
 $Q$-learning does not exist in
@@ -131,23 +134,15 @@ discretizations, and confirm this robustness empirically.
 
 
 \input{intro.tex}
-
-
 \input{relatedworks.tex}
-
 \input{framework.tex}
-
 \input{advup.tex}
-
-
 \input{experiments.tex}
-
 \input{discussions.tex}
-
 \input{conclusion.tex}
-
+\pagebreak
 \bibliography{icml_drau.bib}
-\bibliographystyle{icml2018}
+\bibliographystyle{icml2019}
 \end{document}
 
 
