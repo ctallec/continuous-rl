@@ -6,6 +6,7 @@
 
 \newcommand{\drho}{\!\setminus\hspace{-.75em}\rho}
 \newcommand{\ztar}{z^\mathrm{tar}}
+\newcommand{\zetatar}{\zeta^\mathrm{tar}}
 \newcommand{\Nnewt}{N_\mathrm{steps/Newt}}
 \newcommand{\noise}{\epsilon}
 
@@ -31,7 +32,13 @@ Z\gets (1+\eta) Z-Z\tilde \Delta Z
 with a stochastic estimate $\tilde \Delta$ of $\Delta$ (obtained from a
 transition observed in the MDP). Usually in RL we can only sample
 transitions $s\to s'$ from some initial state $s$ distributed wrt some
-distribution $\rho$ (which we may not control). We then parameterize
+distribution $\rho$ (which we may not control). This means we can sample
+from $\rho \Delta$, more precisely,
+\begin{equation}
+\rho\Delta=\E_{s\sim \rho,\,s'\sim P(s'|s)}
+\1_s\transp{(\1_s-\gamma\1_{s'})}
+\end{equation}
+A solution is to parameterize
 \begin{equation}
 Z_{s_1s_2}\eqd \,\E_{s_2\sim \rho} z(s_1,s_2)
 \end{equation}
@@ -45,11 +52,7 @@ which is equivalent to
 \begin{equation}
 z\gets 2z-z\rho\Delta z
 \end{equation}
-and now $\rho \Delta$ is samplable:
-\begin{equation}
-\rho\Delta=\E_{s\sim \rho,\,s'\sim P(s'|s)}
-\1_s\transp{(\1_s-\gamma\1_{s'})}
-\end{equation}
+and now $\rho \Delta$ is samplable,
 so we can apply the stochastic version of the Newton update. Explicitly
 this is
 \begin{equation}
@@ -207,5 +210,132 @@ class. If the class includes Dirac, then
 the policy with parameter
 $\Omega(s)$ indeed maximizes time spend in $s$. (This might help with the
 Dirac in the policy gradient above.)
+
+\paragraph{Parameterizing $Z-\Id$ in the continuous case.} I think it is quite
+important to initialize at $Z=\Id$, but this is not easy in the
+continuous case (initializing a neural network $z(s_1,s_2)$ to
+$\delta_{s_1s_2}/\rho(s_2)$ is not convenient). Moreover, there is an
+analytical singularity: for a discrete-time Markov process in continuous
+space, the fundamental matrix $Z=\sum_t \gamma^t P^t$ does have two
+analytically distinct components: for every $t\geq 1$ the term $P^t$ is
+smooth, while for $t=0$ it is a Dirac component along the diagonal
+$s_1=s_2$ (corresponding to $\Id$). So it may not be a good idea to
+represent them together in the same network. Instead, we can choose a
+representation of the operator $Z$ as $Z=\Id+\E_\rho \zeta$ or more
+precisely
+\begin{equation}
+Z_{s_1s_2}=\delta_{s_1s_2}+\E_{s_2\sim \rho} \zeta(s_1,s_2)
+\end{equation}
+so that the operator $Z$ acting on a reward $R$ is
+\begin{equation}
+V(s_1)=(ZR)(s_1)=R(s_1)+\int_{s_2} \zeta(s_1,s_2)R(s_2)\d\rho(s_2)
+\end{equation}
+
+Let us work out the Newton step in this representation. Let us first go
+back to the discrete case and matrices. Decomposing $Z=\Id+\zeta\rho$,
+the variable $z$ is $z=Z\rho^{-1}=\rho^{-1}+\zeta$, and the objective on
+$z$ is 
+\begin{equation}
+z\gets 2z-z\rho\Delta z=\rho^{-1}-\zeta\rho\zeta+\gamma(
+P\rho^{-1}+\zeta\rho P \rho^{-1}+P\zeta+\zeta\rho P \zeta)
+\end{equation}
+so that the objective on $\zeta$ is
+\begin{equation}
+\zeta\gets -\zeta\rho\zeta+\gamma(
+P\rho^{-1}+\zeta\rho P \rho^{-1}+P\zeta+\zeta\rho P \zeta)
+\end{equation}
+The terms $-\zeta\rho \zeta$ and $\zeta\rho
+P \zeta$ are similar to what we had with $z$, but the other terms are not
+obviously samplable.
+
+The term in $P$ is a model of the transition probabilities. The term in
+$P\zeta$ is the left Bellman equation, the term in $\zeta P$ is the right
+Bellman equation (up to densities $\rho$ since $\zeta$ is defined as a
+density). I think this is how we get the right mix of the three Bellman
+equations. (Although we evaluate $P$, we do not really develop a world
+model, we only need to estimate $P(s'|s)$ given $s$ and $s'$, not build
+$s'$ from scratch as a sample from $P(s'|s)$.)
+
+The non-samplability problem solves itself when considering the gradient of the
+error. Let $\zetatar$ be the target above on $\zeta$. Define the loss
+$\E_{s_1\sim \rho,\,s_2\sim \rho} (\zeta(s_1,s_2)-\zetatar(s_1,s_2))^2$
+as above, whose gradient is
+\begin{equation}
+\E_{s_1\sim \rho,\,s_2\sim \rho} \,\partial \zeta(s_1,s_2)(\zeta(s_1,s_2)-\zetatar(s_1,s_2))
+\end{equation}
+and let us study the contributions from each term of $\zetatar$, starting
+with the non-samplable term $\gamma P \rho^{-1}$. Its contribution to the
+gradient is
+\begin{align}
+\E_{s_1\sim \rho,\,s_2\sim \rho} \,\partial \zeta(s_1,s_2)
+P_{s_1s_2}/\rho(s_2)&=\E_{s_1\sim \rho}\sum_{s_2} \partial
+\zeta(s_1,s_2)P_{s_1s_2}
+\\&=\E_{s_1\sim \rho,\,s_2\sim P(s_2|s_1)}\partial
+\zeta(s_1,s_2)
+\end{align}
+that is, the gradient of $\zeta$ along a transition $s_1\to s_2$.
+So each time we sample a transition $s\to s'$, the term $
+P\rho^{-1}$ contributes $\gamma \partial
+\zeta(s,s')$ to the gradient. (This differs from the updates above, in
+that above we sampled $s\to s'$ and then modified the value of $z$ at
+$s_1$ and $s_2$ for independently sampled states $s_1$ and $s_2$; here
+sampling $s\to s'$ contributes a change of $\zeta$ at $s$ and $s'$.)
+
+Likewise, the gradient contribution of the $P\zeta$ term is
+\begin{align}
+\E_{s_1\sim \rho,\,s_2\sim \rho} \,\partial \zeta(s_1,s_2)
+\,(P\zeta)(s_1,s_2)&=\E_{s_1\sim \rho,\,s_2\sim \rho}
+\partial \zeta(s_1,s_2)\E_{s_3\sim P(s_3|s_1)}\zeta(s_3,s_2)
+\end{align}
+so this time the transition is $s_1\to s_3$. That is, when we sample a
+transition $s\to s'$, we have a gradient term $\E_{s_2\sim \rho}
+\partial\zeta(s,s_2)\zeta(s',s_2)$.
+
+The last non-obvious term is $\zeta\rho P \rho^{-1}$. Its gradient
+contribution is
+\begin{equation}
+\E_{s_1\sim \rho,\,s_2\sim \rho} \,\partial \zeta(s_1,s_2)\sum_{s_3}
+\zeta(s_1,s_3)\rho(s_3)P_{s_3s_2}/\rho(s_2)
+\end{equation}
+because the $s_1s_2$ entry of $\zeta\rho P \rho^{-1}$ is $\sum_{s_3}
+\zeta(s_1,s_3)\rho(s_3)P_{s_3s_2}/\rho(s_2)$. This rewrites as
+\begin{equation}
+\E_{s_1\sim \rho}\sum_{s_2} \E_{s_3\sim\rho} P_{s_3s_2}
+\zeta(s_1,s_3)\partial\zeta(s_1,s_2)
+\end{equation}
+which in turn rewrites as
+\begin{equation}
+\E_{s_1\sim \rho}\E_{s_3\sim\rho} \E_{s_2\sim P(s_2|s_3)}
+\zeta(s_1,s_3)\partial\zeta(s_1,s_2)
+\end{equation}
+that is, when we sample a transition $s\to s'$, we have a contribution
+$\E_{s_1\sim \rho}\zeta(s_1,s)\partial \zeta(s_1,s')$.
+
+Thus, when sampling $s\to s'$, we have several gradient contributions:
+one is similar to what we have before and involves
+$\partial\zeta(s_1,s_2)$ for independent samples $s_1,s_2$; one involves
+$\partial\zeta(s,s')$, one involves $\partial\zeta(s,s_2)$, and the last
+involves $\partial\zeta(s_1,s')$. All are samplable.
+
+TODO rewrite gradient with current $\zeta$ and previous $\zeta_0$, with
+all correct signs and $\gamma$ factors...
+
+% Starting with a
+% previous value $Z_0=\Id+\E_{\rho}\zeta_0$, or
+% $z_0(s_1,s_2)=\delta_{s_1s_2}/\rho(s_2)+\zeta_0(s_1,s_2)$, the target is
+% $2Z_0-Z_0\Delta Z_0$. The loss is $\E_{s_1\sim \rho,\,s_2\sim \rho}
+% \,(z(s_1,s_2)-\ztar(s_1,s_2))^2$, where $z$ and $\ztar$ are the density
+% of $Z$ and of the target with respect to $\rho(s_2)$. On the variable
+% $z$, the target $\ztar$ is
+% $\ztar=2z_0-z_0\rho\Delta z_0$ which rewrites as
+% \begin{equation}
+% \ztar(s_1,s_2)=2\frac{\delta_{s_1s_2}}{\rho(s_2)}+2\zeta(s_1,s_2)-(\frac{\delta_{s_1s_2}}{\rho(s_2)}+\ztar(s_1,s_2))...
+% \end{equation}
+% % The expected
+% % gradient of the loss is $2\E_{s_1\sim \rho,\,s_2\sim \rho}\partial
+% % z(s_1,s_2)(z(s_1,s_2)-\ztar(s_1,s_2))$. We find
+% % \begin{align}
+% % z(s_1,s_2)-\ztar(s_1,s_2)=\frac{\delta_{s_1s_2}}{\rho(s_2)}-2\frac{\delta_{s_1s_2}}{\rho(s_2)}-2\zeta_0(s_1,s_2)+
+% %\end{align}
 
 \end{document}
