@@ -42,7 +42,9 @@ A solution is to parameterize
 \begin{equation}
 Z_{s_1s_2}\eqd \,\E_{s_2\sim \rho} z(s_1,s_2)
 \end{equation}
-namely, $z$ is the density of $Z$ with respect to $\rho(s_2)$.
+namely, $z$ is the density of $Z$ with respect to $\rho(s_2)$ (and as
+matrices,
+$Z=z\rho$).
 Equivalently, in the matrix case, $Z=z\rho$ with $\rho$ the diagonal
 matrix with entries $\rho$. Then the Newton update becomes
 \begin{equation}
@@ -72,17 +74,21 @@ steps towards the Newton update. More precisely, we define
 \ztar\deq 2z_0-z_0\rho\Delta z_0
 \end{equation}
 and perform any number of SGD steps on the parameters of $z$ to reduce
-the error $\E_{s_1\sim \rho,\,s_2\sim \rho}
-\,(z(s_1,s_2)-\ztar(s_1,s_2))^2$, namely, we draw two states $s_1$ and
-$s_2$ according to $\rho$, a transition $s\to s'$ with $s\sim \rho$, and
-updated the parameter $\theta$ of $z$
-by
+the error 
 \begin{equation}
-\theta\gets \theta+\eta \partial_\theta z(s_1,s_2)\left(
+\ell(z)\deq\tfrac12\, \E_{s_1\sim \rho,\,s_2\sim \rho}
+\,(z(s_1,s_2)-\ztar(s_1,s_2))^2
+\end{equation}
+namely, we draw two states $s_1$ and
+$s_2$ according to $\rho$, a transition $s\to s'$ with $s\sim \rho$, and
+update the parameter $\theta$ of $z$
+by the gradient
+\begin{equation}
+\partial\ell =-\partial_\theta z(s_1,s_2)\left(
 2z_0(s_1,s_2)-z_0(s_1,s)\left(z_0(s,s_2)-\gamma z_0(s',s_2)\right)-z(s_1,s_2)
 \right)
 \end{equation}
-which is an unbiased estimate of the gradient of the error.
+which is an unbiased estimate of the gradient $\partial \ell$ of the error.
 
 We can sample several values of $s_1$ and $s_2$ for each sampled
 transition $s\to s'$.  The distribution used on $s_1$ and $s_2$ need not
@@ -221,8 +227,7 @@ analytically distinct components: for every $t\geq 1$ the term $P^t$ is
 smooth, while for $t=0$ it is a Dirac component along the diagonal
 $s_1=s_2$ (corresponding to $\Id$). So it may not be a good idea to
 represent them together in the same network. Instead, we can choose a
-representation of the operator $Z$ as $Z=\Id+\E_\rho \zeta$ or more
-precisely
+representation of the operator $Z$ as $Z=\Id+\zeta\rho$ or equivalently
 \begin{equation}
 Z_{s_1s_2}=\delta_{s_1s_2}+\E_{s_2\sim \rho} \zeta(s_1,s_2)
 \end{equation}
@@ -316,10 +321,16 @@ Thus, when sampling $s\to s'$, we have several gradient contributions:
 one is similar to what we have before and involves
 $\partial\zeta(s_1,s_2)$ for independent samples $s_1,s_2$; one involves
 $\partial\zeta(s,s')$, one involves $\partial\zeta(s,s_2)$, and the last
-involves $\partial\zeta(s_1,s')$. All are samplable.
+involves $\partial\zeta(s_1,s')$. All are samplable. For each transition
+$s\to s'$, we can
+sample as many states $s_1,s_2$ as we want.
 
 TODO rewrite gradient with current $\zeta$ and previous $\zeta_0$, with
-all correct signs and $\gamma$ factors...
+all correct signs and $\gamma$ factors... and collect into a proposition
+about $\partial \ell$.
+
+TODO might be less easy to use in policy gradient: because of the
+expression for $V$ we have contributions $R(s')$.
 
 % Starting with a
 % previous value $Z_0=\Id+\E_{\rho}\zeta_0$, or
