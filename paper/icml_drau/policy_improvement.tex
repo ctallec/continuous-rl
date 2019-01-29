@@ -12,9 +12,10 @@ Define
 This function if continuously differentiable, and its derivative is
 \begin{align}
 	\dot{B}(T) &= \gamma^T r(s_T, \pi'(s_T)) + \gamma^T \partial_s V^\pi(s) F(s, \pi'(s)) + \gamma^T \ln(\gamma) V^\pi(s_T)\\
-		   &= \gamma^T A^\pi(s_T, \pi'(s))
+		   &= \gamma^T A^\pi(s_T, \pi'(s_T))
 		   &\geq 0.
 \end{align}
 Thus $B$ is increasing, and $B(0) = V^\pi(s)$, $\lim\limits_{T\rightarrow \infty} B(t) = V^{\pi'}(s)$.
-Consequently, $V^\pi(s) \leq V^{\pi'}(s)$, which ends the proof.
+Consequently, $V^\pi(s) \leq V^{\pi'}(s)$.
+Furthermore, if $V^\pi(s) < V^{\pi'}(s)$, then there exists $T_0$ such that $\dot B(T_0) > 0$ (otherwise $B$ is constant), and $A^\pi(s_{T_0}, \pi'(s_{T_0})) > 0$.
 

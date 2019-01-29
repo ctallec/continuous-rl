@@ -1,19 +1,21 @@
 %! TEX root = supplementary.tex
-To make things more precise, we denote $\tilde{s}_\deltat^t(s_0)$ the
+Denote $\tilde{s}_\deltat^t(s_0)$ the
 evaluation at instant $t$ of the solution of $d\tilde{s}_t/dt = F(\tilde{s}_t,
 \pi(s_0))$ with starting point $s_0$.
 
-Bellman equation on $Q^\pi_\deltat$ yields
+The Bellman equation on $Q^\pi_\deltat$ yields
 \begin{align}
 	Q^\pi_\deltat(s, a) &= r(s, a) \deltat + \gamma^\deltat V^\pi_\deltat(\tilde{s}_\deltat^\deltat(s)).
 \end{align}
 
-For all $s$, a first order taylor expansion yields
+For all $s$, a first-order Taylor expansion yields
 \begin{equation}
 	\tilde{s}_\deltat^\deltat(s) = s + F(s, a)\deltat + \bigO(\deltat^2)
 \end{equation}
-thus, by uniform boundedness of the hessian of $V^\pi_\deltat$,\footnote{
-	Without boundedness of the hessian, we cannot write the second order taylor expansion of
+where the constant in $\bigO()$ is uniformly bounded thanks to the
+assumptions on the Hessian.
+Thus, by uniform boundedness of the Hessian of $V^\pi_\deltat$,\footnote{
+	Without boundedness of the Hessian, we cannot write the second order Taylor expansion of
 	$V^\pi_\deltat(\tilde{s}_\deltat^\deltat(s))$ in term of $\deltat$.
 }
 \begin{equation}

@@ -9,8 +9,9 @@ Define $F$ as
 	F^\theta(\theta, \psi, s, a) &= \alpha^V (r(s, a) + \ln(\gamma) V_\theta(s) + \partial_s V_\theta(s) F(s, a) - A_\psi(s, a))\partial_\theta V_\theta(s)\\
 	F^\psi(\theta, \psi, s, a) &= \alpha^A (r(s, a) + \ln(\gamma) V_\theta(s) + \partial_s V_\theta(s) F(s, a) - A_\psi(s, a))\partial_\psi A_\psi(s, a).
 \end{align}
-Both $V$ and $A$ are uniformly lipschitz continuous in $\theta$ and $\psi$, thus
-$F$ is lipschitz continuous.
+From the bounded Hessians and Gradients hypothesis, $V$, $A$, $\partial_s V$,
+$\partial_\theta V$ and $\partial_\psi A$ are uniformly Lipschitz continuous in
+$\theta$ and $\psi$, thus $F$ is Lipschitz continuous.
 
 The discrete equations for parameters updates with learning rates $\alpha^V \deltat^\beta$ and
 $\alpha^A \deltat^\beta$ are
@@ -26,7 +27,7 @@ $\alpha^A \deltat^\beta$ are
 	}{\deltat}
 	\partial_\psi A_{\theta^k_\deltat}(s_{k\deltat}, a_{k\deltat})
 \end{align}
-Under uniform boundedness of the hessian of $s \rightarrow V_\theta(s)$,
+Under uniform boundedness of the Hessian of $s \mapsto V_\theta(s)$,
 one can show
 \begin{equation}
 	\begin{pmatrix}
@@ -41,7 +42,7 @@ one can show
 with a $\bigO$ independent of $k$. With the additional hypothesis that the gradient of
 $(s, a) \rightarrow \bar{A}_\psi(s, a)$ is uniformly bounded, we have
 \begin{itemize}
-	\item For $\beta = 1$, a proof schema similar to that of Thm.~\ref{th:traj-conv} shows that
+	\item For $\beta = 1$, a proof scheme identical to that of Thm.~\ref{th:traj-conv} shows that
 discrete trajectories converge pointwise to continuous trajectories defined by the differential equation
 \begin{equation}
 	\frac{d}{dt}\begin{pmatrix}
@@ -51,7 +52,7 @@ discrete trajectories converge pointwise to continuous trajectories defined by t
 	F(\theta_t, \psi_t, s_t, a_t),
 \end{equation}
 which admits unique solutions for all initial parameters, since $F$ is uniformly lipschitz continuous.
-\item Similarly, for $\beta > 1$, the proof schema of Thm.~\ref{th:traj-conv} shows that
+\item Similarly, for $\beta > 1$, the proof scheme of Thm.~\ref{th:traj-conv} shows that
 discrete trajectories converge pointwise to continuous trajectories defined by the differential equation
 \begin{equation}
 	\frac{d}{dt}\begin{pmatrix}

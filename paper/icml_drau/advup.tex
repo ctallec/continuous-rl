@@ -20,7 +20,7 @@ to induce well-behaved parameter trajectories when $\deltat$ goes to $0$.
 
 As seen above, there is no continuous time limit to $Q$-learning, because
 $Q^\pi$ becomes independent of actions and thus cannot be
-used to select actions.  In near-continuous time,
+used to select actions.  With small but nonzero $\deltat$,
 $Q^\pi_\deltat$ still depends on actions, and could still be used to
 choose actions. However, when
 approximating $Q^\pi_\deltat$, if the approximation error is much larger
@@ -39,11 +39,20 @@ $Q^\pi_\deltat(s, a)$ and $V^\pi_\deltat(s)$ is of order
 $\bigO(\deltat)$. This amounts to splitting $Q$ into value and advantage,
 and observing that these scale very differently when $\deltat\to 0$.
 
-Contrary to the action state value function,
+Contrary to the $Q$-function,
 this
 rescaled advantage function converges when $\deltat\to 0$
-to an action-dependent quantity which, if it can be learned, contains the
-necessary information for policy improvement. A formal statement is given in the supplementary material.
+to a non-degenerate action-dependent quantity.
+
+\begin{theorem}
+\label{thm:Alimit}
+Under suitable smoothness assumptions, $A^\pi_\deltat(s,a)$ has a limit
+$A^\pi(s,a)$ when $\deltat\to 0$. The limit keeps information about
+actions: namely, if a policy $\pi'$ strictly dominates $\pi$, 
+%satisfies $V^{\pi'}>V^{\pi}$ for all states,
+then
+$A^\pi(s,\pi'(s))>0$ for some state $s$.
+\end{theorem}
 
 
 % \LB{In next equation, tiny detail but I would write $\frac{1}{\deltat}(r\deltat+...)$, easier to read.}
@@ -62,7 +71,7 @@ necessary information for policy improvement. A formal statement is given in the
 %     \TODO{Is this true? What is true? Is this real life? We should probably add a reasonable hypothesis, for example $\pi_\deltat^* \rightarrow \pi^*$}
 %   \end{theorem}
 
-The discretized $Q$-function rewrites as
+\paragraph{Learning $A^\pi$.} The discretized $Q$-function rewrites as
 \begin{equation}
 	Q^\pi_\deltat(s, a) = V^\pi_\deltat(s) + \deltat A^\pi_\deltat(s, a).
 	\label{eq:reparam_q_pi}
@@ -72,8 +81,7 @@ A natural way to approximate $V^\pi_\deltat$ and $A^\pi_\deltat$ is to apply
 \begin{equation}
 	Q_\Theta(s, a) \deq V_{\theta}(s) + \deltat A_{\psi}(s, a).
 \end{equation}
-with $\Theta \deq (\theta, \psi)$. (To avoid cumbersome notation, 
-parameter indices are dropped in what follows.)  At initialization, if both $V_{\theta}$ and
+with $\Theta \deq (\theta, \psi)$. At initialization, if both $V_{\theta}$ and
 $A_{\psi}$ are initialized independently of $\deltat$, this parameterization
 provides reasonable scaling of the contribution of actions versus states
 in $Q$.
@@ -84,79 +92,90 @@ $A_{\psi}$ to approximate $A^\pi_\deltat$.
 %\TODO{CT and LB are fighting each other about the importance which should be given to the next paragraph. A impartial judge should give his opinion. (CT is wrong)}
 Still, this reparameterization does not, on its own, guarantee that $A$
 correctly approximates $A^\pi_\deltat$ if
-$Q$ approximates $Q^\pi_\deltat$% \footnote{
+$Q_\Theta$ approximates $Q^\pi_\deltat$% \footnote{
 % 	Ensuring that $A$ does not differ from $A^\pi_\deltat$ by a state dependent function only affects
 % 	$A$'s interpretability. Indeed, for any function $f$, the ranking of actions given by
 % 	$A^\pi_\deltat(s, \cdot)$ and $A^\pi_\deltat(s, \cdot) + f(s)$ is
 % 	the same. \TODO{still unclear why we'd care about identifiability}
 %}
 .
-Indeed, for any given pair $(V,\,A)$, the pair $(V(s) -
-f(s),\,A(s,a)+f(s)/\deltat)$ (for an arbitrary $f$)
+Indeed, for any given pair $(V_\theta,\,A_\psi)$, the pair $(V_\theta(s) -
+f(s),\,A_\psi(s,a)+f(s)/\deltat)$ (for an arbitrary $f$)
 % \begin{align}
 % 	\tilde{V}(s) &= V(s) - f(s),\qquad
 % 	\tilde{A}(s, a) = A(s, a) + \frac{f(s)}{\deltat}
 % \end{align}
-yields the exact same $Q$ function. This new $A$ still defines %the same $Q$ and
+yields the exact same function $Q_\Theta$. This new $A_\psi$ still defines %the same $Q$ and
 the same ranking of actions, yet this phenomenon might cause
-numerical problems or instability of $A$ when $\deltat\to 0$, and prevents direct
-interpretation of the learned $A$.
+numerical problems or instability of $A_\psi$ when $\deltat\to 0$, and prevents direct
+interpretation of the learned $A_\psi$.
 % Consequently, $Q$ can correctly approximate
 % $Q^\pi$ even if $A$ is arbitrarily far from $A^\pi$.
-To enforce identifiability of $A$, one must enforce the consistency equation
+To enforce identifiability of $A_\psi$, one must enforce the consistency equation
 \begin{equation}
-	Q^\pi_\deltat(s, \pi(s)) - V^\pi_\deltat(s) = 0
+	V^\pi_\deltat(s) = Q^\pi_\deltat(s,
+	\pi(s))
 \end{equation}
-on the approximate $A$ and $V$. This translates to
+on the approximate $A_\psi$ and $V_\theta$. This translates to
 \begin{equation}
-	A(s, \pi(s)) = 0.
+	A_\psi(s, \pi(s)) = 0.
 \end{equation}
-With this additional constraint, if $Q = Q^\pi_\deltat$, then $A =
-A^\pi_\deltat$ and $V = V^\pi_\deltat$: indeed \TODO{keep or  leave as
-an exercise?}
+With this additional constraint, if $Q_\Theta = Q^\pi_\deltat$, then $A_\psi =
+A^\pi_\deltat$ and $V_\theta = V^\pi_\deltat$: indeed
 \begin{align}
 	A^\pi_\deltat(s, a) &= \frac{Q^\pi_\deltat(s,a) - V^\pi_\deltat(s)}{\deltat}\\
-		    &= \frac{Q(s,a) - Q(s, \pi(s))}{\deltat}\\
-		    &= A(s, a).
+		    &= \frac{Q_\Theta(s,a) - Q_\Theta(s, \pi(s))}{\deltat}
+		    %\\ &
+		    = A_\psi(s, a).
 \end{align}
-In the spirit of~\cite{dueling_nets}, this condition is enforced by writing $A$ as
+In the spirit of~\cite{dueling_nets}, instead of directly parameterizing $A_\psi$,
+we define a parametric function $\bar{A}_\psi$ (typically a neural network),
+and use $\bar{A}_\psi$ to define $A_\psi$ as
 \begin{equation}
 \label{eq:Aparam}
-	A(s, a) \deq \bar{A}(s, a) - \bar{A}(s, \pi(s)).
+	A_\psi(s, a) \deq \bar{A}_\psi(s, a) - \bar{A}_\psi(s, \pi(s))
 \end{equation}
-With this parameterization, one can hope to learn an approximation of $A^\pi$,
-from which a proper ranking of actions can be derived for any $\deltat$.
+% Rq Harsh
+so that $A_\psi$ directly verifies the consistency condition.
+
+This approach will lead to $\deltat$-robust algorithms for
+approximating $A^\pi_\deltat$, from which a ranking of actions can be
+derived.
 
 \subsection{Timestep-Invariant Exploration}
 \label{subsec:explo}
 
 To obtain a timestep-invariant RL algorithm, a timestep-invariant
 exploration scheme is required. 
-For continuous actions, \cite{ddpg} already introduced a time discretization invariant exploration scheme, which consists in adding an
-\emph{Ornstein--Uhlenbeck} \cite{orn-uhl} (OU) process to actions. Formally, it is defined as
+For \emph{continuous} actions, \cite{ddpg} already introduced such a scheme, 
+by adding an
+\emph{Ornstein--Uhlenbeck} \cite{orn-uhl} (OU) random process to the
+actions. Formally, this is defined as
 \begin{equation}
-	\pi^\text{explore}(s^k_\deltat, z^k_\deltat) \deq \pi(s^k_\deltat) + z^k_\deltat
+	\pi^\text{explore}(s_{k\deltat}, z_{k\deltat}) \deq
+	\pi(s_{k\deltat}) + z_{k\deltat}
 \end{equation}
-with $z^k_\deltat$ the discretization of a continuous-time OU process,
+with $z_{k\deltat}$ the discretization of a continuous-time OU process,
 \begin{equation}
 	dz_t = - z_t \,\kappa\, dt + \sigma \,\dbt.
 	\label{eq:orn_uhl}
 \end{equation}
 where $B_t$ is a brownian motion, $\kappa$ a stiffness parameter and
-$\sigma$ a noise scaling parameter. The discretized trajectories converge
-to non trivial continuous time trajectories, exhibiting a Brownian
+$\sigma$ a noise scaling parameter. The discretized trajectories of $z$ converge
+to nontrivial continuous-time trajectories, exhibiting Brownian
 behavior with a recall force towards $0$.
 
 This exploration can be extended to schemes of the form
 \begin{equation}
   \label{eq:explore}
-	a^k_\deltat = \pi^\text{explore}_\deltat(s^k_\deltat, z^k_\deltat)
+	a_{k\deltat} = \pi^\text{explore}_\deltat(s_{k\deltat},
+	z_{k\deltat})
 \end{equation}
-with $(z^k_\deltat)_{k\geq 0}$ a sequence of random variables independent from the $a$'s and $s$'s.
+with $(z_{k\deltat})_{k\geq 0}$ a sequence of random variables independent from the $a$'s and $s$'s.
 A sufficient condition for this policy to admit a continuous-time
 limit is for the sequence
-$z_\deltat$ to converge in law to a
-well-defined continuous stochastic process $z$ as $\deltat$ goes to $0$.
+$z_{k\deltat}$ to converge in law to a
+well-defined continuous stochastic process $z_t$ as $\deltat$ goes to $0$.
 % For instance, $\varepsilon$-greedy exploration naturally falls in this framework, \TODO{[[CT would like to give these details, LB thinks it is not necessary:]] with each $z^k_\deltat$
 % being a pair composed of a bernoulli random variables $b^k_\deltat$ with probability of being $1$ equal to $\varepsilon$,
 % and of a uniform categorical random variable $\xi^k_\deltat$ on actions. Exploratory actions are then selected as
@@ -164,20 +183,22 @@ well-defined continuous stochastic process $z$ as $\deltat$ goes to $0$.
 % 	a^k_\deltat = (1 - b^k_\deltat) \text{argmax}_{a'} Q^\pi_\deltat(s, a') + b^k_\deltat \xi^k_\deltat.
 % \end{equation}}
 
-Thus, for discrete actions we can obtain a temporally consistent
+Thus, for \emph{discrete} actions we can obtain a consistent
 exploration scheme by taking
-$z_\deltat$ to be a discretization of an $|\mathcal{A}|$-dimensional
+$z_\deltat$ to be a discretization of an $(\#\mathcal{A})$-dimensional
 continuous OU process, and setting
 \begin{equation}
-  \pi^\text{explore}(s_t, z_t)\deq \text{argmax}_{a'} \left(A(s, a') + z_t[a']\right)
+  \pi^\text{explore}(s_{k\deltat}, z_{k\deltat})\deq \argmax_{a}
+  \left(A_\psi(s_{k\deltat}, a) + z_{k\deltat}[a]\right)
 \end{equation}
-where $z_t[a']$ denotes the $a'$-th component of $z_t$. Namely, we
-perturb advantage values by a random process before selecting an action. The resulting scheme
-converges in continuous time to a nontrivial exploration scheme.
+where $z_{k\deltat}[a]$ denotes the $a$-th component of $z_{k\deltat}$. Namely,
+we perturb the \emph{advantage values} by a random process before selecting an action. The
+resulting scheme converges in continuous time to a nontrivial exploration
+scheme.
 
 On the other hand,
 $\varepsilon$-greedy
-exploration is likely \emph{not} to explore, i.e. to collapse to a deterministic
+exploration is likely \emph{not} to explore, i.e., to collapse to a deterministic
 policy, when $\deltat$ goes to $0$.
 % Indeed, in a
 % near-continuous deterministic environment, %the exploration policy resulting from
@@ -186,17 +207,31 @@ policy, when $\deltat$ goes to $0$.
 Intuitively,
 with very small $\deltat$, changing the action at random every $\deltat$ time
 step just averages out the randomness due to the law of large numbers.
-More precisely, let
-$(a_\deltat)$ be a sequence of i.i.d.\ actions drawn from a distribution $p_A$, (for instance
-the sequence of actions generated by $\varepsilon$-greedy exploration on a
-fixed policy) in a near-continuous environment. Then, as $\deltat$ goes
-to $0$, the trajectories generated by
-this policy tend to solutions of the deterministic equation
+More precisely:%, let
+% $(a_\deltat)$ be a sequence of i.i.d.\ actions drawn from a distribution $p_A$, (for instance
+% the sequence of actions generated by $\varepsilon$-greedy exploration on a
+% fixed policy) in a near-continuous environment. Then, as $\deltat$ goes
+% to $0$, the trajectories generated by
+% this policy tend to solutions of the deterministic equation
+% \begin{equation}
+% 	ds_t/dt  = \E_{a\sim p_A}\left[F(s_t, a)\right]
+% \end{equation}
+% where the expectation cancels the exploration noise. The proof is given in the
+% supplementary material. \TODO{Is there a stronger theorm? Should we talk more about that?}
+
+
+\begin{theorem}
+Consider a near-continuous MDP in which an agent selects an
+action according to an $\eps$-greedy policy that mixes a deterministic
+exploitation policy $\pi$ with an action taken from a noise policy
+$\pi^\text{noise}(a|s)$ with probability $\eps$ at each step. Then the
+agent's trajectories converge when $\deltat\to 0$ to the solutions of the
+\emph{deterministic} equation
 \begin{equation}
-	ds_t/dt  = \E_{a\sim p_A}\left[F(s_t, a)\right]
+d s_t/dt= (1-\eps) F(s_t,\pi(s_t))+\eps \E_{a\sim
+\pi^\text{noise}(a|s)}F(s_t,a)
 \end{equation}
-where the expectation cancels the exploration noise. The proof is given in the
-supplementary material. \TODO{Is there a stronger theorm? Should we talk more about that?}
+\end{theorem}
 
 \subsection{Algorithms for Deep Advantage Updating}
 \label{subsec:algorithm}
@@ -206,8 +241,8 @@ supplementary material. \TODO{Is there a stronger theorm? Should we talk more ab
 	\input{dauc.tex}
 \end{algorithm}
 
-$V_{\theta}$ and $A_{\psi}$ are learned by a variants of $Q$-learning for continuous and
-discrete action spaces are used. Namely, 
+We learn $V_{\theta}$ and $A_{\psi}$ via suitable variants of $Q$-learning for continuous and
+discrete action spaces. Namely, 
 the true $A^\pi_\deltat$
 and $V^\pi_\deltat$ of a near-continuous MDP with greedy exploitation
 policy $\pi(s) \deq
@@ -218,92 +253,113 @@ are the unique solution to the Bellman and consistency equations
 	r\,\deltat + \gamma^{\deltat}  \,\E_{s'} V^{\pi}_\deltat(s')\label{eq:bellman_A}\\
 	A^{\pi}_\deltat(s, \pi(s)) &= 0\label{eq:max_A}.
 \end{align}
-as seen in \ref{subsec:reparam}. Then $V_{\theta}$
+as seen in \ref{subsec:reparam}. Thus $V_{\theta}$
 and $A_{\psi}$ are trained to approximately solve these equations.
 
-Maximization over actions in $\pi$ is implemented exactly for discrete actions,
-and approximated by a policy neural network $\pi_\phi(s)$, trained to maximize $A(s,
-\pi_\phi(s))$ for continuous actions. This point is similar to
+Maximization over actions for $\pi$ is implemented exactly for discrete actions,
+and, for continuous actions, approximated by a policy neural network $\pi_\phi(s)$ trained to maximize $A_\psi(s,
+\pi_\phi(s))$, similarly to
 \cite{ddpg}.
 
 Eq.~\eqref{eq:max_A}
 is directly verified by $A_{\psi}$, owing to the reparametrization
 $A_\psi(s, a) = \bar{A}_\psi(s, a) - \bar{A}_\psi(s, \pi(s))$, described
 in~\ref{subsec:reparam}.  To approximately verify~\eqref{eq:bellman_A}, the
-corresponding squared residual is minimized by an approximate gradient descent.
+corresponding squared Bellman residual is minimized by an approximate gradient descent.
 The update equations when learning from a transition $(s, a, r, s')$, either from
 an exploratory trajectory or from a replay buffer~\cite{dqn}, are
 \begin{align}
-	\delta Q_\deltat &\leftarrow A(s, a)\, \deltat - \left(r
-	\,\deltat + \gamma^{\deltat}\, V(s') - V(s)\right)\\
+	\delta Q_\deltat &\leftarrow A_\psi(s, a)\, \deltat - \left(r
+	\,\deltat + \gamma^{\deltat}\, V_\theta(s') - V_\theta(s)\right)
+	\label{eq:approx_deltaQ}\\
 	\theta_\deltat &\leftarrow \theta_\deltat + \eta^V_\deltat
-	\,\partial_{\theta} V(s) \,\frac{\delta Q_\deltat}{\deltat}\\
+	\,\partial_{\theta} V_\theta(s) \,\frac{\delta Q_\deltat}{\deltat}
+	\label{eq:approx_bellman_V}\\
 	\psi_\deltat &\leftarrow \psi_\deltat + \eta^A_\deltat
-	\,\partial_{\psi} A(s, a) \,\frac{\delta Q_\deltat}{\deltat}.
+	\,\partial_{\psi} A_\psi(s, a) \,\frac{\delta Q_\deltat}{\deltat}.
 	\label{eq:approx_bellman_A}
 \end{align} 
 where the $\eta$'s are learning rates.
 Appropriate scalings for the learning rates $\eta^V_\deltat$ and
-$\eta^A_\deltat$ in term of $\deltat$ to obtain a well defined continuous
+$\eta^A_\deltat$ in terms of $\deltat$ to obtain a well defined continuous
 limit are derived next.
 % As we will see in the following section,
 % to obtain a well defined continuous time limit, the learning rates can be rewritten as
 % $\eta^i_\deltat = \alpha^i \deltat$, where $\alpha^1$ and $\alpha^2$ are independant
 % of $\deltat$.
 
-\TODO{say somewhere around here that we assume $\deltat$ is known}
-
 \subsection{Scaling the Learning Rates}
 \label{subsec:lr}
 \input{pendulum_fig.tex}
-For the discrete algorithm to admit a continuous time limit, the trajectories
-of parameters must converge to well defined trajectories as $\deltat$ goes to
-$0$.  The optimization steps should not be too large,
-in which case parameter trajectories could jump in a single gradient step,
-or too small, in which case the trajectories would become stationary as
-$\deltat$ goes to $0$.  This in turn imposes conditions on the scalings of the
-learning rates of algorithms robust to changes of the tine discretization.
+For the algorithm to admit a continuous-time limit, the discrete-time trajectories
+of parameters must converge to well-defined trajectories as $\deltat$ goes to
+$0$.
+% The optimization steps should not be too large,
+% in which case parameter trajectories could jump in a single gradient step,
+% or too small, in which case the trajectories would become stationary as
+% $\deltat$ goes to $0$.
+This in turn imposes precise conditions on the scalings of the
+learning rates.% of algorithms robust to changes of the time discretization.  }
 
-The updates of $\theta$ and $\psi$ are described in
-\eqref{eq:approx_bellman_A}.  To have parameter updates that do not explode or shrink to $0$ too
-fast as $\deltat \rightarrow 0$, both $\delta \theta$ and
-$\delta \psi$ should verify stochastic differential equations in the
-limit, and notably,
-have a deterministic component of order $\deltat$. As $\deltat$ goes to $0$,
-a Taylor expansion yields (with $\deltas\deq s'-s$)
-\begin{align}
-	\delta Q_\deltat &= A(s, a)\,\deltat - r\,\deltat - \log(\gamma)
-	\,V(s)\,\deltat - \partial_s V(s) \,\deltas\nonumber \\&- \frac{(\deltas)^T \partial_{s}^2 V(s) \deltas}{2} + \smallo\left(\deltat\right)\\
-	\delta \theta_\deltat &= \eta^V_\deltat \partial_{\theta} V(s)
-	\frac{\delta Q_\deltat}{\deltat} \\%+ \smallo\left(\eta^V_\deltat\right)\\
-	\delta \psi_\deltat &= \eta^A_\deltat \partial_{\psi} A(s)
-	\frac{\delta Q_\deltat}{\deltat} %+ \smallo\left(\eta^A_\deltat\right).
-\end{align}
+Informally, in the parameter updates
+\eqref{eq:approx_deltaQ}--\eqref{eq:approx_bellman_A}, the quantity $\delta
+Q_\deltat$ is of order $O(\deltat)$, because $s'=s+O(\deltat)$ in a
+near-continuous system. Therefore, $\delta
+Q_\deltat/\deltat$ is $O(1)$, so that the gradients used to
+update $\theta$ and $\psi$ are $O(1)$. Therefore, if the
+learning rates are of order $\deltat$, one would expect 
+the parameters $\theta$ and $\psi$ to change by $O(\deltat)$ in
+each time interval $\deltat$, thus hopefully converging to smooth
+continuous-time trajectories. The next theorem formally confirms that
+learning rates of order $\deltat$ are the only possibility.
 
-If we set 
-$\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
-\deltat$, the parameter updates will follow a Euler discretization scheme
-for a continuous-time equation, thus presumably converging. This is
-actually the only possibility; more precisely,
+% The updates of $\theta$ and $\psi$ are described in
+% \eqref{eq:approx_bellman_A}.  To have parameter updates that do not explode or shrink to $0$ too
+% fast as $\deltat \rightarrow 0$, both $\delta \theta$ and
+% $\delta \psi$ should verify stochastic differential equations in the
+% limit, and notably,
+% have a deterministic component of order $\deltat$. As $\deltat$ goes to $0$,
+% a Taylor expansion yields (with $\deltas\deq s'-s$)
+% \begin{align}
+% 	\delta Q_\deltat &= A(s, a)\,\deltat - r\,\deltat - \log(\gamma)
+% 	\,V(s)\,\deltat - \partial_s V(s) \,\deltas\nonumber \\&- \frac{(\deltas)^T \partial_{s}^2 V(s) \deltas}{2} + \smallo\left(\deltat\right)\\
+% 	\delta \theta_\deltat &= \eta^V_\deltat \partial_{\theta} V(s)
+% 	\frac{\delta Q_\deltat}{\deltat} \\%+ \smallo\left(\eta^V_\deltat\right)\\
+% 	\delta \psi_\deltat &= \eta^A_\deltat \partial_{\psi} A(s)
+% 	\frac{\delta Q_\deltat}{\deltat} %+ \smallo\left(\eta^A_\deltat\right).
+% \end{align}
+
+% The next theorem confirms this analysis: with
+% $\eta^V_\deltat = \alpha^V \deltat$ and $\eta^A_\deltat = \alpha^A
+% \deltat$, the parameter updates follow a Euler discretization scheme
+% for a continuous-time equation and have a well-defined limit behavior. On
+% the other hand, with smaller learning rates the parameters do not move,
+% and can explode instantaneously with larger learning rates.\TODO{keep? or
+% just say "the next theorem confirms this"?}
 
 \begin{theorem}
-	\TODO{Assume a continuous action space. Let $(s_t, a_t)_{t\geq 0}$ be a
-	time continuous exploratory trajectory. Let $\pi$ be a sufficiently
-regular policy, and $\bar{A}$ and $\bar{V}$ be regular function approximators.}
-	Let $\eta^V_\deltat = \alpha^V \deltat^\beta$ (resp. $\eta^A = \alpha^A \deltat^\beta$) be the learning rate
-	of $V$ (resp. $\bar{A}$). Then, when learning on $(s_t, a_t)_{t\geq 0}$, 
+	\label{th:cont-params}
+Let $(s_t,a_t)$ be some exploration trajectory in a near-continuous MDP. Set the learning rates to $\eta^V_\deltat =
+\alpha^V \deltat^\beta$ and $\eta^A = \alpha^A \deltat^\beta$ for some
+$\beta\geq 0$, and learn the parameters $\theta$ and $\psi$ by iterating
+\eqref{eq:approx_deltaQ}--\eqref{eq:approx_bellman_A} along the
+trajectory $(s_t,a_t)$. Then, when
+$\deltat\to 0$:
+% 	\TODO{Assume a continuous action space. Let $(s_t, a_t)_{t\geq 0}$ be a
+% 	time continuous exploratory trajectory. Let $\pi$ be a sufficiently
+% regular policy, and $\bar{A}$ and $\bar{V}$ be regular function approximators.}
+% 	Let $\eta^V_\deltat = \alpha^V \deltat^\beta$ (resp. $\eta^A = \alpha^A \deltat^\beta$) be the learning rate
+% 	of $V$ (resp. $\bar{A}$). Then, when learning on $(s_t, a_t)_{t\geq 0}$, 
 	\begin{itemize}
 		\item If $\beta = 1$ the discrete parameter trajectories converge to continuous parameter
-			trajectories as $\deltat$ goes to $0$.
-		\item If $\beta < 1$, parameters grow arbitrarily large in after an arbitrarily small physical time when $\deltat$ goes to $0$. \TODO{not quite true, in a single
-			step the update is bounded. But the parameters
-			become arbitrary large in an arbitrarily small
-			physical time.}
-		\item If $\beta > 1$, parameter trajectories become
-		stationary as
-			$\deltat$ goes to $0$.
+			trajectories.% as $\deltat$ goes to $0$.
+		\item If $\beta>1$ the parameters stay at their initial
+		values.
+		%trajectories become
+		%stationary.% as $\deltat$ goes to $0$.
+		\item If $\beta < 1$, the parameters can reach infinity
+		in arbitrarily small physical time.%	parameters grow arbitrarily large in after an arbitrarily small physical time when $\deltat$ goes to $0$.
 	\end{itemize}
-	\label{th:cont-params}
 \end{theorem}
 
 % With this choice of learning rates, the limit SDEs are
@@ -314,11 +370,10 @@ regular policy, and $\bar{A}$ and $\bar{V}$ be regular function approximators.}
 % 	d\psi_t &= (\alpha^A Fdt  + D \dbt)\partial_{\psi} A(s_t, a_t)\nonumber.
 % \end{align}
 
-This results in a fullly specified algorithm,
-\emph{Deep Advantage Updating} (DAU).
-Pseudocode for the discrete actions algorithm is given in Alg.~\ref{alg:dau}.
-Pseudocode for continuous actions is given in the supplementary
-material.
+The resulting algorithm with suitable scalings,
+\emph{Deep Advantage Updating} (DAU), is specified in Alg.~\ref{alg:dau} for
+discrete actions, and in the Supplementary for continuous
+actions.
 
 %%% Local Variables:
 %%% TeX-master: "icml_drau"
