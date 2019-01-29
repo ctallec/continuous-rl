@@ -275,7 +275,7 @@ P_{s_1s_2}/\rho(s_2)&=\E_{s_1\sim \rho}\sum_{s_2} \partial
 \end{align}
 that is, the gradient of $\zeta$ along a transition $s_1\to s_2$.
 So each time we sample a transition $s\to s'$, the term $
-P\rho^{-1}$ contributes $\gamma \partial
+\gamma P\rho^{-1}$ contributes $\gamma \partial
 \zeta(s,s')$ to the gradient. (This differs from the updates above, in
 that above we sampled $s\to s'$ and then modified the value of $z$ at
 $s_1$ and $s_2$ for independently sampled states $s_1$ and $s_2$; here
@@ -289,7 +289,8 @@ Likewise, the gradient contribution of the $P\zeta$ term is
 \end{align}
 so this time the transition is $s_1\to s_3$. That is, when we sample a
 transition $s\to s'$, we have a gradient term $\E_{s_2\sim \rho}
-\partial\zeta(s,s_2)\zeta(s',s_2)$.
+\partial\zeta(s,s_2)\zeta(s',s_2)$. This term is absolutely similar to
+standard TD (for which $s_2$ is fixed).
 
 The last non-obvious term is $\zeta\rho P \rho^{-1}$. Its gradient
 contribution is
