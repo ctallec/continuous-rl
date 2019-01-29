@@ -1,4 +1,6 @@
-"""Log facilities"""
+"""Log facilities, strongly inspired by OpenAI baselines:
+https://github.com/openai/baselines/blob/master/baselines/logger.py
+"""
 from abc import ABC, abstractmethod
 from os import makedirs
 from os import remove
