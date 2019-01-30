@@ -2,64 +2,64 @@
 \section{Experiments}
 \label{sec:exp}
 \input{lc_fig.tex}
-The experiment set provided here is specifically aimed at showing that
-the proposed method DAU can operate efficiently on a wide range of time
-discretizations, without specific tuning, while standard deep Q-learning
-approaches cannot. DAU is compared to DDPG in continuous action settings and to DQN in
-discrete action settings. \TODO{(We only test off-policy
-algorithms.)}
+The experiments provided here are specifically aimed at showing that
+the proposed method, DAU, works efficiently over a wide range of time
+discretizations, without specific tuning, while standard deep $Q$-learning
+approaches do not. DAU is compared to DDPG for continuous actions and to DQN
+for discrete actions.  As mentionned earlier, we do not study the time
+discretization invariance of on-policy methods (A3C, PPO, TRPO...).
 
-In all settings, we use the learning algorithm described in
-Alg.~\ref{alg:dau} and \TODO{supplementary, algo 1}. The variants of DDPG and DQN
-used are described in the supplementary material, as well as all the hyperparameters
-used. To make comparison fair, we use the properly rescaled discount
-factor $\gamma_\deltat$ and reward $r_\deltat$ from \eqref{eq:def-gamma},
-as well as scaled learning rates, for DDPG and DQN. \TODO{NDY not
-convincing: precisely because DDPG and DQN are not invariant, they might
-benefit from a different scaling.}
+In all setups, we use the algorithms described in
+Alg.~\ref{alg:dau} and Supplementary Alg.~1. The variants of DDPG and DQN
+used are described in the Supplementary, as well as all hyperparameters. We tested two different setups for DDPG and DQN.
+In one, we scaled the discount factor (to avoid shortsightedness with small $\deltat$), but
+left all other hyperparameters constant across time discretizations.
+In the other, we used the properly rescaled discount
+factor and reward from Eq.~\eqref{eq:def-gamma},
+as well as $O(\deltat)$ learning rates for RMSProp.  The first variant yields slightly
+better results, and is presented here, with the second variant in the
+Supplementary. For all setups, quantitative results are averaged over five runs.
 
 Let us stress that the quantities plotted are rescaled to make comparison
 possible across different timesteps. For example,
-return results are given in term of discretized return $R_\deltat$ as defined in \eqref{eq:discretized-return},\footnote{This mostly amounts to scaling rewards
+returns are given in terms of the discretized return $R_\deltat$ as defined in \eqref{eq:discretized-return},\footnote{This mostly amounts to scaling rewards
 by a factor $\deltat$ when this scaling is not naturally done in the environment. Environment-specific
-details are given in the supplementary material.} and, most notably, time elapsed is always given in
-normalized epochs (physical time), i.e. the true number of epochs multiplied by the
-discretization timestep.
+details are given in the Supplementary.} and, most notably, time elapsed is always given in
+\emph{physical} time, i.e., the amount of time that the agent spent
+interacting with the environment (this is not the number of steps).
 
 
 \paragraph{Qualitative experiments: Visualizing policies and values.}
 To provide qualitative results, and check robustness to time
-discretization both in terms of raw return results and in terms
+discretization both in terms of returns and in terms
 of convergence of the approximate value function and policies, we first provide results on the simple pendulum environment
-from the OpenAI Gym classic control suite.  Its state space is of
+from the OpenAI Gym classic control suite.  The state space is of
 dimension $2$. We visualize both the learnt value and policy functions by
 plotting, for each point of the phase diagram $(\theta, \dot{\theta})$,
 its value and policy. The results are presented in
-Fig.~\ref{fig:pend} (policy function) and in Fig.\TODO{ref} in
-Supplementary \TODO{ref} (value function).
+Fig.~\ref{fig:pend} (value function) and Figs.~1, 2,  3 in
+Supplementary.
 
-We plot the learnt policy at several instants in physical time (or
-normalized epochs) during training, for various time discretizations
-$\deltat$, for both DAU and DDPG. With DAU, the agent's policy quickly
-converges for every time discretization without specific hyperparameter
-tuning. On the contrary, with DDPG, the agent is only able to learn for
-the two largest time discretizations; DDPG learning gets harder as $\deltat$ decreases.
+We plot the learnt policy at several instants in physical time
+during training, for various time discretizations
+$\deltat$, for both DAU and DDPG. With DAU, the agent's policy and value
+function quickly converge for every time discretization without specific
+tuning. On the contrary, with DDPG, learning of both value function and
+policy vary greatly from one discretization to another.
 
 \paragraph{Quantitative experiments.}
 We benchmark DAU against DDPG on classic control benchmarks: Pendulum,
-Cartpole, BipedalWalker, Ant, and Half-Cheetah environments from OpenAI
-Gym. For Pendulum and Ant, DDPG is able to learn for the highest
-$\deltat$ but fails for the others, while DAU remains reasonably
-invariant to the time discretization. On BipedalWalker, DDPG is never
-able to learn while DAU is achieving decent performance for all the
-$\deltat$'s. On Cartpole and Half-Cheetah, the results are less clear. On
-Cartpole, noise dominates, which makes interpretation difficult. On Half-Cheetah, DAU is not clearly more invariant to time discretization than
-DDPG. This could be explained by the multiple suboptimal regimes that
-coexist in the Half-Cheetah environment (walking on the head, walking on
-the back). \TODO{Removed, was unclear: ``and that DAU may fail to correctly weight the performance of
-each regime (as explained in Section \ref{sec:discussions}).'' Anyway
-this regimes exist for all algorithms...}
-
+Cartpole, BipedalWalker, Ant, and Half-Cheetah environments from OpenAI Gym. On
+Pendulum, Bipedal Walker and Ant, DAU is quite robust to variations of
+$\deltat$ and displays reasonable performance in all cases. On the other hand,
+DDPG's performance varies with $\deltat$; performance either degrades as
+$\deltat$ decreases (Ant, Cheetah), or becomes more variable as learning
+progresses (Pendulum) for small $\deltat$. On Cartpole, noise dominates,
+making interpretation difficult. On Half-Cheetah, DAU is not clearly
+invariant to time discretization. This could be explained by the multiple
+suboptimal regimes that coexist in the Half-Cheetah environment (walking on the
+head, walking on the back), which create discontinuities in the value
+function (see Discussion).
 % \begin{figure}[h]
 %   \centering
 %   \includegraphics[width=\columnwidth]{figs_data/cartpole_lc.png}

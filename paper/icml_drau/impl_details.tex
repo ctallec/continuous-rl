@@ -1,0 +1,88 @@
+%! TEX root = supplementary.tex
+All the details specifying our implementation are given in this section. We
+first give precise pseudo code descriptions for both \emph{Continuous Deep
+Advantage Updating} (Alg.~\ref{alg:cdau}), as well as the variants of DDPG
+(Alg.~\ref{alg:ddpg}) and DQN (Alg.~\ref{alg:dqn}) used.
+
+\begin{algorithm}
+	\input{cdau.tex}
+	\caption{Continuous DAU}
+	\label{alg:cdau}
+\end{algorithm}
+\begin{algorithm}
+	\input{ddpg.tex}
+	\caption{DDPG}
+	\label{alg:ddpg}
+\end{algorithm}
+\begin{algorithm}
+	\input{dqn.tex}
+	\caption{DQN}
+	\label{alg:dqn}
+\end{algorithm}
+
+For DDPG and DQN, two different settings were experimented with:
+\begin{itemize}
+	\item One with time discretization scalings, to keep the comparison
+		fair. In this setting, the discount factor is still scaled as $\gamma^\deltat$,
+		rewards are scaled as $r \deltat$, and learning rates are scaled to obtain parameter
+		updates of order $\deltat$. As RMSprop is used for all experiments, this amounts
+		to using a learning rate scaling as $\alpha^Q = \tilde{\alpha}^Q \deltat$,
+		$\alpha^\pi = \tilde{\alpha}^\pi \deltat$.
+	\item One without discretization scalings. In that case, only the discount factor is scaled
+		as $\gamma^\deltat$, to prevent unfair shortsightedness. All other
+		parameters are set with a reference $\deltat_0 = 1e-2$. For instance,
+		for all $\deltat$'s, the reward perceived is $r * \deltat_0$, and
+		similarily for learning rates, $\alpha^Q = \tilde{\alpha}^Q
+		\deltat_0$, $\alpha^\pi = \tilde{\alpha}^Q \deltat_0$. These scalings
+		don't depend on the discretization, but perform decently at least for
+		the highest discretization.
+\end{itemize}
+\subsection{Global hyperparameters}
+The following hyperparameters are maintained constant throughout all our experiments,
+\begin{itemize}
+	\item All networks used are of the form
+		\begin{verbatim}
+		Sequential(
+		    Linear(nb_inputs, 256),
+		    LayerNorm(256),
+		    ReLU(),
+		    Linear(256, 256),
+		    LayerNorm(256),
+		    ReLU(),
+		    Linear(256, nb_outputs)
+		).
+		\end{verbatim}
+	Policy networks have an additional $\tanh$ layer to constraint action range. On certain
+	environments, network inputs are normalized by applying a mean-std normalization, with
+	mean and standard deviations computed on each individual input features, on all previously
+	encountered samples.
+	\item $\mathcal{D}$ is a cyclic buffer of size $1000000$.
+	\item $\textbf{nb\_steps}$ is set to $10$, and $256$ environments are run in parallel to
+		accelerate the training procedure, totalling $2560$ environment interactions between
+		learning steps.
+	\item $\textbf{nb\_learn}$ is set to $50$.
+	\item The physical $\gamma$ is set to $0.8$. It is always scaled as $\gamma^\deltat$ (even for
+		unscaled DQN and DDPG).
+	\item $N$, the batch size is set to $256$.
+	\item RMSprop is used as an optimizer without momentum, and with
+		$\alpha=1 - \deltat$ (or $1 - \deltat_0$ for unscaled DDPG and
+		DQN).
+	\item Exploration is always performed as described in the main text. The OU process used as
+		parameters $\kappa = 7.5$, $\sigma = 1.5$.
+	\item Unless otherwise stated, $\alpha_1 \deq \tilde{\alpha}^Q = \alpha^V = \alpha^A = 0.1$, $\alpha_2 \deq \tilde{\alpha}^\pi =
+		\alpha^\pi = 0.03$.
+	\item $\tau = 0.9$
+\end{itemize}
+\subsection{Environment dependent hyperparameters}
+We hereby list the hyperparameters used for each environment. Continuous actions environments are marked with a
+(C), discrete actions environments with a (D).
+\begin{itemize}
+	\item {\bf Ant (C)}: State normalization is used. Discretization range: $[0.05, 0.02, 0.01, 0.005, 0.002]$.
+	\item {\bf Cheetah (C)}: State normalization is used. Discretization range: $[0.05, 0.02, 0.01, 0.005, 0.002]$
+	\item {\bf Bipedal Walker (C)\footnote{
+				The reward for Bipedal Walker is modified not to scale with $\deltat$. This does not introduce any change for the default setup.
+		}}: State normalization is used, $\alpha_2 = 0.02$. Discretization range: $[0.01, 0.005, 0.002, 0.001]$.
+	\item {\bf Cartpole (D)}: $\alpha_2 = 0.02$, $\tau = 0$. Discretization range: $[0.01, 0.005, 0.002, 0.001, 0.0005]$.
+	\item {\bf Pendulum (C)}: $\alpha_2 = 0.02$, $\tau = 0$. Discretization range: $[0.01, 0.005, 0.002, 0.001, 0.0005]$.
+
+\end{itemize}

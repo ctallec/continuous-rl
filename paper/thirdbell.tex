@@ -1,0 +1,353 @@
+\documentclass[11pt,a4paper]{article}
+\input{header.en.tex}
+
+\title{The Third Bellman Equation}
+\author{}
+
+\newcommand{\drho}{\!\setminus\hspace{-.75em}\rho}
+\newcommand{\ztar}{z^\mathrm{tar}}
+\newcommand{\zetatar}{\zeta^\mathrm{tar}}
+\newcommand{\Nnewt}{N_\mathrm{steps/Newt}}
+\newcommand{\noise}{\epsilon}
+
+\begin{document}
+\maketitle
+
+\paragraph{Approximating $\Delta^{-1}$ via the Bellman--Newton equation.}
+We learn an approximation $Z$ of $\Delta^{-1}$ via the Newton iteration
+(V.Pan and J.Reif, \emph{Fast and efficient parallel solution of dense
+linear systems}, 1989)
+\begin{equation}
+Z\gets 2Z-Z\Delta Z=2Z-Z^2+\gamma ZPZ
+\end{equation}
+which, if properly initialized, converges to $\Delta^{-1}$. A criterion
+for correct initialization is if $\norm{\Id-Z\Delta}<1$ where $\norm{}$
+is the operator norm. With $\Delta=\Id-\gamma P$ this is satisfied, for
+instance, with $Z=\Id$ (for $\gamma<1$).
+
+A stochastic version can be
+\begin{equation}
+Z\gets (1+\eta) Z-Z\tilde \Delta Z
+\end{equation}
+with a stochastic estimate $\tilde \Delta$ of $\Delta$ (obtained from a
+transition observed in the MDP). Usually in RL we can only sample
+transitions $s\to s'$ from some initial state $s$ distributed wrt some
+distribution $\rho$ (which we may not control). This means we can sample
+from $\rho \Delta$, more precisely,
+\begin{equation}
+\rho\Delta=\E_{s\sim \rho,\,s'\sim P(s'|s)}
+\1_s\transp{(\1_s-\gamma\1_{s'})}
+\end{equation}
+A solution is to parameterize
+\begin{equation}
+Z_{s_1s_2}\eqd \,\E_{s_2\sim \rho} z(s_1,s_2)
+\end{equation}
+namely, $z$ is the density of $Z$ with respect to $\rho(s_2)$ (and as
+matrices,
+$Z=z\rho$).
+Equivalently, in the matrix case, $Z=z\rho$ with $\rho$ the diagonal
+matrix with entries $\rho$. Then the Newton update becomes
+\begin{equation}
+z\rho\gets 2z\rho-z\rho\Delta z\rho
+\end{equation}
+which is equivalent to
+\begin{equation}
+z\gets 2z-z\rho\Delta z
+\end{equation}
+and now $\rho \Delta$ is samplable,
+so we can apply the stochastic version of the Newton update. Explicitly
+this is
+\begin{equation}
+z(s_1,s_2)\gets (1+\eta) z(s_1,s_2)-
+\E_{s\sim \rho,\,s'\sim P(s'|s)}z(s_1,s)\left(z(s,s_2)-\gamma
+z(s',s_2)\right)
+\end{equation}
+
+In the tabular case, we can directly implement the above for all values
+of $s_1,s_2$ each time we observe a transition $s\to s'$. (We can also
+initialize to $\Id$.)
+
+In the non-tabular case, we parameterize $z(s_1,s_2)$ by a machine
+learning model. Then, given a current value $z_0$ of $z$, we to TD-like
+steps towards the Newton update. More precisely, we define
+\begin{equation}
+\ztar\deq 2z_0-z_0\rho\Delta z_0
+\end{equation}
+and perform any number of SGD steps on the parameters of $z$ to reduce
+the error 
+\begin{equation}
+\ell(z)\deq\tfrac12\, \E_{s_1\sim \rho,\,s_2\sim \rho}
+\,(z(s_1,s_2)-\ztar(s_1,s_2))^2
+\end{equation}
+namely, we draw two states $s_1$ and
+$s_2$ according to $\rho$, a transition $s\to s'$ with $s\sim \rho$, and
+update the parameter $\theta$ of $z$
+by the gradient
+\begin{equation}
+\partial\ell =-\partial_\theta z(s_1,s_2)\left(
+2z_0(s_1,s_2)-z_0(s_1,s)\left(z_0(s,s_2)-\gamma z_0(s',s_2)\right)-z(s_1,s_2)
+\right)
+\end{equation}
+which is an unbiased estimate of the gradient $\partial \ell$ of the error.
+
+We can sample several values of $s_1$ and $s_2$ for each sampled
+transition $s\to s'$.  The distribution used on $s_1$ and $s_2$ need not
+be the same distribution used for $s\to s'$ (though in the
+parameterization by $Z-\Id$ this will be needed).
+
+We perform $\Nnewt$ gradient steps before resetting the Bellman--Newton
+objective using the current value of $z$ (namely, $z_0\gets z$ every
+$\Nnewt$ steps). If $\Nnewt\gg 1$ and the machine learning model
+converges, and $Z_0$ is initialized to $\Id$ (namely $z_0=1/\rho(s_2)$ at
+startup) then this is guaranteed to converge.
+
+\paragraph{What to do with $Z$.} Since $V=\Delta^{-1}R$, approximating
+$\Delta^{-1}$ provides the ingredients for policy evaluation and policy
+gradient. With the representation of $\Delta^{-1}$ as
+$Z_{s_1s_2}=\E_{s_2\sim \rho} z(s_1,s_2)$, one has
+\begin{equation}
+V(s_1)=\E_{s_2\sim \rho}\, z(s_1,s_2) R(s_2)
+\end{equation}
+The representation of $V$ as an expectation may not be convenient. So if
+$V$ is explicitly needed, we may need an auxiliary neural network to
+learn $V(s_1)$ via the above (supervised learning). However, for policy
+gradient the auxiliary network is not needed. Indeed, by the policy
+gradient formula, on-policy (with $\mu$ the stationary distribution) we find
+\begin{align}
+\partial \E R&=
+\E_{s\sim \mu,s'\sim P(s'|s)} \partial \ln
+\pi(a|s) \left(
+r(s,a,s')+\gamma V(s')-V(s)
+\right)
+\\&=
+\E_{s\sim \mu,s'\sim P(s'|s),\,s_2\sim \rho} \partial \ln
+\pi(a|s) \left(
+r(s,a,s')+R(s_2)\left(\gamma z(s',s_2)-z(s,s_2)\right)
+\right)
+\end{align}
+To exploit this, two possibilities. Either work online on $s\sim \mu$,
+and use many samples from $s_2$ with a model for $R(s_2)$. Or (better),
+work online on $s_2$ with an on-policy replay buffer on $s$, and update
+several values of $s$ each time a reward is observed at $s_2$.
+
+\paragraph{All rewards at once.} The relationship between $R$ and $V$ is
+linear (for a fied policy). The generic representation of $Z$ above
+requires computing a model of $V$ for each reward we want to work with.
+We can directly exploit the linearity by parameterizing $z$ as
+\begin{equation}
+z(s_1,s_2)=\langle A(s_1),B(s_2)\rangle
+\end{equation}
+with some parameterized functions $A$ and $B$ with values in some vector
+space with dot product $\langle\cdot,\cdot\rangle$. Intuitively, $A(s_1)$
+represents the future of $s_1$, and $B(s_2)$ the past of $s_2$.
+Then we have
+\begin{equation}
+V(s_1)=\langle A(s_1),\E_{s_2\sim \rho} B(s_2)R(s_2)\rangle
+\end{equation}
+so we can abuse notation and compute
+\begin{equation}
+B(R)\deq \E_{s_2\sim \rho} B(s_2)R(s_2)
+\end{equation}
+as the representation of $R$. Then
+\begin{equation}
+V(s_1)=\langle A(s_1),B(R)\rangle
+\end{equation}
+
+I'm not too sure about this representation. The rank of $Z$ is limited to
+the dimension of the vector space, and this may cause problems. An
+infinite-dimensional representation can be used, by having $A$ and $B$
+take values in a space of $L^2$ functions over some probability space.
+Namely, the dot product is
+\begin{equation}
+z(s_1,s_2)=\E_{\noise} A(s_1,\eps)B(s_2,\eps)
+\end{equation}
+and we can use as many samples of $\noise$ as we want. Obviously this
+adds noise.
+
+This computes the value functions of all rewards for a given policy.
+Obviously when changing the policy, we may not change the policy in
+several ways at once. For this we have to introduce targets (options) in
+the policy.
+
+\paragraph{All targets at once.} Let $\omega$ be an input to the policy,
+which represents its current ``target''. We want to learn a policy with
+input $\omega$, together with a function $\Omega$ that maps each state
+$s$ to a target $\Omega(s)$, such that if we follow the policy with
+target $\Omega(s)$, then we move towards $s$.
+
+Concretely, we now have a function $z(s_1,s_2;\omega)$ which corresponds
+to the inverse Laplacian of the MDP using policy $\omega$. It is learned
+as above. Then we learn the parameters of $\pi(a|s,\omega)$ and of
+$\Omega$ so as to maximize the time spent in $s$ when using policy
+$\pi(\cdot|\Omega(s))$. Concretely, policy gradient is
+\begin{equation}
+\E_{s_1\sim \mu,\,a\sim \pi(a|s_1,\Omega(s)),\,s'\sim P(s'|s_1,a)}
+\partial \ln \pi(a|s_1,\Omega(s))(\1_{s_1=s}+\gamma
+z(s',s;\Omega(s))-z(s_1,s;\Omega(s)))
+\end{equation}
+(TODO: the $\1_{s_1=s}$ becomes a Dirac in the continuous case??)
+
+I think the policy gradient above covers both the parameters of the
+policy and the parameters of $\Omega$ (we can pretend the policy takes
+$s$ as its target and that computing $\Omega$ is part of the policy).
+But this conflicts with my previous intuition that we should train
+$\Omega(s)$ to maximize $z(s',s;\Omega(s))$, which is the locally optimal
+choice. I think we are missing some terms coming from the gradients of
+$z(s_1,s;\Omega(s))$ when updating $\Omega$. TODO!! (Might be correct in
+the end. Write that we want to maximize expected time spent in $s$ for
+policy $\Omega(s)$. Write policy gradient for the policy with target $\Omega(s)$,
+seeing $\Omega$ as part of the policy. Its policy gradient involves the
+value function for policy $\Omega(s)$, which is given by $z(;\Omega(s))$,
+but it does not involves the gradients of the value function.)
+
+Problem here: $\mu$ has to be the invariant distribution of the
+$\Omega(s)$-policy, so a bit complicated to apply online, we need to keep
+the policy fixed until convergence... this implies having separate runs
+with different targets. Or find an off-policy version... 
+
+$\omega$ represents an option, but there is no risk of option collapse
+because each option has a different target.
+
+This still does not cover policies with arbitrary rewards $R$. We have to
+find a representation $\Omega(R)$. We could try to enforce linearity of
+$\Omega$, namely, train things such that the policy with parameter
+$\omega=\E_{s\sim \rho} \Omega(s)R(s)$ maximizes $R$, for every $R$ in some
+class. If the class includes Dirac, then 
+the policy with parameter
+$\Omega(s)$ indeed maximizes time spend in $s$. (This might help with the
+Dirac in the policy gradient above.)
+
+\paragraph{Parameterizing $Z-\Id$ in the continuous case.} I think it is quite
+important to initialize at $Z=\Id$, but this is not easy in the
+continuous case (initializing a neural network $z(s_1,s_2)$ to
+$\delta_{s_1s_2}/\rho(s_2)$ is not convenient). Moreover, there is an
+analytical singularity: for a discrete-time Markov process in continuous
+space, the fundamental matrix $Z=\sum_t \gamma^t P^t$ does have two
+analytically distinct components: for every $t\geq 1$ the term $P^t$ is
+smooth, while for $t=0$ it is a Dirac component along the diagonal
+$s_1=s_2$ (corresponding to $\Id$). So it may not be a good idea to
+represent them together in the same network. Instead, we can choose a
+representation of the operator $Z$ as $Z=\Id+\zeta\rho$ or equivalently
+\begin{equation}
+Z_{s_1s_2}=\delta_{s_1s_2}+\E_{s_2\sim \rho} \zeta(s_1,s_2)
+\end{equation}
+so that the operator $Z$ acting on a reward $R$ is
+\begin{equation}
+V(s_1)=(ZR)(s_1)=R(s_1)+\int_{s_2} \zeta(s_1,s_2)R(s_2)\d\rho(s_2)
+\end{equation}
+
+Let us work out the Newton step in this representation. Let us first go
+back to the discrete case and matrices. Decomposing $Z=\Id+\zeta\rho$,
+the variable $z$ is $z=Z\rho^{-1}=\rho^{-1}+\zeta$, and the objective on
+$z$ is 
+\begin{equation}
+z\gets 2z-z\rho\Delta z=\rho^{-1}-\zeta\rho\zeta+\gamma(
+P\rho^{-1}+\zeta\rho P \rho^{-1}+P\zeta+\zeta\rho P \zeta)
+\end{equation}
+so that the objective on $\zeta$ is
+\begin{equation}
+\zeta\gets -\zeta\rho\zeta+\gamma(
+P\rho^{-1}+\zeta\rho P \rho^{-1}+P\zeta+\zeta\rho P \zeta)
+\end{equation}
+The terms $-\zeta\rho \zeta$ and $\zeta\rho
+P \zeta$ are similar to what we had with $z$, but the other terms are not
+obviously samplable.
+
+The term in $P$ is a model of the transition probabilities. The term in
+$P\zeta$ is the left Bellman equation, the term in $\zeta P$ is the right
+Bellman equation (up to densities $\rho$ since $\zeta$ is defined as a
+density). I think this is how we get the right mix of the three Bellman
+equations. (Although we evaluate $P$, we do not really develop a world
+model, we only need to estimate $P(s'|s)$ given $s$ and $s'$, not build
+$s'$ from scratch as a sample from $P(s'|s)$.)
+
+The non-samplability problem solves itself when considering the gradient of the
+error. Let $\zetatar$ be the target above on $\zeta$. Define the loss
+$\E_{s_1\sim \rho,\,s_2\sim \rho} (\zeta(s_1,s_2)-\zetatar(s_1,s_2))^2$
+as above, whose gradient is
+\begin{equation}
+\E_{s_1\sim \rho,\,s_2\sim \rho} \,\partial \zeta(s_1,s_2)(\zeta(s_1,s_2)-\zetatar(s_1,s_2))
+\end{equation}
+and let us study the contributions from each term of $\zetatar$, starting
+with the non-samplable term $\gamma P \rho^{-1}$. Its contribution to the
+gradient is
+\begin{align}
+\E_{s_1\sim \rho,\,s_2\sim \rho} \,\partial \zeta(s_1,s_2)
+P_{s_1s_2}/\rho(s_2)&=\E_{s_1\sim \rho}\sum_{s_2} \partial
+\zeta(s_1,s_2)P_{s_1s_2}
+\\&=\E_{s_1\sim \rho,\,s_2\sim P(s_2|s_1)}\partial
+\zeta(s_1,s_2)
+\end{align}
+that is, the gradient of $\zeta$ along a transition $s_1\to s_2$.
+So each time we sample a transition $s\to s'$, the term $
+\gamma P\rho^{-1}$ contributes $\gamma \partial
+\zeta(s,s')$ to the gradient. (This differs from the updates above, in
+that above we sampled $s\to s'$ and then modified the value of $z$ at
+$s_1$ and $s_2$ for independently sampled states $s_1$ and $s_2$; here
+sampling $s\to s'$ contributes a change of $\zeta$ at $s$ and $s'$.)
+
+Likewise, the gradient contribution of the $P\zeta$ term is
+\begin{align}
+\E_{s_1\sim \rho,\,s_2\sim \rho} \,\partial \zeta(s_1,s_2)
+\,(P\zeta)(s_1,s_2)&=\E_{s_1\sim \rho,\,s_2\sim \rho}
+\partial \zeta(s_1,s_2)\E_{s_3\sim P(s_3|s_1)}\zeta(s_3,s_2)
+\end{align}
+so this time the transition is $s_1\to s_3$. That is, when we sample a
+transition $s\to s'$, we have a gradient term $\E_{s_2\sim \rho}
+\partial\zeta(s,s_2)\zeta(s',s_2)$. This term is absolutely similar to
+standard TD (for which $s_2$ is fixed).
+
+The last non-obvious term is $\zeta\rho P \rho^{-1}$. Its gradient
+contribution is
+\begin{equation}
+\E_{s_1\sim \rho,\,s_2\sim \rho} \,\partial \zeta(s_1,s_2)\sum_{s_3}
+\zeta(s_1,s_3)\rho(s_3)P_{s_3s_2}/\rho(s_2)
+\end{equation}
+because the $s_1s_2$ entry of $\zeta\rho P \rho^{-1}$ is $\sum_{s_3}
+\zeta(s_1,s_3)\rho(s_3)P_{s_3s_2}/\rho(s_2)$. This rewrites as
+\begin{equation}
+\E_{s_1\sim \rho}\sum_{s_2} \E_{s_3\sim\rho} P_{s_3s_2}
+\zeta(s_1,s_3)\partial\zeta(s_1,s_2)
+\end{equation}
+which in turn rewrites as
+\begin{equation}
+\E_{s_1\sim \rho}\E_{s_3\sim\rho} \E_{s_2\sim P(s_2|s_3)}
+\zeta(s_1,s_3)\partial\zeta(s_1,s_2)
+\end{equation}
+that is, when we sample a transition $s\to s'$, we have a contribution
+$\E_{s_1\sim \rho}\zeta(s_1,s)\partial \zeta(s_1,s')$.
+
+Thus, when sampling $s\to s'$, we have several gradient contributions:
+one is similar to what we have before and involves
+$\partial\zeta(s_1,s_2)$ for independent samples $s_1,s_2$; one involves
+$\partial\zeta(s,s')$, one involves $\partial\zeta(s,s_2)$, and the last
+involves $\partial\zeta(s_1,s')$. All are samplable. For each transition
+$s\to s'$, we can
+sample as many states $s_1,s_2$ as we want.
+
+TODO rewrite gradient with current $\zeta$ and previous $\zeta_0$, with
+all correct signs and $\gamma$ factors... and collect into a proposition
+about $\partial \ell$.
+
+TODO might be less easy to use in policy gradient: because of the
+expression for $V$ we have contributions $R(s')$.
+
+% Starting with a
+% previous value $Z_0=\Id+\E_{\rho}\zeta_0$, or
+% $z_0(s_1,s_2)=\delta_{s_1s_2}/\rho(s_2)+\zeta_0(s_1,s_2)$, the target is
+% $2Z_0-Z_0\Delta Z_0$. The loss is $\E_{s_1\sim \rho,\,s_2\sim \rho}
+% \,(z(s_1,s_2)-\ztar(s_1,s_2))^2$, where $z$ and $\ztar$ are the density
+% of $Z$ and of the target with respect to $\rho(s_2)$. On the variable
+% $z$, the target $\ztar$ is
+% $\ztar=2z_0-z_0\rho\Delta z_0$ which rewrites as
+% \begin{equation}
+% \ztar(s_1,s_2)=2\frac{\delta_{s_1s_2}}{\rho(s_2)}+2\zeta(s_1,s_2)-(\frac{\delta_{s_1s_2}}{\rho(s_2)}+\ztar(s_1,s_2))...
+% \end{equation}
+% % The expected
+% % gradient of the loss is $2\E_{s_1\sim \rho,\,s_2\sim \rho}\partial
+% % z(s_1,s_2)(z(s_1,s_2)-\ztar(s_1,s_2))$. We find
+% % \begin{align}
+% % z(s_1,s_2)-\ztar(s_1,s_2)=\frac{\delta_{s_1s_2}}{\rho(s_2)}-2\frac{\delta_{s_1s_2}}{\rho(s_2)}-2\zeta_0(s_1,s_2)+
+% %\end{align}
+
+\end{document}

@@ -5,17 +5,28 @@
 \usepackage{amsthm}
 \usepackage{mathtools}
 \usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 
 \newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
 \input{macros.tex}
 
 \begin{document}
 \section{Proofs}
-We hereby give proofs for all the results presented in the paper.
+
+We now give proofs for all the results presented in the paper. Most
+proofs follow standard patterns from calculus and numerical schemes for
+differential equations, except for Theorem~\ref{thm:policyimprovement},
+which uses an argument specific to reinforcement learning to prove that
+the continuous-time advantage function contains all the necessary
+information for policy improvement.
+
+
 The first result presented is a proof of convergence for discretized
 trajectories.
-\begin{theorem}
-	Let $F: {\cal S} \times {\cal A} \rightarrow \bb{R}^n$ and $\pi: {\cal S}
+\begin{lemma}
+	Let $F\from {\cal S} \times {\cal A} \rightarrow \bb{R}^n$ and $\pi\from {\cal S}
 	\rightarrow {\cal A}$ be the dynamic and policy functions. Assume that,
 	for any $a$, $s \rightarrow F(s, a)$ and $s \rightarrow F(s, \pi(s))$
 	are ${\cal C}^1$, bounded and $K$-lipschitz.  For
@@ -26,29 +37,36 @@ trajectories.
 		\label{eq:diff}
 	\end{equation}
 	For any $\deltat > 0$, define the discretized trajectory
-	$(s_\deltat^k)_k$ recurrently as $s_\deltat^0 = s_0$,
+	$(s_\deltat^k)_k$ which amounts to maintaining each action for a
+	time interval $\deltat$; it is defined by induction as $s_\deltat^0 = s_0$,
 	$s_\deltat^{k + 1}$ is the value at time $\deltat$ of
 	the unique solution of
 	\begin{equation}
 		\frac{d\tilde{s}_t}{dt} = F(\tilde{s}_t, \pi(s_\deltat^k))
+		\label{eq:diff_2}
 	\end{equation}
 	with initial point $s_\deltat^k$.
-	Then, for every $t \geq 0$
+	Then, there exists $C > 0$ such that, for every $t \geq 0$
 	\begin{equation}
 		\|s_t - s_\deltat^{\lfloor \frac{t}{\deltat} \rfloor}\|
-		\leq 
+		\leq \deltat \frac{C}{K}e^{Kt}.
 	\end{equation}
+	Therefore, discretized trajectories converge pointwise to continuous trajectories.
 	\label{th:traj-conv}
-\end{theorem}
+\end{lemma}
 \begin{proof}
 	\input{proof_traj.tex}
 \end{proof}
-\begin{theorem}
-	Under suitable assumptions \TODO{ref appendix}, for all $s \in {\cal
-	S}$, one has
+
+In what follows, we assume that the continuous-time reward function $r\from {\cal S} \times {\cal A} \rightarrow \bb{R}$
+is bounded, to ensure existence of $V^\pi$ and $V^\pi_\deltat$ for all $\deltat$
+.\begin{theorem}
+	Assume that $r\from {\cal S} \times {\cal A} \rightarrow \bb R$ is bounded, and
+	that $s \rightarrow r(s, \pi(s))$ is $L_r$-Lipschitz continuous, then
+	for all $s \in {\cal S}$, one has
 	%\begin{equation}
 	%\label{eq:conv-value}
-	$V^\pi_\deltat(s) = V^\pi(s) + \bigO(\deltat)$
+	$V^\pi_\deltat(s) = V^\pi(s) + \smallo(1)$
 	%\end{equation}
 	when $\deltat\to 0$.
 	\label{th:conv-value}
@@ -56,17 +74,100 @@ trajectories.
 \begin{proof}
 	\input{proof_conv_value.tex}
 \end{proof}
+
+For the following proof, we further assume that both $V^\pi$ and
+$V^\pi_\deltat$ are continuously differentiable, and that the gradient and
+Hessian of $V^\pi_\deltat$ w.r.t. $s$ are uniformly bounded in both $s$ and $\deltat$.
+We also assume convergence of $\partial_s V^\pi_\deltat(s)$ to $\partial_s V^\pi(s)$ for
+all $s$.
+
 \begin{theorem}
-	$A^\pi_\deltat$ convergence theorem.
-\end{theorem}
+	Under the hypothesis above, there exists $A^\pi\from {\cal S} \rightarrow
+	\bb{R}$ such that $A^\pi_\deltat$ converges pointwise to $A^\pi$ as
+	$\deltat$ goes to $0$. Besides,
+	\begin{equation}
+		A^\pi(s, a) = r(s, a) + \partial_s V^\pi(s) F(s, a) + \log \gamma V^\pi(s).
+	\end{equation}\end{theorem}
 \begin{proof}
 	\input{proof_conv_adv.tex}
 \end{proof}
+
+We now show that policy improvement works with the continous time advantage function, i.e.\
 \begin{theorem}
-	Discrete parameter trajectories converge to continuous trajectories.
+\label{thm:policyimprovement}
+	Let $\pi$ and $\pi'$ be two policies such that both $s \rightarrow r(s, \pi(s))$ and
+	$s \rightarrow r(s, \pi'(s))$ are continuous.
+	Assume that both $V^\pi$ and $V^{\pi'}$ are continuously differentiable.
+	Define the advantage function for policies $\pi$ and $\pi'$ as in Eq.~\eqref{eq:adv_function}.
+
+	If for all $s$, $A^\pi(s, \pi'(s)) \geq 0$, then for all $s$,
+	$V^\pi(s) \leq V^{\pi'}(s)$. Moreover, if for all $s$, 
+	$V^{\pi'}(s)>V^{\pi}(s)$, then there exists $s'$ such that $A^\pi(s',\pi'(s'))>0$.
+\end{theorem}
+
+\begin{proof}
+	\input{policy_improvement.tex}
+\end{proof}
+\begin{theorem}
+	Let $\cal A = \bb R^A$ be the action space, and let ${\cal P}_1 = \bb
+	R^{p_1}$ and ${\cal P}_2 = \bb R^{p_2}$ be parameter spaces.  Let
+	$A\colon {\cal P}_1 \times {\cal S} \times {\cal A} \rightarrow \bb R$
+	and $V\colon {\cal P}_2 \times {\cal S} \rightarrow \bb R$ be ${\cal
+	C}^2$ function approximators with bounded gradients and Hessians. Let
+	$(a_t)_{t\geq 0}$ be a ${\cal C}^1$ exploratory action trajectory and
+	$(s_t)_{t\geq 0}$ the resulting state trajectory, when starting from $s_0$ and
+	following $ds_t/dt=F(s_t,a_t)$.  Let $\theta^k_\deltat$ and
+	$\psi^k_\deltat$ be the discrete parameter trajectories resulting from
+	the gradient descent steps in the main text, with
+	learning rates $\eta^V = \alpha^V \deltat^\beta$ and $\eta^A =
+	\alpha^A \deltat^\beta$ for some $\beta\geq 0$. Then,
+	\begin{itemize}
+		\item If $\beta = 1$ the discrete parameter trajectories converge to continuous parameter
+			trajectories as $\deltat$ goes to $0$.
+		\item If $\beta > 1$, parameter trajectories become
+		stationary as
+			$\deltat$ goes to $0$.
+		\item If $\beta < 1$, parameters can grow arbitrarily large after an arbitrarily small physical time when $\deltat$ goes to $0$.
+	\end{itemize}
 \end{theorem}
 \begin{proof}
 	\input{proof_conv_params.tex}
+	\input{no_conv_beta.tex}
+\end{proof}
+
+\begin{theorem}
+  Let $F\from {\cal S} \times {\cal A} \rightarrow \bb{R}^n$ be the dynamic, and $\pi\from {\cal S} \times {\cal A} \rightarrow [0,1]$ be the policy, such that $\pi(s, \cdot)$ is a probability distribution over ${\cal A}$. Assume that 
+  $F$ is $C^1$ with bounded derivatives, and that $\pi$ is $C^1$ and bounded.
+  For any $\deltat > 0$, define the discretized trajectory
+	$(s_\deltat^k)_k$ which amounts to sample an action from $\pi(s, \cdot)$ and maintaining each action for a
+	time interval $\deltat$; it is defined by induction as $s_\deltat^0 = s_0$,
+	$s_\deltat^{k + 1}$ is the value at time $\deltat$ of
+	the unique solution of
+	\begin{equation}
+		\frac{d\tilde{s}_t}{dt} = F(\tilde{s}_t, a_k)
+		\label{eq:diff_2}
+	\end{equation}
+	with $a_k \sim \pi(s_\deltat^k, \cdot)$ and initial point $s_\deltat^k$.
+
+        Then the
+        agent's trajectories converge when $\deltat\to 0$ to the solutions of the
+        \emph{deterministic} equation:
+        \begin{equation}
+		\frac{ds_t}{dt} = \E_{a\sim \pi(s_t, \cdot)}F(s_t, a).
+		\label{eq:diff}
+              \end{equation}
+              Notably, if $\pi$ is an epsilon greedy strategy that mixes a deterministic exploitation policy $\pi^{\text{deterministic}}$ with an action taken from a noise policy $\pi^{\text{noise}}$ with probability $\varepsilon$ at, the trajectory converge to the solutions of the equation: 
+        \begin{equation}
+          d s_t/dt= (1-\eps) F(s_t,\pi^\text{deterministic}(s_t))+\eps \E_{a\sim
+            \pi^\text{noise}(a|s)}F(s_t,a)
+	\end{equation}
+\end{theorem}
+\begin{proof}
+	\input{proof_conv_expl.tex}
 \end{proof}
 \section{Implementation details}
+\input{impl_details.tex}
+\section{Additional results}
+Additional results mentionned in the text are presented in this section.
+\input{pendulum_figs_suppl.tex}
 \end{document}

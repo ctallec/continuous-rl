@@ -1,0 +1,37 @@
+%! TEX root = supplementary.tex
+
+\begin{algorithmic}
+	\STATE \textbf{Inputs:}
+	\STATE $\psi$ and $\phi$, parameters of
+	$Q_\psi$ and $\pi_\phi$.
+	\STATE $\psi'$ and $\phi'$, parameters of target networks
+	$Q_{\psi'}$ and $\pi_{\phi'}$.
+	\STATE $\pi^{\text{explore}}$ and $\nu$ defining an exploration policy.
+	\STATE \textbf{opt}$_Q$, \textbf{opt}$_\pi$, $\alpha^Q$ and $\alpha^\pi$, optimizers and learning rates.
+	\STATE $\mathcal{D}$, buffer of transitions $(s, a, r, d, s')$, with $d$ the episode termination signal.
+	\STATE $\gamma$ discount factor.
+	\STATE $\tau$ target network update factor.
+	\STATE \textbf{nb\_epochs} number of epochs.
+	\STATE \textbf{nb\_steps}, number of steps per epoch.
+	\STATE
+	\STATE Observe initial state $s^0$
+	\STATE $t \gets 0$
+	\FOR {$e=0, \textbf{nb\_epochs}$}
+	\FOR {$j=1, \textbf{nb\_steps}$}
+	\STATE $a^k \leftarrow \pi^{\text{explore}}(s^k, \nu^k)$.
+	\STATE Perform $a^k$ and observe $(r^{k+1}, d^{k+1}, s^{k+1})$.
+	\STATE Store $(s^k, a^k, r^{k+1}, d^{k+1}, s^{k+1})$ in $\mathcal{D}$.
+	\STATE $k \gets k + 1$
+	\ENDFOR
+	\FOR {$k=0, \text{nb\_learn}$}
+	\STATE \text{Sample a batch of $N$ random transitions from $\mathcal{D}$}
+	\STATE $\tilde{Q^i} \gets r^i + (1 - d^i) \gamma Q_{\psi'}(s'^i, \pi_{\phi'}(s'^i))$
+	\STATE $\Delta \psi \gets \frac{1}{N}\sum\limits_{i=1}^N \left(Q^i - \tilde{Q^i}\right) \partial_\psi Q(s^i, a^i)$
+	\STATE $\Delta \phi \gets \frac{1}{N} \sum\limits_{i=1}^N \partial_a Q_\psi(s^i, \pi_\phi(s^i)) \partial_\phi \pi_\phi(s^i)$
+	\STATE Update $\psi$ with \textbf{opt}$_Q$, $\Delta \psi$ and learning rate $\alpha^Q$.
+	\STATE Update $\phi$ with \textbf{opt}$_\pi$, $\Delta \phi$ and learning rate $\alpha^\pi$.
+	\STATE $\psi' \gets \tau \psi' + (1 - \tau) \psi$
+	\STATE $\phi' \gets \tau \phi' + (1 - \tau) \phi$
+	\ENDFOR
+	\ENDFOR
+\end{algorithmic}
