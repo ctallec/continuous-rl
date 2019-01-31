@@ -4,7 +4,9 @@ from abc import abstractmethod
 from torch import Tensor
 
 
-from abstract import Stateful, Cudaable, Loggable, Arrayable, Actor, Tensorable
+from abstract import Stateful, Cudaable, Loggable, Arrayable, Tensorable
+from actors.actor import Actor
+
 class Critic(Stateful, Cudaable, Loggable):
     @abstractmethod
     def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,

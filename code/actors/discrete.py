@@ -1,5 +1,6 @@
 from torch import Tensor
-from abstract import Actor, ParametricFunction, Noise, Arrayable, StateDict
+from abstract import ParametricFunction, Noise, Arrayable, StateDict
+from actors.actor import Actor
 
 class DiscreteActor(Actor):
     def __init__(self, critic: ParametricFunction, target_critic: ParametricFunction, noise: Noise) -> None:

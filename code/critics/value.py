@@ -1,5 +1,6 @@
-from abstract import Arrayable, ParametricFunction, Tensorable, Actor
+from abstract import Arrayable, ParametricFunction, Tensorable
 from critics.critic import Critic
+from actors.actor import Actor
 from torch import Tensor
 from typing import Optional
 from convert import arr_to_th, check_array, check_tensor

@@ -2,7 +2,8 @@ import copy
 from torch import Tensor
 from gym.spaces import Box
 from models import ContinuousPolicyMLP, NormalizedMLP
-from abstract import Actor, ParametricFunction, Noise, Arrayable
+from abstract import ParametricFunction, Noise, Arrayable
+from actors.actor import Actor
 from stateful import CompoundStateful
 from optimizer import setup_optimizer
 from nn import soft_update

@@ -1,6 +1,7 @@
 from typing import Optional
-from abstract import Policy, Actor, Arrayable, StateDict, Cudaable, Tensorable
+from abstract import Policy, Arrayable, StateDict, Cudaable, Tensorable
 from critics.critic import Critic
+from actors.actor import Actor
 from memory.utils import setup_memory
 from stateful import CompoundStateful
 from mylog import log
