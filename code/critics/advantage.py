@@ -1,5 +1,6 @@
 import copy
-from abstract import Critic, Arrayable, ParametricFunction, Tensorable, Actor
+from abstract import Arrayable, ParametricFunction, Tensorable, Actor
+from critics.critic import Critic
 from typing import Optional
 import torch
 from torch import Tensor
