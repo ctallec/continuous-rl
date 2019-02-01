@@ -1,6 +1,6 @@
 """Policy-env interactions."""
-from abstract import Env, Policy, Arrayable
-
+from abstract import Env, Arrayable
+from policies.policy import Policy
 
 def interact(
         env: Env,

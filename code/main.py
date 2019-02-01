@@ -7,7 +7,8 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from abstract import Policy, Env, Arrayable
+from abstract import Env, Arrayable
+from policies.policy import Policy
 from interact import interact
 from evaluation import specific_evaluation
 from utils import compute_return
