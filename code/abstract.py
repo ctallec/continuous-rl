@@ -59,14 +59,7 @@ class ParametricFunction(Stateful, Cudaable):
     def output_shape(self) -> Shape:
         pass
 
-
-
-
-
 class Loggable(ABC):
     @abstractmethod
     def log(self):
         raise NotImplementedError()
-
-
-
