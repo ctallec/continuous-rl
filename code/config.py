@@ -1,7 +1,7 @@
 from functools import partial
 from policies.offline_policy import OfflinePolicy
 from abstract import Env
-from actors import DiscreteActor, SampledActor, ApproximateActor
+from actors import DiscreteActor, ApproximateActor
 from critics import AdvantageCritic, ValueCritic
 from envs.utils import make_env
 from envs.vecenv import VEnv
@@ -26,7 +26,7 @@ def configure(args):
         action_space=eval_env.action_space, observation_space=eval_env.observation_space,
         nb_layers=args.nb_layers, hidden_size=args.hidden_size,
         normalize=args.normalize_state, weight_decay=args.weight_decay, noise=noise,
-        tau=args.tau, use_reference=not args.noreference, noscale=args.noscale
+        tau=args.tau, use_reference=True, noscale=args.noscale
     )
 
     critic_cls = {
@@ -39,7 +39,6 @@ def configure(args):
     kwargs["target_critic_function"] = critic.critic_function(target=True)
 
     actor_cls = {
-        "sampled": SampledActor,
         "approximate": ApproximateActor,
         "discrete": DiscreteActor}[actor_type]
 
