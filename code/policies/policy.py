@@ -2,9 +2,9 @@
 from typing import Optional
 from abc import abstractmethod
 from torch import Tensor
+from stateful import Stateful
 
-
-from abstract import Stateful, Arrayable, Tensorable
+from abstract import Arrayable, Tensorable
 
 class Policy(Stateful):
     @abstractmethod

@@ -1,5 +1,7 @@
 from typing import Optional
-from abstract import Arrayable, StateDict, Cudaable, Tensorable
+from abstract import Arrayable, Tensorable
+from cudaable import Cudaable
+from stateful import StateDict
 from policies.policy import Policy
 from critics.critic import Critic
 from actors.actor import Actor

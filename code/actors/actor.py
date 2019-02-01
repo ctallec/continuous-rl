@@ -3,8 +3,9 @@ from abc import abstractmethod
 from torch import Tensor
 
 
-from abstract import Stateful, Cudaable, Loggable, Arrayable
-
+from abstract import Loggable, Arrayable
+from cudaable import Cudaable
+from stateful import Stateful
 
 class Actor(Stateful, Cudaable, Loggable):
     @abstractmethod

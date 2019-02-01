@@ -1,6 +1,21 @@
 """Generalities for parametric policies."""
 from typing import Any
-from abstract import StateDict, Stateful, Cudaable
+from abc import ABC, abstractmethod
+from typing import Dict
+from cudaable import Cudaable
+
+StateDict = Dict[str, Any]
+
+
+class Stateful(ABC):
+    @abstractmethod
+    def load_state_dict(self, state_dict: StateDict):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def state_dict(self) -> StateDict:
+        raise NotImplementedError()
+
 
 class CompoundStateful(Cudaable):
     def __init__(self):

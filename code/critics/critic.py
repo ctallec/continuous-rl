@@ -4,8 +4,10 @@ from abc import abstractmethod
 from torch import Tensor
 
 
-from abstract import Stateful, Cudaable, Loggable, Arrayable, Tensorable
+from abstract import Loggable, Arrayable, Tensorable
+from cudaable import Cudaable
 from actors.actor import Actor
+from stateful import Stateful
 
 class Critic(Stateful, Cudaable, Loggable):
     @abstractmethod
@@ -25,3 +27,6 @@ class Critic(Stateful, Cudaable, Loggable):
     @abstractmethod
     def advantage(self, obs: Arrayable, action: Tensorable, actor: Actor) -> Tensor:
         pass
+
+
+# class OnlineCritic(Stateful, )
