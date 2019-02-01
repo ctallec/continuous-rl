@@ -17,7 +17,7 @@ class Stateful(ABC):
         raise NotImplementedError()
 
 
-class CompoundStateful(Cudaable):
+class CompoundStateful(Stateful, Cudaable):
     def __init__(self):
         self._statefuls = {}
 
@@ -48,5 +48,3 @@ class CompoundStateful(Cudaable):
                 self._statefuls[k] = self._statefuls[k].to(device)
         return self
 
-
-Stateful.register(CompoundStateful)
