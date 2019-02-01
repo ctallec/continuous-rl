@@ -52,6 +52,3 @@ class Loggable(ABC):
     @abstractmethod
     def log(self):
         raise NotImplementedError()
-
-
-
