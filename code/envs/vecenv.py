@@ -3,7 +3,7 @@ from multiprocessing import Pipe, Process
 from envs.utils import CloudpickleWrapper, VecEnv
 from envs.utils import tile_images
 import numpy as np
-from abstract import Env
+from envs.env import Env
 
 def worker(remote, env_wrapper):
     """

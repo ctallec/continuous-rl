@@ -1,6 +1,6 @@
 from functools import partial
 from policies.offline_policy import OfflinePolicy
-from abstract import Env
+from envs.env import Env
 from actors import DiscreteActor, ApproximateActor
 from critics import AdvantageCritic, ValueCritic
 from envs.utils import make_env

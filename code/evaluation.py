@@ -1,7 +1,7 @@
 """Environment specific evaluation."""
 import numpy as np
 import matplotlib.pyplot as plt
-from abstract import Env
+from envs.env import Env
 from policies.policy import Policy
 from envs.hill import HillEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv

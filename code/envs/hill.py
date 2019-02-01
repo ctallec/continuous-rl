@@ -5,7 +5,7 @@ import gym
 from gym.utils import seeding
 from gym.spaces import Discrete, Box
 import numpy as np
-from abstract import Env
+from envs.env import Env
 
 class HillEnv(gym.Env, Env):
     def __init__(self, discrete: bool=True) -> None:

@@ -5,7 +5,7 @@ import gym
 from gym.spaces import Discrete, Box
 from gym.utils import seeding
 import numpy as np
-from abstract import Env
+from envs.env import Env
 
 class AbstractPusher(gym.Env, Env):
     """ Abstract pusher class """
