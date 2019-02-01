@@ -5,7 +5,7 @@ from actors import DiscreteActor, ApproximateActor
 from critics import AdvantageCritic, ValueCritic
 from envs.utils import make_env
 from envs.vecenv import VEnv
-from noise import setup_noise
+from noises.setupnoise import setup_noise
 
 def configure(args):
     env_fn = partial(make_env, env_id=args.env_id,

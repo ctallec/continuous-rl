@@ -61,17 +61,7 @@ class ParametricFunction(Stateful, Cudaable):
 
 
 
-class Noise(Cudaable):
-    @abstractmethod
-    def step(self):
-        pass
 
-    @abstractmethod
-    def perturb_output(
-            self,
-            *inputs: Arrayable,
-            function: ParametricFunction):
-        pass
 
 class Loggable(ABC):
     @abstractmethod
