@@ -29,4 +29,3 @@ class Critic(Stateful, Cudaable, Loggable):
         pass
 
 
-# class OnlineCritic(Stateful, )
