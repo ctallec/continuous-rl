@@ -4,14 +4,14 @@ from torch import Tensor
 from typing import Optional
 from convert import check_array
 from optimizer import setup_optimizer
-# from gym import Space
-# from gym.spaces import Box, Discrete
-from models import MLP, ContinuousAdvantageMLP, NormalizedMLP
+from gym import Space
+from gym.spaces import Box
+from models import MLP
 from stateful import CompoundStateful
 import copy
 from nn import soft_update
 
-from memory.memorytrajectory import Trajectory, MemoryTrajectory, BatchTraj
+from memory.memorytrajectory import BatchTraj
 
 
 
@@ -60,12 +60,7 @@ class A2CValue(CompoundStateful):
 
 
 
-
-
-
-
-
-class A2CValueCritic(CompoundStateful):
+class A2CCritic(CompoundStateful):
     def __init__(self, gamma: float, lr: float, optimizer: str,
                  v_function: ParametricFunction, tau: float) -> None:
         CompoundStateful.__init__(self)
@@ -76,10 +71,10 @@ class A2CValueCritic(CompoundStateful):
 
 
     def optimize(self, traj: BatchTraj) -> Tensor:
-        critic = self.critic(traj, target=True).detach()
-        v = self._a2cvalue.value(traj.obs[:,0], target=False)
+        v_nstep = self.value(traj, nstep=True, target=True).detach()
+        v = self.value(traj, nstep=False, target=False)
 
-        loss = ((v - critic) ** 2).mean()
+        loss = ((v - v_nstep) ** 2).mean()
 
         self._optimizer.zero_grad()
         loss.backward(retain_graph=True)
@@ -87,44 +82,52 @@ class A2CValueCritic(CompoundStateful):
         return loss
 
     def critic(self, traj:BatchTraj, target:bool=False) -> Tensor:
-        length = traj.length
+        v_nstep = self.value(traj, nstep=True, target=True)
+        v = self.value(traj, nstep=False, target=False)
+        return v_nstep - v
 
-        trunctraj, (lastobs, _, _, done) = traj.splitlast()
-        
-        discounts = self._gamma ** torch.arange(length, dtype=trunctraj.rewards.dtype, device=self._device)
-        discounted_rewards = trunctraj.rewards * discounts
-        critic = (discounted_rewards).sum(dim=1)
-        critic += (1-done) * (self._gamma ** length) * self._a2cvalue.value(lastobs, target=target)
-        return critic
 
-    def log(self):
+    def value(self, traj:BatchTraj, nstep:Optional[bool]=False, target:Optional[bool]=False) -> Tensor:
+        if nstep:
+            length = traj.length
+
+            trunctraj, (lastobs, _, lastr, done) = traj.splitlast()
+            
+            discounts = self._gamma ** torch.arange(length, dtype=trunctraj.rewards.dtype, device=self._device)
+            discounted_rewards = trunctraj.rewards * discounts
+            v = (discounted_rewards).sum(dim=1)
+            v += (1-done) * (self._gamma ** length) * self._a2cvalue.value(lastobs, target=target) \
+                +  done * (self._gamma ** length) * lastr
+        else:
+            v = self._a2cvalue.value(traj.obs[:,0], target=target)
+        return v
+
+
+
+    def log(self) -> None:
         pass
 
     
 
-    def to(self, device):
+    def to(self, device) -> "A2CCritic":
         CompoundStateful.to(self, device)
         self._device = device
         return self
 
     @staticmethod
     def configure(dt: float, gamma: float, lr: float, optimizer: str,
-                  action_space: Space, observation_space: Space,
-                  nb_layers: int, hidden_size: int, normalize: bool,
-                  tau: float, noscale: bool, **kwargs):
-        pass
-        # assert isinstance(observation_space, Box)
-        # nb_state_feats = observation_space.shape[-1]
-        # net_dict = dict(nb_layers=nb_layers, hidden_size=hidden_size)
-        # if isinstance(action_space, Discrete):
-        #     nb_actions = action_space.n
-        #     q_function = MLP(nb_inputs=nb_state_feats, nb_outputs=nb_actions,
-        #                      **net_dict)
-        # elif isinstance(action_space, Box):
-        #     nb_actions = action_space.shape[-1]
-        #     q_function = ContinuousAdvantageMLP(
-        #         nb_outputs=1, nb_state_feats=nb_state_feats, nb_actions=nb_actions,
-        #         **net_dict)
-        # if normalize:
-        #     q_function = NormalizedMLP(q_function)
-        # return ValueCritic(dt, gamma, lr, optimizer, q_function, tau, noscale)
+                  observation_space: Space,
+                  nb_layers: int, hidden_size: int,
+                  tau: float, noscale: bool) -> "A2CCritic":
+
+        assert isinstance(observation_space, Box)
+        nb_state_feats = observation_space.shape[-1]
+        v_function = MLP(nb_inputs=nb_state_feats, nb_outputs=1,
+                         nb_layers=nb_layers, hidden_size=hidden_size)
+        
+        
+        return A2CCritic(gamma, lr, optimizer, v_function, tau)
+
+
+
+

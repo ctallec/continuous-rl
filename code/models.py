@@ -2,6 +2,7 @@
 from collections import OrderedDict
 import torch
 import torch.nn as nn
+from torch import Tensor
 from abstract import ParametricFunction, Tensorable, Shape
 from convert import check_tensor
 # from mylog import log
@@ -114,3 +115,58 @@ class NormalizedMLP(nn.Module, ParametricFunction):
 
     def output_shape(self) -> Shape:
         return self._model.output_shape()
+
+
+class DiscreteRandomPolicy(nn.module, ParametricFunction):
+    def __init__(self, nb_state_feats: int, nb_actions: int,
+                 nb_layers:int, hidden_size:int) -> None:
+        self._model = MLP(nb_state_feats, nb_actions, nb_layers, hidden_size)
+
+    def forward(self, *inputs: Tensorable) -> Tensor:
+        x = check_tensor(inputs[0])
+        x = self._model(x)
+        x = nn.functional.log_softmax(x, dim=1)
+        return x
+
+    def input_shape(self) -> Shape:
+        return self._model.input_shape()
+
+    def output_shape(self) -> Shape:
+        return self._model.output_shape()
+
+
+class ContinuousRandomPolicy(nn.module, ParametricFunction):
+    def __init__(self, nb_state_feats: int, nb_actions: int,
+                 nb_layers: int, hidden_size: int) -> None:
+        self._model = MLP(nb_state_feats, hidden_size, nb_layers-1, hidden_size)
+        self._fc_mu = nn.Linear(hidden_size, nb_actions)
+        self._fc_sigma = nn.Linear(hidden_size, nb_actions)
+
+    def forward(self, *inputs: Tensorable) -> Tensor:
+        x = check_tensor(inputs[0])
+        x = self._model(x)
+        mu = self._fc_mu(x)
+        sigma = torch.log(1 + torch.exp(self._fc_sigma(x)))
+        return mu, sigma
+
+    def input_shape(self) -> Shape:
+        return self._mode.input_shape()
+
+    def output_shape(self) -> Shape:
+        return ((self._nb_actions,), (self._nb_actions,))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

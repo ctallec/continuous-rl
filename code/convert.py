@@ -16,5 +16,5 @@ def check_tensor(tens: Tensorable, device='cpu') -> torch.Tensor:
 def arr_to_th(arr: Arrayable, device) -> torch.Tensor:
     return torch.from_numpy(check_array(arr)).float().to(device)
 
-def th_to_arr(tens: torch.Tensor) -> Arrayable:
+def th_to_arr(tens: torch.Tensor) -> np.ndarray:
     return tens.cpu().detach().numpy()
