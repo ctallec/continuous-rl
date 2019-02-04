@@ -18,14 +18,14 @@ from memory.memorytrajectory import BatchTraj
 
 
 class A2CValue(CompoundStateful):
-    def __init__(self, lr: float, optimizer:str,
+    def __init__(self, lr: float, dt: float, optimizer:str,
                  v_function: ParametricFunction, tau: float):
         CompoundStateful.__init__(self)
         self._lr = lr
         self._v_function = v_function
         self._target_v_function = copy.deepcopy(self._v_function)
         self._optimizer = setup_optimizer(self._v_function.parameters(),
-                        opt_name=optimizer, lr=lr, dt=self._dt,
+                        opt_name=optimizer, lr=lr, dt=dt,
                         inverse_gradient_magnitude=self._dt,
                         weight_decay=0)
         self._device = 'cpu'
@@ -61,13 +61,14 @@ class A2CValue(CompoundStateful):
 
 
 class A2CCritic(CompoundStateful):
-    def __init__(self, gamma: float, lr: float, optimizer: str,
+    def __init__(self, gamma: float, dt: float, lr: float, optimizer: str,
                  v_function: ParametricFunction, tau: float) -> None:
         CompoundStateful.__init__(self)
         self._reference_obs: Tensor = None
-        self._a2cvalue = A2CValue(lr=lr, optimizer=optimizer, v_function=v_function, tau=tau)
+        self._a2cvalue = A2CValue(lr=lr, dt=dt, optimizer=optimizer, v_function=v_function, tau=tau)
         self._gamma = gamma
         self._device = 'cpu'
+        self._dt
 
 
     def optimize(self, traj: BatchTraj) -> Tensor:
@@ -126,7 +127,7 @@ class A2CCritic(CompoundStateful):
                          nb_layers=nb_layers, hidden_size=hidden_size)
         
         
-        return A2CCritic(gamma, lr, optimizer, v_function, tau)
+        return A2CCritic(gamma, dt, lr, optimizer, v_function, tau)
 
 
 

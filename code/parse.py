@@ -24,6 +24,8 @@ def setup_args():
                         help='number of layers (careful, the "true number of layers" is this number + 1).')
     parser.add_argument('--gamma', type=float, default=.8,
                         help='discount factor.')
+    parser.add_argument('--n_step', type=int, default=20,
+                        help='Number of steps in a2c')
     parser.add_argument('--nb_true_epochs', type=float, default=50,
                         help='number of true epochs (epochs / dt) to train on.')
     parser.add_argument('--nb_steps', type=int, default=100,
@@ -69,7 +71,7 @@ def setup_args():
                         help='do not reload previously saved model when set.')
     parser = argload.ArgumentLoader(parser, to_reload=[
         'algo', 'dt', 'steps_btw_train', 'env_id', 'noise_type',
-        'batch_size', 'hidden_size', 'nb_layers', 'gamma', 'nb_true_epochs', 'nb_steps',
+        'batch_size', 'hidden_size', 'nb_layers', 'gamma', 'n_step', 'nb_true_epochs', 'nb_steps',
         'sigma', 'theta', 'c_entropy', 'nb_train_env', 'nb_eval_env', 'memory_size',
         'learn_per_step', 'normalize_state', 'lr', 'time_limit',
         'policy_lr', 'alpha', 'beta', 'weight_decay', 'optimizer',

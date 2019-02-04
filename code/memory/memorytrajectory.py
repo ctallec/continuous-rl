@@ -111,6 +111,8 @@ class MemoryTrajectory:
 
     @property
     def size(self) -> int:
+        if len(self._cumsizes) == 0:
+            return 0
         return self._cumsizes[-1]
 
 

@@ -70,7 +70,7 @@ class A2CActor(CompoundStateful, Loggable):
             nb_actions = action_space.n
             policy_generator = DiscreteRandomPolicy
             actor_generator = A2CActorDiscrete
-        policy_function = policy_generator(nb_state_feats, nb_actions, kwargs['hidden_size'], kwargs['nb_layers'])
+        policy_function = policy_generator(nb_state_feats, nb_actions, kwargs['nb_layers'], kwargs['hidden_size'])
 
         return actor_generator(policy_function, kwargs['lr'], kwargs['tau'],
                                kwargs['optimizer'], kwargs['dt'], kwargs['c_entropy'], 

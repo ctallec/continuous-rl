@@ -37,6 +37,7 @@ class A2CPolicy(CompoundStateful, Policy, Cudaable):
         self._learn_per_step = learn_per_step
         self._nb_train_env = nb_train_env
 
+        self.reset()
  
 
     def step(self, obs: Arrayable):
@@ -44,7 +45,8 @@ class A2CPolicy(CompoundStateful, Policy, Cudaable):
             action = th_to_arr(self._actor.act_noisy(obs))
         else:
             action = th_to_arr(self._actor.act(obs))
-        self._current_action = action
+        self._current_obs = check_array(obs)
+        self._current_action = check_array(action)
         return action
 
     def reset(self):
@@ -66,10 +68,11 @@ class A2CPolicy(CompoundStateful, Policy, Cudaable):
         self._count += 1
         reward = check_array(reward)
         done = check_array(done)
+        time_limit = check_array(time_limit)
         for k in range(self._nb_train_env):
             traj = self._current_trajectories[k]
-            traj.push(self._current_obs[k], self._current_action[k], reward[k], done[k])
-            if traj.isdone or (time_limit is not None and time_limit == 1.):
+            traj.push(self._current_obs[k], self._current_action[k], reward[k], float(done[k]))
+            if traj.isdone or (time_limit is not None and time_limit[k]):
                 self._memory.push(traj)
                 self._current_trajectories[k] = Trajectory()
         self._current_obs = check_array(next_obs)
