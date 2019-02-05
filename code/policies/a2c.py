@@ -14,7 +14,7 @@ from actors.a2cactor import A2CActor
 from critics.a2ccritic import A2CCritic
 
 
-class A2CPolicy(CompoundStateful, Policy, Cudaable):
+class A2CPolicy(CompoundStateful, Policy):
     def __init__(
             self, memory_size: int, batch_size: int, n_step: int,
             steps_btw_train: int, learn_per_step: int, nb_train_env: int,
@@ -40,16 +40,18 @@ class A2CPolicy(CompoundStateful, Policy, Cudaable):
         self.reset()
  
 
-    def step(self, obs: Arrayable):
+    def step(self, obs: Arrayable) -> np.ndarray:
         if self._train:
             action = th_to_arr(self._actor.act_noisy(obs))
         else:
             action = th_to_arr(self._actor.act(obs))
+
+        action = np.clip(action, -1, 1)
         self._current_obs = check_array(obs)
         self._current_action = check_array(action)
         return action
 
-    def reset(self):
+    def reset(self) -> None:
         # internals
         self._current_trajectories: List[Trajectory] = [Trajectory() for _ in range(self._nb_train_env)]
         self._current_obs = np.array([])
@@ -60,7 +62,7 @@ class A2CPolicy(CompoundStateful, Policy, Cudaable):
                 next_obs: Arrayable,
                 reward: Arrayable,
                 done: Arrayable,
-                time_limit: Optional[Arrayable] = None):
+                time_limit: Optional[Arrayable] = None) -> None:
 
         if not self._train:
             return None
@@ -81,8 +83,11 @@ class A2CPolicy(CompoundStateful, Policy, Cudaable):
 
     def learn(self) -> None:
         if (self._count + 1) % self._steps_btw_train != 0 or not self._sampler.warmed_up():
+            if (self._count + 1) % self._steps_btw_train == 0:
+                info(f"NotWarmedup")
             return None
 
+        info("Learn")
         cum_critic_loss = 0
         cum_critic_value = 0
 
@@ -96,7 +101,8 @@ class A2CPolicy(CompoundStateful, Policy, Cudaable):
             critic_value = self._critic.critic(traj, target=True)
             
             # weights = arr_to_th(weights, device=critic_loss.device)
-            self._actor.optimize(-critic_value)
+            obs, action = traj.obs[:,0], traj.actions[:,0]
+            self._actor.optimize(obs, action, -critic_value)
             # self._sampler.observe(th_to_arr(critic_loss * weights))
 
             cum_critic_loss += critic_loss.mean().item()
@@ -118,14 +124,14 @@ class A2CPolicy(CompoundStateful, Policy, Cudaable):
         CompoundStateful.load_state_dict(self, state_dict)
         self._count = state_dict["count"]
 
-    def train(self):
+    def train(self) -> None:
         self._train = True
 
-    def eval(self):
+    def eval(self) -> None:
         self._train = False
 
-    def to(self, device):
-        return CompoundStateful.to(self, device)
+    # def to(self, device):
+    #     return CompoundStateful.to(self, device)
 
     # def value(self, obs: Arrayable) -> Tensor:
     #     return self._critic.value(obs, self._actor)

@@ -5,15 +5,14 @@ import torch
 from torch import Tensor
 from gym.spaces import Box, Discrete
 from models import ContinuousRandomPolicy, DiscreteRandomPolicy
-from abstract import ParametricFunction, Arrayable, Loggable
-from noises import Noise
+from abstract import ParametricFunction, Loggable, Tensorable
 from actors.actor import Actor
 from stateful import CompoundStateful
 from optimizer import setup_optimizer
 from nn import soft_update
 import random
-from convert import check_array
-
+from convert import check_tensor
+from logging import info
 
 class A2CActor(CompoundStateful, Loggable):
     def __init__(self, policy_function: ParametricFunction,
@@ -30,21 +29,26 @@ class A2CActor(CompoundStateful, Loggable):
         self._c_entropy = c_entropy
 
 
-    def act_noisy(self, obs: Arrayable) -> Arrayable:
+    def act_noisy(self, obs: Tensorable) -> Tensor:
         return self.act(obs)
 
     @abstractmethod
-    def act(self, obs: Arrayable, target=False) -> Tensor:
+    def act(self, obs: Tensorable, target=False) -> Tensor:
         pass
         
     @abstractmethod
-    def optimize_critic(self, obs: Arrayable, action: Arrayable,  critic_value: Tensor):
+    def optimize(self, obs: Tensorable, action: Tensorable,  critic_value: Tensor) -> Tensor:
         pass
 
-    def log(self):
+    def log(self) -> None:
         pass
 
-    def policy(self, obs: Arrayable, target: bool):
+    def to(self, device) -> "A2CActor":
+        CompoundStateful.to(self, device)
+        self._device = device
+        return self
+
+    def policy(self, obs: Tensorable, target: bool) -> Tensor:
         if target:
             policy_fun = self._target_policy_function
         else:
@@ -86,22 +90,25 @@ class A2CActorContinuous(A2CActor):
                           c_entropy, weight_decay)
         
 
-    def act(self, obs: Arrayable, target=False) -> Tensor:
+    def act(self, obs: Tensorable, target=False) -> Tensor:
         mu, sigma = self.policy(obs, target)
         eps = torch.randn_like(mu)
-        return mu + eps * sigma
+        action = mu + eps * sigma
+        if not torch.isfinite(action).all():
+            raise ValueError()
+        return action
 
-    def optimize_critic(self, obs: Arrayable, action: Arrayable,  critic_value: Tensor):
-        action = check_array(action)        
+    def optimize(self, obs: Tensorable, action: Tensorable,  critic_value: Tensor) -> None:
+        action = check_tensor(action, self._device)        
         mu, sigma = self._policy_function(obs)
 
-        logp_action = - torch.log(sigma).sum(dim=1) -.5 * (action - mu)/sigma ** 2
+        logp_action = (- torch.log(sigma) -.5 * ((action - mu)/sigma) ** 2).sum(dim=1)
         entropy = torch.log(sigma).sum(dim=1)
 
-        loss = - logp_action * critic_value.detach() - self._c_entropy * entropy
-
+        loss = (- logp_action * critic_value.detach() - self._c_entropy * entropy).mean()
+        info(f"loss_actor:{loss.item()}")
         self._optimizer.zero_grad()
-        loss.mean().backward()
+        loss.backward()
         self._optimizer.step()
         soft_update(self._policy_function, self._target_policy_function, self._tau)
 
@@ -114,12 +121,12 @@ class A2CActorDiscrete(A2CActor):
         A2CActor.__init__(self, policy_function, lr, tau, opt_name, dt,
                           c_entropy, weight_decay)
 
-    def act(self, obs: Arrayable, target=False) -> Tensor:
+    def act(self, obs: Tensorable, target=False) -> Tensor:
         p_actions = self.policy(obs, target).exp()
         return random.choices(list(range(self._nb_action)), weights=p_actions)
 
-    def optimize_critic(self, obs: Arrayable, action: Arrayable, critic_value: Tensor):
-        action = check_array(action)
+    def optimize(self, obs: Tensorable, action: Tensorable, critic_value: Tensor):
+        action = check_tensor(action, self._device)
         logp_action = self._policy_function(obs).gather(1, action.view(-1, 1)).squeeze()
         loss = - logp_action * critic_value.detach()
 

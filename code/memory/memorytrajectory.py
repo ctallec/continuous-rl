@@ -8,6 +8,7 @@ from torch import Tensor
 from convert import check_array, check_tensor
 from abstract import Arrayable, Tensorable
 from cudaable import Cudaable
+from logging import info
 
 
 
@@ -48,7 +49,7 @@ class Trajectory:
     def extract(self, length: int) -> "Trajectory":
         assert length <= len(self)
         start = random.randrange(len(self) - length + 1)
-        stop = length - start
+        stop = start + length
         obs = self._obs[start:stop]
         actions = self._actions[start:stop]
         rewards = self._rewards[start:stop]
@@ -82,18 +83,19 @@ class BatchTraj(Cudaable):
             and self.done.shape[0] == self.batch_size
         assert self.actions.shape[1] == self.length and self.rewards.shape[1] == self.length \
             and self.done.shape[1] == self.length
+        assert len(self.done.shape) == 2 and len(self.rewards.shape) == 2
     
     def to(self, device) -> "BatchTraj":
         self.obs = self.obs.to(device)
         self.actions = self.actions.to(device)
-        self.rewards = self.actions.to(device)
+        self.rewards = self.rewards.to(device)
         self.done = self.done.to(device)
         return self
 
-    def splitlast(self) -> Tuple["BatchTraj", Tuple[Tensor, Tensor, Tensor, Tensor]]:
-        trunctraj = BatchTraj(self.obs[:,:-1], self.actions[:,:-1], self.rewards[:,:-1], self.done[:,:-1])
-        last = (self.obs[:,-1], self.actions[:,-1], self.rewards[:,-1], self.done[:,-1])
-        return trunctraj, last
+    @property
+    def device(self):
+        return self.obs.device
+    
 
 
 

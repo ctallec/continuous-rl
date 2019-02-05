@@ -1,3 +1,4 @@
+from typing import Tuple
 from functools import partial
 from policies.offline_policy import OfflinePolicy
 from envs.env import Env
@@ -6,14 +7,15 @@ from critics import AdvantageCritic, ValueCritic
 from envs.utils import make_env
 from envs.vecenv import VEnv
 from noises.setupnoise import setup_noise
+from policies.policy import Policy
 from policies.a2c import A2CPolicy
 from actors.a2cactor import A2CActor
 from critics.a2ccritic import A2CCritic
 
 
-def configure(args):
+def configure(args) -> Tuple[Policy, Env, Env]:
     env_fn = partial(make_env, env_id=args.env_id,
-                     dt=args.dt, time_limit=args.time_limit)
+                     dt=args.dt, time_limit=args.time_limit) 
 
     env: Env = VEnv([env_fn() for _ in range(args.nb_train_env)])
     eval_env: Env = VEnv([env_fn() for _ in range(args.nb_eval_env)])

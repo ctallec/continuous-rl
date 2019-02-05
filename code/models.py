@@ -141,11 +141,15 @@ class ContinuousRandomPolicy(nn.Module, ParametricFunction):
                  nb_layers: int, hidden_size: int) -> None:
         nn.Module.__init__(self)
         self._model = MLP(nb_state_feats, hidden_size, nb_layers-1, hidden_size)
+        self.ln = nn.LayerNorm(hidden_size)
+        self.relu = nn.ReLU()
         self._fc_mu = nn.Linear(hidden_size, nb_actions)
         self._fc_sigma = nn.Linear(hidden_size, nb_actions)
 
+
     def forward(self, *inputs: Tensorable) -> Tensor:
         x = self._model(inputs[0])
+        x = self.relu(self.ln(x))
         mu = self._fc_mu(x)
         sigma = torch.log(1 + torch.exp(self._fc_sigma(x)))
         return mu, sigma
