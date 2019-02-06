@@ -92,10 +92,16 @@ class A2CActorContinuous(A2CActor):
                           c_entropy, weight_decay)
         
 
-    def act(self, obs: Tensorable) -> Tensor:
+    def act_noisy(self, obs: Tensorable) -> Tensor:
         mu, sigma = self._policy_function(obs)
         eps = torch.randn_like(mu)
         action = mu + eps * sigma
+        if not torch.isfinite(action).all():
+            raise ValueError()
+        return action
+
+    def act(self, obs: Tensorable) -> Tensor:
+        action, _ = self._policy_function(obs)
         if not torch.isfinite(action).all():
             raise ValueError()
         return action
