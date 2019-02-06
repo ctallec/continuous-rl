@@ -43,26 +43,25 @@ class A2CPolicy(CompoundStateful, Policy):
             action = th_to_arr(self._actor.act(obs))
 
         action = np.clip(action, -1, 1)
+
+        assert not self._current_obs.any() or (self._current_obs == check_array(obs)).all()
         self._current_obs = check_array(obs)
         self._current_action = check_array(action)
         return action
 
     def reset(self) -> None:
-        # internals
         self._current_trajectories: List[Trajectory] = \
             [Trajectory(boundlength=self._n_step) for _ in range(self._nb_train_env)]
         self._current_obs = np.array([])
         self._current_action = np.array([])
-        # self._reward = np.array([])
-        # self._done = np.array([])
-        # self._time_limit = np.array([])
-
+        
     def observe(self,
                 next_obs: Arrayable,
                 reward: Arrayable,
                 done: Arrayable,
                 time_limit: Optional[Arrayable] = None) -> None:
 
+        self._current_obs = check_array(next_obs)
         if not self._train:
             return None
 
@@ -77,7 +76,7 @@ class A2CPolicy(CompoundStateful, Policy):
             traj.push(self._current_obs[k], self._current_action[k], reward[k], \
                         float(done[k]), float(time_limit[k]))
 
-        # self._current_obs = check_array(next_obs)
+        
         self.learn()
 
     def learn(self) -> None:

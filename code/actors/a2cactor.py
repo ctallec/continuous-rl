@@ -95,6 +95,7 @@ class A2CActorContinuous(A2CActor):
 
         return Normal(mu, sigma).sample()
 
+
     def optimize(self, traj: BatchTraj,  critic_value: Tensor) -> None:
         traj = traj.to(self._device)
         action = traj.actions
@@ -121,13 +122,18 @@ class A2CActorDiscrete(A2CActor):
         A2CActor.__init__(self, policy_function, lr, tau, opt_name, dt,
                           c_entropy, weight_decay)
 
-    def act(self, obs: Tensorable) -> Tensor:
+    def act_noisy(self, obs: Tensorable) -> Tensor:
         logp_actions = self._policy_function(obs)
 
         distr = torch.distributions.categorical.Categorical(
             logits=logp_actions)
 
         return distr.sample()
+
+    def act(self, obs: Tensorable) -> Tensor:
+        return torch.argmax(self._policy_function(obs), dim=-1)
+
+
 
     def optimize(self, traj: BatchTraj, critic_value: Tensor):
         traj = traj.to(self._device)
@@ -138,6 +144,8 @@ class A2CActorDiscrete(A2CActor):
         distr = Categorical(logits=logits)
         logp_actions = distr.log_prob(actions)
         entropy = distr.entropy()
+
+        print(f"entropy:{entropy.mean().item()}")
         loss = - logp_actions * critic_value.detach() - self._c_entropy * entropy
 
         self._optimizer.zero_grad()

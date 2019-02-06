@@ -20,7 +20,7 @@ from config import configure
 def train(nb_steps: int, env: Env, policy: Policy, start_obs: Arrayable):
     """ Trains for one epoch. """
     policy.train()
-
+    policy.reset()
     obs = start_obs
     for _ in range(nb_steps):
         # interact
@@ -33,7 +33,7 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
     """ Evaluate. """
     log_gap = int(eval_gap / dt)
     policy.eval()
-
+    policy.reset()
     R = None
     if eval_return:
         rewards, dones = [], []
