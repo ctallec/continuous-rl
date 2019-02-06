@@ -79,7 +79,7 @@ class A2CPolicy(CompoundStateful, Policy):
             traj.push(self._current_obs[k], self._current_action[k], reward[k], \
                         float(done[k]), float(time_limit[k]))
 
-        self._current_obs = check_array(next_obs)
+        # self._current_obs = check_array(next_obs)
         self.learn()
 
     def learn(self) -> None:
@@ -128,8 +128,8 @@ class A2CPolicy(CompoundStateful, Policy):
         return self._critic.value(obs)
 
     def actions(self, obs: Arrayable) -> Tensor:
-        mu, sigma = self._actor._policy_function(obs)
-        return mu
+        return self._actor.actions(obs)
+        
 
     
 

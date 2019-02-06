@@ -124,8 +124,7 @@ class DiscreteRandomPolicy(nn.Module, ParametricFunction):
         self._model = MLP(nb_state_feats, nb_actions, nb_layers, hidden_size)
 
     def forward(self, *inputs: Tensorable) -> Tensor:
-        x = check_tensor(inputs[0])
-        x = self._model(x)
+        x = self._model(inputs[0])
         x = nn.functional.log_softmax(x, dim=1)
         return x
 
@@ -150,12 +149,12 @@ class ContinuousRandomPolicy(nn.Module, ParametricFunction):
     def forward(self, *inputs: Tensorable) -> Tensor:
         x = self._model(inputs[0])
         x = self.relu(self.ln(x))
-        mu = self._fc_mu(x)
+        mu = torch.tanh(self._fc_mu(x))
         sigma = torch.log(1 + torch.exp(self._fc_sigma(x)))
         return mu, sigma
 
     def input_shape(self) -> Shape:
-        return self._mode.input_shape()
+        return self._model.input_shape()
 
     def output_shape(self) -> Shape:
         return ((self._nb_actions,), (self._nb_actions,))

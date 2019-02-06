@@ -11,6 +11,7 @@ from models import MLP
 from stateful import CompoundStateful
 from memory.memorytrajectory import BatchTraj
 
+import ipdb
 
 
 class A2CCritic(CompoundStateful):
@@ -50,9 +51,20 @@ class A2CCritic(CompoundStateful):
         v = self.value_batch(traj, nstep=False)
         stopping_criteria = torch.max(traj.done, traj.time_limit)
         stopping_criteria[:, -1] = 1.
-        v_nstep = traj.rewards + torch.min(stopping_criteria, 1-traj.done) * v
+
+
+        # v_nstep = traj.rewards + torch.min(stopping_criteria, 1-traj.done) * v
+        # for t in range(traj.length-2,-1, -1):
+        #     v_nstep[:, t] += (1 - stopping_criteria[:, t]) * (self._gamma * v_nstep[:, t+1])
+
+        v_nstep = torch.zeros_like(traj.rewards)
+        v_nstep[:, -1] = (1-traj.done[:, -1]) * v[:, -1] + traj.done[:, -1] * traj.rewards[:, -1]
         for t in range(traj.length-2,-1, -1):
+            v_nstep[:, t] += torch.max(1 - stopping_criteria[:, t], traj.done[:, t]) * traj.rewards[:, t]
             v_nstep[:, t] += (1 - stopping_criteria[:, t]) * (self._gamma * v_nstep[:, t+1])
+            v_nstep[:, t] += traj.time_limit[:, t] * v[:, t]
+
+        print(v_nstep-v)
         return v, v_nstep
 
 
