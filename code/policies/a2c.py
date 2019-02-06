@@ -14,8 +14,6 @@ from actors.a2cactor import A2CActor
 from critics.a2ccritic import A2CCritic
 
 
-import ipdb
-
 class A2CPolicy(CompoundStateful, Policy):
     def __init__(
             self, batch_size: int, n_step: int,

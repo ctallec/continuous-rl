@@ -137,7 +137,7 @@ class A2CActorDiscrete(A2CActor):
 
         distr = torch.distributions.categorical.Categorical(
             logits=logp_actions)
-        
+
         return distr.sample()
 
     def act(self, obs: Tensorable) -> Tensor:
@@ -163,7 +163,4 @@ class A2CActorDiscrete(A2CActor):
         self._optimizer.step()
 
     def actions(self, obs: Tensorable) -> Tensor:
-        return torch.argmax(self._policy_function(obs), dim=-1)
-    
-
-
+        return torch.softmax(self._policy_function(obs), dim=-1)[:, 0]

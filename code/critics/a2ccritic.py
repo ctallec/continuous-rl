@@ -11,8 +11,6 @@ from models import MLP
 from stateful import CompoundStateful
 from memory.memorytrajectory import BatchTraj
 
-import ipdb
-
 
 class A2CCritic(CompoundStateful):
     def __init__(self, gamma: float, dt: float, lr: float, optimizer: str,
@@ -26,7 +24,7 @@ class A2CCritic(CompoundStateful):
                                           weight_decay=0)
         self._gamma = gamma ** dt
         self._device = 'cpu'
-        self._dt
+        self._dt = dt
 
     def optimize(self, v: Tensor, v_target: Tensor) -> Tensor:
         self._optimizer.zero_grad()
@@ -49,21 +47,20 @@ class A2CCritic(CompoundStateful):
             return v
 
         v = self.value_batch(traj, nstep=False)
-        done = (traj.done == 1)
-        time_limit = (traj.time_limit == 1)
-        stopping_criteria = done | time_limit
-        stopping_criteria[:, -1] = 1
+        stopping_criteria = torch.max(traj.done, traj.time_limit)
+        stopping_criteria[:, -1] = 1.
 
 
-        v_nstep = torch.zeros_like(v)
-        v_nstep[:, -1] = torch.where(done[:, -1], traj.rewards[:, -1], v[:, -1])
+        # v_nstep = traj.rewards + torch.min(stopping_criteria, 1-traj.done) * v
+        # for t in range(traj.length-2,-1, -1):
+        #     v_nstep[:, t] += (1 - stopping_criteria[:, t]) * (self._gamma * v_nstep[:, t+1])
+
+        v_nstep = torch.zeros_like(traj.rewards)
+        v_nstep[:, -1] = (1-traj.done[:, -1]) * v[:, -1] + traj.done[:, -1] * traj.rewards[:, -1] * self._dt
         for t in range(traj.length-2,-1, -1):
-
-            v_nstep[:, t] += torch.where(~ stopping_criteria[:, t] | done[:, t], 
-                                traj.rewards[:, t], torch.zeros_like(traj.rewards[:, t]))
-            v_nstep[:, t] += torch.where(~ stopping_criteria[:, t],
-                self._gamma * v_nstep[:, t+1], torch.zeros_like(v_nstep[:, t+1]))
-            v_nstep[:, t] += torch.where(time_limit[:, t],  v[:, t], torch.zeros_like(v[:, t]))
+            v_nstep[:, t] += torch.max(1 - stopping_criteria[:, t], traj.done[:, t]) * traj.rewards[:, t] * self._dt
+            v_nstep[:, t] += (1 - stopping_criteria[:, t]) * (self._gamma * v_nstep[:, t+1])
+            v_nstep[:, t] += traj.time_limit[:, t] * v[:, t]
 
         return v, v_nstep
 

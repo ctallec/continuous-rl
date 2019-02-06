@@ -125,7 +125,6 @@ class DiscreteRandomPolicy(nn.Module, ParametricFunction):
 
     def forward(self, *inputs: Tensorable) -> Tensor:
         x = self._model(inputs[0])
-        # x = nn.functional.log_softmax(x, dim=-1)
         return x
 
     def input_shape(self) -> Shape:

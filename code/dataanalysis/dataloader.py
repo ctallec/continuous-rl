@@ -5,7 +5,6 @@ from typing import List, Callable, Any
 import numpy as np
 import random
 
-import ipdb
 class ExperimentData:
     def __init__(self, runs: List['ExperimentRun']) -> None:
         # experimentrunlist = [ExperimentRun(args_file, logs_file) for args_file, logs_file in argslogs_filelist]
