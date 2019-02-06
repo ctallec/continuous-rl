@@ -1,8 +1,6 @@
 from datetime import datetime
 
-
-
-from dataloader import loader_leonard, ExperimentData
+from dataloader import loader, ExperimentData
 
 from plots import plot_learning_curves
 
@@ -12,7 +10,7 @@ start_date = datetime.strptime('2019_01_14_10_22_54', "%Y_%m_%d_%H_%M_%S")
 
 # start_date = 'last'
 stop_date = None
-runlist = loader_leonard('/private/home/leonardb/workdir', 'mujoco_continuous', 
+runlist = loader('/private/home/leonardb/workdir', 'mujoco_continuous', 
     start_date=start_date, stop_date=stop_date)
 
 expdata = ExperimentData(runlist)

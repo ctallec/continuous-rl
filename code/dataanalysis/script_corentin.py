@@ -1,5 +1,5 @@
 import argparse
-from dataloader import loader_leonard, ExperimentData
+from dataloader import loader, ExperimentData
 from plots import plot_learning_curves
 from typing import List
 
@@ -15,7 +15,7 @@ start_date = 'last'
 stop_date = None
 runlist: List[ExperimentData] = []
 for exp_name in args.exp_names:
-    runlist.extend(loader_leonard(args.logdir, exp_name, start_date=start_date, stop_date=stop_date))
+    runlist.extend(loader(args.logdir, exp_name, start_date=start_date, stop_date=stop_date))
 
 expdata = ExperimentData(runlist)
 
