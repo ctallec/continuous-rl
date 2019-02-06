@@ -13,6 +13,8 @@ from nn import soft_update
 import random
 from convert import check_tensor
 from logging import info
+from memory.memorytrajectory import BatchTraj
+
 
 class A2CActor(CompoundStateful, Loggable):
     def __init__(self, policy_function: ParametricFunction,
@@ -33,11 +35,11 @@ class A2CActor(CompoundStateful, Loggable):
         return self.act(obs)
 
     @abstractmethod
-    def act(self, obs: Tensorable, target=False) -> Tensor:
+    def act(self, obs: Tensorable) -> Tensor:
         pass
         
     @abstractmethod
-    def optimize(self, obs: Tensorable, action: Tensorable,  critic_value: Tensor) -> Tensor:
+    def optimize(self, traj: BatchTraj, critic_value: Tensor) -> Tensor:
         pass
 
     def log(self) -> None:
@@ -48,12 +50,8 @@ class A2CActor(CompoundStateful, Loggable):
         self._device = device
         return self
 
-    def policy(self, obs: Tensorable, target: bool) -> Tensor:
-        if target:
-            policy_fun = self._target_policy_function
-        else:
-            policy_fun = self._policy_function
-        return policy_fun(obs)
+    def policy(self, obs: Tensorable) -> Tensor:
+        return self._policy_function(obs)
 
 
     @staticmethod
@@ -90,23 +88,25 @@ class A2CActorContinuous(A2CActor):
                           c_entropy, weight_decay)
         
 
-    def act(self, obs: Tensorable, target=False) -> Tensor:
-        mu, sigma = self.policy(obs, target)
+    def act(self, obs: Tensorable) -> Tensor:
+        mu, sigma = self._policy_function(obs)
         eps = torch.randn_like(mu)
         action = mu + eps * sigma
         if not torch.isfinite(action).all():
             raise ValueError()
         return action
 
-    def optimize(self, obs: Tensorable, action: Tensorable,  critic_value: Tensor) -> None:
-        action = check_tensor(action, self._device)        
-        mu, sigma = self._policy_function(obs)
+    def optimize(self, traj: BatchTraj,  critic_value: Tensor) -> None:
+        traj = traj.to(self._device)
+        action = traj.actions
+        batchobs = traj.obs.reshape((traj.batch_size * traj.length, *traj.obs.shape[2:]))     
+        mu, sigma = self._policy_function(batchobs)
+        mu, sigma = mu.reshape(action.shape), sigma.reshape(action.shape)
 
-        logp_action = (- torch.log(sigma) -.5 * ((action - mu)/sigma) ** 2).sum(dim=1)
-        entropy = torch.log(sigma).sum(dim=1)
+        logp_action = (- torch.log(sigma) -.5 * ((action - mu)/sigma) ** 2).sum(dim=-1)
+        entropy = torch.log(sigma).sum(dim=-1)
 
         loss = (- logp_action * critic_value.detach() - self._c_entropy * entropy).mean()
-        info(f"loss_actor:{loss.item()}")
         self._optimizer.zero_grad()
         loss.backward()
         self._optimizer.step()
@@ -121,11 +121,11 @@ class A2CActorDiscrete(A2CActor):
         A2CActor.__init__(self, policy_function, lr, tau, opt_name, dt,
                           c_entropy, weight_decay)
 
-    def act(self, obs: Tensorable, target=False) -> Tensor:
-        p_actions = self.policy(obs, target).exp()
+    def act(self, obs: Tensorable) -> Tensor:
+        p_actions = self._policy_function(obs).exp()
         return random.choices(list(range(self._nb_action)), weights=p_actions)
 
-    def optimize(self, obs: Tensorable, action: Tensorable, critic_value: Tensor):
+    def optimize(self, traj: BatchTraj, critic_value: Tensor):
         action = check_tensor(action, self._device)
         logp_action = self._policy_function(obs).gather(1, action.view(-1, 1)).squeeze()
         loss = - logp_action * critic_value.detach()

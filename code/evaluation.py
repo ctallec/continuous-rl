@@ -3,13 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from envs.env import Env
 from policies.policy import Policy
+from policies.a2c import A2CPolicy
 from envs.hill import HillEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv
 from convert import th_to_arr
 from gym.envs.classic_control import PendulumEnv
 from gym.spaces import Box
 from mylog import log_image
-
 def specific_evaluation(
         epoch: int,
         log: int,
@@ -17,6 +17,7 @@ def specific_evaluation(
         env: Env,
         policy: Policy):
 
+    
     if isinstance(env.envs[0].unwrapped, AbstractPusher): # type: ignore
         nb_pixels = 50
         state_space = np.linspace(-1.5, 1.5, nb_pixels)[:, np.newaxis]

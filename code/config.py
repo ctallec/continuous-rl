@@ -68,9 +68,9 @@ def configure(args) -> Tuple[Policy, Env, Env]:
             dt=args.dt, gamma=args.gamma, lr=args.lr, optimizer=args.optimizer,
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
-            tau=args.tau, noscale=args.noscale) 
+            noscale=args.noscale) 
 
-        policy = A2CPolicy(args.memory_size, args.batch_size, args.n_step,
+        policy = A2CPolicy(args.batch_size, args.n_step,
             args.steps_btw_train, args.learn_per_step, args.nb_train_env,
             actor, critic)
         

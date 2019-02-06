@@ -19,14 +19,13 @@ class Policy(Stateful):
                 time_limit: Optional[Arrayable]):
         pass
 
-    # Used for evaluation/logging
-    # @abstractmethod
-    # def value(self, obs: Arrayable) -> Tensor:
-    #     pass
+    @abstractmethod
+    def value(self, obs: Arrayable) -> Tensor:
+        pass
 
-    # @abstractmethod
-    # def actions(self, obs: Arrayable) -> Tensor:
-    #     pass
+    @abstractmethod
+    def actions(self, obs: Arrayable) -> Tensor:
+        pass
 
     # @abstractmethod
     # def advantage(self, obs: Arrayable, action: Tensorable) -> Tensor:

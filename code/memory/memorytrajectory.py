@@ -18,7 +18,9 @@ class Trajectory:
                  obs: Optional[List[np.ndarray]] = None, 
                  actions: Optional[List[np.ndarray]] = None, 
                  rewards: Optional[List[float]] = None,
-                 done: Optional[List[float]] = None) -> None:
+                 done: Optional[List[float]] = None,
+                 time_limit: Optional[List[float]] = None,
+                 boundlength: Optional[int] = None) -> None:
         
         if obs is None:
             obs = []
@@ -28,16 +30,21 @@ class Trajectory:
             rewards = []
         if done is None:
             done = []
+        if time_limit is None:
+            time_limit = []
         self._obs = obs
         self._actions = actions
         self._rewards = rewards
         self._done = done
+        self._time_limit = time_limit
+        self._boundlength = boundlength
 
         l = len(self)
-        assert len(self._rewards) == l and len(self._actions) == l and len(self._done) == l
+        assert len(self._rewards) == l and len(self._actions) == l \
+            and len(self._done) == l and len(self._time_limit) == l
 
-    def push(self, obs: Arrayable, action: Arrayable, reward: float, done: float) -> None:
-        assert not self.isdone
+    def push(self, obs: Arrayable, action: Arrayable, reward: float, 
+             done: float, time_limit: float) -> None:
         obs = check_array(obs)
         action = check_array(action)
 
@@ -45,6 +52,8 @@ class Trajectory:
         self._actions.append(action)
         self._rewards.append(reward)
         self._done.append(done)
+        self._time_limit.append(time_limit)
+        self.boundlength()
 
     def extract(self, length: int) -> "Trajectory":
         assert length <= len(self)
@@ -54,12 +63,22 @@ class Trajectory:
         actions = self._actions[start:stop]
         rewards = self._rewards[start:stop]
         done = self._done[start:stop]
-
-        return Trajectory(obs, actions, rewards, done)
+        time_limit = self._time_limit[start:stop]
+        return Trajectory(obs, actions, rewards, done, time_limit)
 
 
     def __len__(self) -> int:
-        return len(self._obs)
+        return len(self._obs) 
+
+    def boundlength(self) -> None:
+        if self._boundlength is None:
+            return None
+        delta = max(0, len(self) - self._boundlength)
+        self._obs = self._obs[delta:]
+        self._actions = self._actions[delta:]
+        self._rewards = self._rewards[delta:]
+        self._done = self._done[delta:]
+        self._time_limit = self._time_limit[delta:]
 
     @property
     def isdone(self) -> bool:
@@ -67,30 +86,59 @@ class Trajectory:
             return False
 
         return self._done[-1] == 1.
+
+    @staticmethod
+    def tobatch(*trajs: "Trajectory") -> "BatchTraj":
+        batch_size = len(trajs)
+        length_traj = len(trajs[0])
+        assert all(len(traj) == length_traj for traj in trajs)
+
+        obs_shape = trajs[0]._obs[0].shape
+        action_shape = trajs[0]._actions[0].shape
+
+        obs = np.zeros((batch_size, length_traj, *obs_shape))
+        actions = np.zeros((batch_size, length_traj, *action_shape))
+        rewards = np.zeros((batch_size, length_traj))
+        done = np.zeros((batch_size, length_traj))
+        time_limit = np.zeros((batch_size, length_traj))
+        for i, traj in enumerate(trajs):
+            for t in range(length_traj):
+                obs[i,t] = traj._obs[t]
+                actions[i,t] = traj._actions[t]
+                rewards[i,t] = traj._rewards[t]
+                done[i,t] = traj._done[t]
+
+        return BatchTraj(obs=obs, actions=actions, rewards=rewards, done=done, time_limit=time_limit)
     
 
 class BatchTraj(Cudaable):
     def __init__(self, obs: Tensorable, actions: Tensorable, 
-                 rewards: Tensorable, done: Tensorable):
+                 rewards: Tensorable, done: Tensorable, time_limit: Tensorable):
         self.obs = check_tensor(obs)
         self.actions = check_tensor(actions)
         self.rewards = check_tensor(rewards)
         self.done = check_tensor(done)
+        self.time_limit = check_tensor(time_limit)
         self.batch_size = self.obs.shape[0]
         self.length = self.obs.shape[1] 
 
         assert self.actions.shape[0] == self.batch_size and self.rewards.shape[0] == self.batch_size \
-            and self.done.shape[0] == self.batch_size
+            and self.done.shape[0] == self.batch_size and self.time_limit.shape[0] == self.batch_size
         assert self.actions.shape[1] == self.length and self.rewards.shape[1] == self.length \
-            and self.done.shape[1] == self.length
-        assert len(self.done.shape) == 2 and len(self.rewards.shape) == 2
+            and self.done.shape[1] == self.length and self.time_limit.shape[1] == self.length
+        assert len(self.done.shape) == 2 and len(self.rewards.shape) == 2 and len(self.time_limit.shape) == 2
     
     def to(self, device) -> "BatchTraj":
         self.obs = self.obs.to(device)
         self.actions = self.actions.to(device)
         self.rewards = self.rewards.to(device)
         self.done = self.done.to(device)
+        self.time_limit = self.time_limit.to(device)
         return self
+
+    def __getitem__(self, key) -> "BatchTraj":
+        return BatchTraj(obs=self.obs[key], actions=self.actions[key], rewards=self.rewards[key],
+                         done=self.done[key], time_limit=self.time_limit[key])
 
     @property
     def device(self):
