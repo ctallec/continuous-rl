@@ -41,12 +41,11 @@ class A2CPolicy(CompoundStateful, Policy):
             action = th_to_arr(self._actor.act_noisy(obs))
         else:
             action = th_to_arr(self._actor.act(obs))
-
-        action = np.clip(action, -1, 1)
-
         assert not self._current_obs.any() or (self._current_obs == check_array(obs)).all()
         self._current_obs = check_array(obs)
         self._current_action = check_array(action)
+        # TODO check continuous...
+        action = np.clip(action, -1, 1)
         return action
 
     def reset(self) -> None:
