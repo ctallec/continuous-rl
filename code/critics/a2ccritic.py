@@ -49,22 +49,22 @@ class A2CCritic(CompoundStateful):
             return v
 
         v = self.value_batch(traj, nstep=False)
-        stopping_criteria = torch.max(traj.done, traj.time_limit)
-        stopping_criteria[:, -1] = 1.
+        done = (traj.done == 1)
+        time_limit = (traj.time_limit == 1)
+        stopping_criteria = done | time_limit
+        stopping_criteria[:, -1] = 1
 
 
-        # v_nstep = traj.rewards + torch.min(stopping_criteria, 1-traj.done) * v
-        # for t in range(traj.length-2,-1, -1):
-        #     v_nstep[:, t] += (1 - stopping_criteria[:, t]) * (self._gamma * v_nstep[:, t+1])
-
-        v_nstep = torch.zeros_like(traj.rewards)
-        v_nstep[:, -1] = (1-traj.done[:, -1]) * v[:, -1] + traj.done[:, -1] * traj.rewards[:, -1]
+        v_nstep = torch.zeros_like(v)
+        v_nstep[:, -1] = torch.where(done[:, -1], traj.rewards[:, -1], v[:, -1])
         for t in range(traj.length-2,-1, -1):
-            v_nstep[:, t] += torch.max(1 - stopping_criteria[:, t], traj.done[:, t]) * traj.rewards[:, t]
-            v_nstep[:, t] += (1 - stopping_criteria[:, t]) * (self._gamma * v_nstep[:, t+1])
-            v_nstep[:, t] += traj.time_limit[:, t] * v[:, t]
 
-        print(v_nstep-v)
+            v_nstep[:, t] += torch.where(~ stopping_criteria[:, t] | done[:, t], 
+                                traj.rewards[:, t], torch.zeros_like(traj.rewards[:, t]))
+            v_nstep[:, t] += torch.where(~ stopping_criteria[:, t],
+                self._gamma * v_nstep[:, t+1], torch.zeros_like(v_nstep[:, t+1]))
+            v_nstep[:, t] += torch.where(time_limit[:, t],  v[:, t], torch.zeros_like(v[:, t]))
+
         return v, v_nstep
 
 

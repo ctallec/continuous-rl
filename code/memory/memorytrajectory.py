@@ -71,7 +71,7 @@ class Trajectory:
         return len(self._obs) 
 
     def boundlength(self) -> None:
-        if self._boundlength is None:
+        if self._boundlength is None or len(self) <= self._boundlength:
             return None
         delta = max(0, len(self) - self._boundlength)
         self._obs = self._obs[delta:]
@@ -79,6 +79,8 @@ class Trajectory:
         self._rewards = self._rewards[delta:]
         self._done = self._done[delta:]
         self._time_limit = self._time_limit[delta:]
+        assert len(self) == self._boundlength
+
 
     @property
     def isdone(self) -> bool:
@@ -103,6 +105,7 @@ class Trajectory:
         time_limit = np.zeros((batch_size, length_traj))
         for i, traj in enumerate(trajs):
             for t in range(length_traj):
+                assert obs[i,t].shape == traj._obs[t].shape and actions[i,t].shape == traj._actions[t].shape
                 obs[i,t] = traj._obs[t]
                 actions[i,t] = traj._actions[t]
                 rewards[i,t] = traj._rewards[t]
