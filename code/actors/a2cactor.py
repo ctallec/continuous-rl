@@ -4,6 +4,7 @@ import copy
 import torch
 from torch import Tensor
 from torch.distributions.categorical import Categorical
+from torch.distributions.normal import Normal
 from gym.spaces import Box, Discrete
 from models import ContinuousRandomPolicy, DiscreteRandomPolicy
 from abstract import ParametricFunction, Loggable, Tensorable
@@ -82,23 +83,17 @@ class A2CActor(CompoundStateful, Loggable):
                                kwargs['optimizer'], kwargs['dt'], kwargs['c_entropy'], 
                                kwargs['weight_decay'])
 
-
-
 class A2CActorContinuous(A2CActor):
     def __init__(self, policy_function: ParametricFunction,
                  lr: float, tau: float, opt_name: str, dt: float,
                  c_entropy:float, weight_decay: float) -> None:
         A2CActor.__init__(self, policy_function, lr, tau, opt_name, dt,
                           c_entropy, weight_decay)
-        
 
     def act_noisy(self, obs: Tensorable) -> Tensor:
         mu, sigma = self._policy_function(obs)
-        eps = torch.randn_like(mu)
-        action = mu + eps * sigma
-        if not torch.isfinite(action).all():
-            raise ValueError()
-        return action
+
+        return Normal(mu, sigma).sample()
 
     def act(self, obs: Tensorable) -> Tensor:
         action, _ = self._policy_function(obs)
@@ -110,26 +105,21 @@ class A2CActorContinuous(A2CActor):
     def optimize(self, traj: BatchTraj,  critic_value: Tensor) -> None:
         traj = traj.to(self._device)
         action = traj.actions
-        # batchobs = traj.obs.reshape((traj.batch_size * traj.length, *traj.obs.shape[2:]))     
         mu, sigma = self._policy_function(traj.obs)
-        # mu, sigma = mu.reshape(action.shape), sigma.reshape(action.shape)
+        distr = Normal(mu, sigma)
+        logp_action = distr.log_prob(action).sum(dim=-1)
+        entropy = distr.entropy().sum(dim=-1)
 
-        logp_action = (- torch.log(sigma) -.5 * ((action - mu)/sigma) ** 2).sum(dim=-1)
-        entropy = torch.log(sigma).sum(dim=-1).mean()
-        # distr = torch.distributions.multivariate_normal.MultivariateNormal(
-        #     mu, covariance_matrix=torch.diag(sigma ** 2))
         loss_critic = (- logp_action * critic_value.detach()).mean()
         loss = loss_critic - self._c_entropy * entropy
 
-        info(f"loss_critic:{loss_critic.item():.0e}\tentropy:{entropy.item():.0e}")
+        info(f"loss_critic:{loss_critic.mean().item():.0e}\tentropy:{entropy.mean().item():.0e}")
         self._optimizer.zero_grad()
-        loss.backward()
+        loss.mean().backward()
         self._optimizer.step()
 
     def actions(self, obs: Tensorable) -> Tensor:
         return self._policy_function(obs)[0]
-
-
 
 class A2CActorDiscrete(A2CActor):
     def __init__(self, policy_function: ParametricFunction,
