@@ -9,8 +9,8 @@ from envs.vecenv import VEnv
 from noises.setupnoise import setup_noise
 from policies.policy import Policy
 from policies.a2c import A2CPolicy
-from actors.a2cactor import A2CActor
-from critics.a2ccritic import A2CCritic
+from actors.a2c_actor import A2CActor
+from critics.a2c_critic import A2CCritic
 
 
 def configure(args) -> Tuple[Policy, Env, Env]:
@@ -71,7 +71,7 @@ def configure(args) -> Tuple[Policy, Env, Env]:
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
             noscale=args.noscale)
 
-        policy = A2CPolicy(args.n_step, args.steps_btw_train, args.nb_train_env,
+        policy = A2CPolicy(args.n_step, args.nb_train_env,
                            actor, critic)
     else:
         raise ValueError(f"Unknown algorithm {args.algo}")
