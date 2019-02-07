@@ -7,7 +7,7 @@ import numpy as np
 from torch import Tensor
 from convert import th_to_arr, check_array
 from memory.memorytrajectory import Trajectory
-from actors.online_actor import OnlineActor
+from actors.online_actor import OnlineActor, OnlineActorContinuous
 from critics.online_critic import OnlineCritic
 from abc import abstractmethod
 
@@ -27,6 +27,7 @@ class OnlinePolicy(CompoundStateful, Policy):
         self._nb_train_env = nb_train_env
         self._count = 0
         self._T = T
+        self._device="cpu"
         self.reset()
 
     def step(self, obs: Arrayable) -> np.ndarray:
@@ -38,7 +39,9 @@ class OnlinePolicy(CompoundStateful, Policy):
         self._current_obs = check_array(obs)
         self._current_action = check_array(action)
         # TODO check continuous...
-        action = np.clip(action, -1, 1)
+
+        if isinstance(self._actor, OnlineActorContinuous):
+            action = np.clip(action, -1, 1)
         return action
 
     def reset(self) -> None:
@@ -93,3 +96,9 @@ class OnlinePolicy(CompoundStateful, Policy):
 
     def actions(self, obs: Arrayable) -> Tensor:
         return self._actor.actions(obs)
+
+    def to(self, device) -> "OnlinePolicy":
+        self._device = device
+        CompoundStateful.to(self, device)
+        return self
+        

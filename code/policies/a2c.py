@@ -9,7 +9,7 @@ class A2CPolicy(OnlinePolicy):
         if (self._count + 1) % self._T != 0:
             return None
         traj = Trajectory.tobatch(*self._current_trajectories)
-
+        traj = traj.to(self._device)
         v, v_target = self._critic.value_batch(traj)
 
         critic_loss = self._critic.optimize(v, v_target)
