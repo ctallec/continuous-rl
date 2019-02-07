@@ -108,7 +108,8 @@ def main(args):
         if new_R is not None:
             # policy.observe_evaluation(new_R)
             if new_R > R:
-                evaluate(dt, e, eval_env, policy, eval_gap,
+                evaluate(
+                    dt, e, eval_env, policy, eval_gap,
                     time_limit, eval_return=True, test=True)
                 info(f"Saving new policy with return {new_R}")
                 state_dict = policy.state_dict()

@@ -1,27 +1,20 @@
-from typing import List, Optional, Tuple, NamedTuple
-from collections import namedtuple
+from typing import List, Optional
 import random
 import numpy as np
-from torch import Tensor
-
 
 from convert import check_array, check_tensor
 from abstract import Arrayable, Tensorable
 from cudaable import Cudaable
-from logging import info
-
-
-
 
 class Trajectory:
-    def __init__(self, 
-                 obs: Optional[List[np.ndarray]] = None, 
-                 actions: Optional[List[np.ndarray]] = None, 
+    def __init__(self,
+                 obs: Optional[List[np.ndarray]] = None,
+                 actions: Optional[List[np.ndarray]] = None,
                  rewards: Optional[List[float]] = None,
                  done: Optional[List[float]] = None,
                  time_limit: Optional[List[float]] = None,
                  boundlength: Optional[int] = None) -> None:
-        
+
         if obs is None:
             obs = []
         if actions is None:
@@ -39,11 +32,11 @@ class Trajectory:
         self._time_limit = time_limit
         self._boundlength = boundlength
 
-        l = len(self)
-        assert len(self._rewards) == l and len(self._actions) == l \
-            and len(self._done) == l and len(self._time_limit) == l
+        length = len(self)
+        assert len(self._rewards) == length and len(self._actions) == length \
+            and len(self._done) == length and len(self._time_limit) == length
 
-    def push(self, obs: Arrayable, action: Arrayable, reward: float, 
+    def push(self, obs: Arrayable, action: Arrayable, reward: float,
              done: float, time_limit: float) -> None:
         obs = check_array(obs)
         action = check_array(action)
@@ -66,9 +59,8 @@ class Trajectory:
         time_limit = self._time_limit[start:stop]
         return Trajectory(obs, actions, rewards, done, time_limit)
 
-
     def __len__(self) -> int:
-        return len(self._obs) 
+        return len(self._obs)
 
     def boundlength(self) -> None:
         if self._boundlength is None or len(self) <= self._boundlength:
@@ -80,7 +72,6 @@ class Trajectory:
         self._done = self._done[delta:]
         self._time_limit = self._time_limit[delta:]
         assert len(self) == self._boundlength
-
 
     @property
     def isdone(self) -> bool:
@@ -105,17 +96,17 @@ class Trajectory:
         time_limit = np.zeros((batch_size, length_traj))
         for i, traj in enumerate(trajs):
             for t in range(length_traj):
-                assert obs[i,t].shape == traj._obs[t].shape and actions[i,t].shape == traj._actions[t].shape
-                obs[i,t] = traj._obs[t]
-                actions[i,t] = traj._actions[t]
-                rewards[i,t] = traj._rewards[t]
-                done[i,t] = traj._done[t]
+                assert obs[i, t].shape == traj._obs[t].shape and actions[i, t].shape == traj._actions[t].shape
+                obs[i, t] = traj._obs[t]
+                actions[i, t] = traj._actions[t]
+                rewards[i, t] = traj._rewards[t]
+                done[i, t] = traj._done[t]
 
         return BatchTraj(obs=obs, actions=actions, rewards=rewards, done=done, time_limit=time_limit)
-    
+
 
 class BatchTraj(Cudaable):
-    def __init__(self, obs: Tensorable, actions: Tensorable, 
+    def __init__(self, obs: Tensorable, actions: Tensorable,
                  rewards: Tensorable, done: Tensorable, time_limit: Tensorable):
         self.obs = check_tensor(obs)
         self.actions = check_tensor(actions)
@@ -123,14 +114,14 @@ class BatchTraj(Cudaable):
         self.done = check_tensor(done)
         self.time_limit = check_tensor(time_limit)
         self.batch_size = self.obs.shape[0]
-        self.length = self.obs.shape[1] 
+        self.length = self.obs.shape[1]
 
         assert self.actions.shape[0] == self.batch_size and self.rewards.shape[0] == self.batch_size \
             and self.done.shape[0] == self.batch_size and self.time_limit.shape[0] == self.batch_size
         assert self.actions.shape[1] == self.length and self.rewards.shape[1] == self.length \
             and self.done.shape[1] == self.length and self.time_limit.shape[1] == self.length
         assert len(self.done.shape) == 2 and len(self.rewards.shape) == 2 and len(self.time_limit.shape) == 2
-    
+
     def to(self, device) -> "BatchTraj":
         self.obs = self.obs.to(device)
         self.actions = self.actions.to(device)
@@ -146,9 +137,6 @@ class BatchTraj(Cudaable):
     @property
     def device(self):
         return self.obs.device
-    
-
-
 
 class MemoryTrajectory:
     def __init__(self, maxsize: int, memory: Optional[List[Trajectory]] = None) -> None:
@@ -157,7 +145,6 @@ class MemoryTrajectory:
             memory = []
         self._memory: List[Trajectory] = memory
         self._cumsizes: List[int] = np.cumsum([len(traj) for traj in self._memory]).tolist()
-
 
     def __len__(self) -> int:
         return len(self._memory)
@@ -168,21 +155,18 @@ class MemoryTrajectory:
             return 0
         return self._cumsizes[-1]
 
-
     def _reducesize(self) -> None:
         if self.size < self._maxsize:
             return None
-        i, subsize = next((i, cumsize_i) for i, cumsize_i in enumerate(self._cumsizes) \
-                    if cumsize_i > self.size - self._maxsize)
+        i, subsize = next((i, cumsize_i) for i, cumsize_i in enumerate(self._cumsizes)
+                          if cumsize_i > self.size - self._maxsize)
         self._memory = self._memory[i+1:]
         self._cumsizes = [s - subsize for s in self._cumsizes[i+1:]]
-
 
     def push(self, trajectory: Trajectory) -> None:
         self._memory.append(trajectory)
         self._cumsizes.append(self.size + len(trajectory))
         self._reducesize()
-
 
     def choose(self, idxs: List[int]) -> List[Trajectory]:
         return [self._memory[i] for i in idxs]
@@ -193,9 +177,6 @@ class MemorySampler:
         self._memory = memory
         self._batch_size = batch_size
         self._length_traj = length_traj
-
-
-
 
     def sample_batch(self) -> BatchTraj:
         idxs = random.sample([i for i in range(len(self._memory))], self._batch_size)
@@ -209,24 +190,18 @@ class MemorySampler:
         actions = np.zeros((self._batch_size, self._length_traj, *action_shape))
         rewards = np.zeros((self._batch_size, self._length_traj))
         done = np.zeros((self._batch_size, self._length_traj))
+        tl = np.zeros((self._batch_size, self._length_traj))
 
         for i, traj in enumerate(trajs_truncated):
             for t in range(self._length_traj):
-                obs[i,t] = traj._obs[t]
-                actions[i,t] = traj._actions[t]
-                rewards[i,t] = traj._rewards[t]
-                done[i,t] = traj._done[t]
+                obs[i, t] = traj._obs[t]
+                actions[i, t] = traj._actions[t]
+                rewards[i, t] = traj._rewards[t]
+                done[i, t] = traj._done[t]
+                tl[i, t] = traj._time_limit[t]
 
-        batchtraj = BatchTraj(obs=obs, actions=actions, rewards=rewards, done=done)
+        batchtraj = BatchTraj(obs=obs, actions=actions, rewards=rewards, done=done, time_limit=tl)
         return batchtraj
 
     def warmed_up(self) -> bool:
         return len(self._memory) > self._batch_size
-
-
-
-
-
-
-
-

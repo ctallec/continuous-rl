@@ -1,5 +1,5 @@
 """Define memory sampler"""
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Any
 import numpy as np
 from abstract import Arrayable
 from convert import check_array
@@ -109,7 +109,7 @@ class PrioritizedMemorySampler:
         self._alpha = alpha
 
         # placeholders to update priorities
-        self._idxs = None
+        self._idxs: Optional[Tuple[Any, ...]] = None
 
     @property
     def beta(self):
@@ -151,6 +151,7 @@ class PrioritizedMemorySampler:
 
     def observe(self, priorities: Arrayable):
         assert self._idxs is not None, "No sample before observe ..."
+        priorities = check_array(priorities)
         self._max_priority = max(self._max_priority, priorities.max())
         for idx, prio in zip(self._idxs, priorities):
             self._sum_tree.modify(idx, prio ** self._alpha)

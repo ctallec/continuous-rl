@@ -15,7 +15,7 @@ from critics.a2ccritic import A2CCritic
 
 def configure(args) -> Tuple[Policy, Env, Env]:
     env_fn = partial(make_env, env_id=args.env_id,
-                     dt=args.dt, time_limit=args.time_limit) 
+                     dt=args.dt, time_limit=args.time_limit)
 
     env: Env = VEnv([env_fn() for _ in range(args.nb_train_env)])
     eval_env: Env = VEnv([env_fn() for _ in range(args.nb_eval_env)])
@@ -41,7 +41,7 @@ def configure(args) -> Tuple[Policy, Env, Env]:
             "value": ValueCritic,
         }[critic_type]
 
-        critic = critic_cls.configure(**kwargs)
+        critic = critic_cls.configure(**kwargs) # type: ignore
         kwargs["critic_function"] = critic.critic_function()
         kwargs["target_critic_function"] = critic.critic_function(target=True)
 
@@ -49,9 +49,9 @@ def configure(args) -> Tuple[Policy, Env, Env]:
             "approximate": ApproximateActor,
             "discrete": DiscreteActor}[actor_type]
 
-        actor = actor_cls.configure(**kwargs)
+        actor = actor_cls.configure(**kwargs) # type: ignore
 
-        policy = OfflinePolicy(
+        policy: Policy = OfflinePolicy(
             steps_btw_train=args.steps_btw_train, learn_per_step=args.learn_per_step,
             memory_size=args.memory_size,
             batch_size=args.batch_size, alpha=args.alpha, beta=args.beta,
@@ -59,24 +59,21 @@ def configure(args) -> Tuple[Policy, Env, Env]:
     elif args.algo == "a2c":
 
         actor = A2CActor.configure(
-            action_space=eval_env.action_space, observation_space=eval_env.observation_space,
+            action_space=eval_env.action_space,
+            observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
-            lr=args.policy_lr, tau=args.tau, optimizer=args.optimizer, dt=args.dt, c_entropy=args.c_entropy,
-            weight_decay=args.weight_decay
-            )
+            lr=args.policy_lr, optimizer=args.optimizer, dt=args.dt,
+            c_entropy=args.c_entropy, weight_decay=args.weight_decay
+        )
         critic = A2CCritic.configure(
             dt=args.dt, gamma=args.gamma, lr=args.lr, optimizer=args.optimizer,
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
-            noscale=args.noscale) 
+            noscale=args.noscale)
 
-        policy = A2CPolicy(args.batch_size, args.n_step,
-            args.steps_btw_train, args.learn_per_step, args.nb_train_env,
-            actor, critic)
-        
+        policy = A2CPolicy(args.n_step, args.steps_btw_train, args.nb_train_env,
+                           actor, critic)
     else:
         raise ValueError(f"Unknown algorithm {args.algo}")
-
-
 
     return policy, env, eval_env

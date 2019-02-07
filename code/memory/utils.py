@@ -7,6 +7,7 @@ def setup_memory(memory_size: int, alpha: Optional[float],
                 size=memory_size)
 
     if beta is not None:
+        assert alpha is not None
         return PrioritizedMemorySampler(
             alpha=alpha, beta=beta, **args)
     return MemorySampler(**args)

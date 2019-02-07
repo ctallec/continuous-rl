@@ -4,7 +4,7 @@ from abc import abstractmethod
 from torch import Tensor
 from stateful import Stateful
 
-from abstract import Arrayable, Tensorable
+from abstract import Arrayable
 
 class Policy(Stateful):
     @abstractmethod
@@ -26,10 +26,6 @@ class Policy(Stateful):
     @abstractmethod
     def actions(self, obs: Arrayable) -> Tensor:
         pass
-
-    # @abstractmethod
-    # def advantage(self, obs: Arrayable, action: Tensorable) -> Tensor:
-    #     pass
 
     @abstractmethod
     def learn(self):

@@ -1,6 +1,5 @@
 
 from abc import abstractmethod
-import copy
 import torch
 from torch import Tensor
 from torch.distributions.categorical import Categorical
@@ -8,11 +7,8 @@ from torch.distributions.normal import Normal
 from gym.spaces import Box, Discrete
 from models import ContinuousRandomPolicy, DiscreteRandomPolicy
 from abstract import ParametricFunction, Loggable, Tensorable
-from actors.actor import Actor
 from stateful import CompoundStateful
 from optimizer import setup_optimizer
-from nn import soft_update
-import random
 from convert import check_tensor
 from logging import info
 from memory.memorytrajectory import BatchTraj
@@ -20,25 +16,24 @@ from memory.memorytrajectory import BatchTraj
 
 class A2CActor(CompoundStateful, Loggable):
     def __init__(self, policy_function: ParametricFunction,
-                 lr: float, tau: float, opt_name: str, dt: float,
-                 c_entropy:float, weight_decay: float) -> None:
+                 lr: float, opt_name: str, dt: float,
+                 c_entropy: float, weight_decay: float) -> None:
         CompoundStateful.__init__(self)
         self._policy_function = policy_function
 
         self._optimizer = setup_optimizer(
             self._policy_function.parameters(), opt_name=opt_name,
             lr=lr, dt=dt, inverse_gradient_magnitude=1, weight_decay=weight_decay)
-        self._tau = tau
         self._c_entropy = c_entropy
 
-
+    @abstractmethod
     def act_noisy(self, obs: Tensorable) -> Tensor:
-        return self.act(obs)
+        pass
 
     @abstractmethod
     def act(self, obs: Tensorable) -> Tensor:
         pass
-        
+
     @abstractmethod
     def optimize(self, traj: BatchTraj, critic_value: Tensor) -> Tensor:
         pass
@@ -58,7 +53,6 @@ class A2CActor(CompoundStateful, Loggable):
     def actions(self, obs: Tensorable) -> Tensor:
         pass
 
-
     @staticmethod
     def configure(**kwargs):
         action_space = kwargs['action_space']
@@ -71,7 +65,7 @@ class A2CActor(CompoundStateful, Loggable):
             nb_actions = action_space.shape[-1]
             policy_generator = ContinuousRandomPolicy
             policy_function = ContinuousRandomPolicy(nb_state_feats, nb_actions,
-                 **net_dict)
+                                                     **net_dict)
             actor_generator = A2CActorContinuous
         elif isinstance(action_space, Discrete):
             nb_actions = action_space.n
@@ -79,15 +73,15 @@ class A2CActor(CompoundStateful, Loggable):
             actor_generator = A2CActorDiscrete
         policy_function = policy_generator(nb_state_feats, nb_actions, kwargs['nb_layers'], kwargs['hidden_size'])
 
-        return actor_generator(policy_function, kwargs['lr'], kwargs['tau'],
-                               kwargs['optimizer'], kwargs['dt'], kwargs['c_entropy'], 
+        return actor_generator(policy_function, kwargs['lr'], kwargs['optimizer'],
+                               kwargs['dt'], kwargs['c_entropy'],
                                kwargs['weight_decay'])
 
 class A2CActorContinuous(A2CActor):
     def __init__(self, policy_function: ParametricFunction,
-                 lr: float, tau: float, opt_name: str, dt: float,
-                 c_entropy:float, weight_decay: float) -> None:
-        A2CActor.__init__(self, policy_function, lr, tau, opt_name, dt,
+                 lr: float, opt_name: str, dt: float,
+                 c_entropy: float, weight_decay: float) -> None:
+        A2CActor.__init__(self, policy_function, lr, opt_name, dt,
                           c_entropy, weight_decay)
 
     def act_noisy(self, obs: Tensorable) -> Tensor:
@@ -101,8 +95,7 @@ class A2CActorContinuous(A2CActor):
             raise ValueError()
         return action
 
-
-    def optimize(self, traj: BatchTraj,  critic_value: Tensor) -> None:
+    def optimize(self, traj: BatchTraj, critic_value: Tensor) -> None:
         traj = traj.to(self._device)
         action = traj.actions
         mu, sigma = self._policy_function(traj.obs)
@@ -123,9 +116,9 @@ class A2CActorContinuous(A2CActor):
 
 class A2CActorDiscrete(A2CActor):
     def __init__(self, policy_function: ParametricFunction,
-                 lr: float, tau: float, opt_name: str, dt: float,
+                 lr: float, opt_name: str, dt: float,
                  c_entropy: float, weight_decay: float) -> None:
-        A2CActor.__init__(self, policy_function, lr, tau, opt_name, dt,
+        A2CActor.__init__(self, policy_function, lr, opt_name, dt,
                           c_entropy, weight_decay)
 
     def act_noisy(self, obs: Tensorable) -> Tensor:
@@ -138,8 +131,6 @@ class A2CActorDiscrete(A2CActor):
 
     def act(self, obs: Tensorable) -> Tensor:
         return torch.argmax(self._policy_function(obs), dim=-1)
-
-
 
     def optimize(self, traj: BatchTraj, critic_value: Tensor):
         traj = traj.to(self._device)

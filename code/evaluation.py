@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from envs.env import Env
 from policies.policy import Policy
-from policies.a2c import A2CPolicy
+from policies.offline_policy import OfflinePolicy
 from envs.hill import HillEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv
 from convert import th_to_arr
@@ -17,7 +17,6 @@ def specific_evaluation(
         env: Env,
         policy: Policy):
 
-    
     if isinstance(env.envs[0].unwrapped, AbstractPusher): # type: ignore
         nb_pixels = 50
         state_space = np.linspace(-1.5, 1.5, nb_pixels)[:, np.newaxis]
@@ -34,10 +33,11 @@ def specific_evaluation(
             states, actions = np.meshgrid(state_space, action_space)
             states = states[..., np.newaxis]
             actions = actions[..., np.newaxis]
-            advantage = th_to_arr(policy.advantage(states, actions).squeeze())
-            plt.subplot(133)
-            plt.imshow(advantage)
-            log_image('adv', epoch, advantage)
+            if isinstance(policy, OfflinePolicy):
+                advantage = th_to_arr(policy.advantage(states, actions).squeeze())
+                plt.subplot(133)
+                plt.imshow(advantage)
+                log_image('adv', epoch, advantage)
         plt.pause(.1)
     elif isinstance(env.envs[0].unwrapped, PendulumEnv): # type: ignore
         nb_pixels = 50
