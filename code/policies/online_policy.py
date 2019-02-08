@@ -38,8 +38,6 @@ class OnlinePolicy(CompoundStateful, Policy):
 
         self._current_obs = check_array(obs)
         self._current_action = check_array(action)
-        # TODO check continuous...
-
         if isinstance(self._actor, OnlineActorContinuous):
             action = np.clip(action, -1, 1)
         return action

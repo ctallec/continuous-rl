@@ -36,6 +36,10 @@ def setup_args():
                         help='OU stiffness parameter.')
     parser.add_argument('--c_entropy', type=float, default=1e-4,
                         help='entropy regularization')
+    parser.add_argument('--eps_clamp', type=float, default=0.2,
+                        help='Clipping value for PPO, epsilon in the original paper')
+    parser.add_argument('--c_kl', type=float, default=0.,
+                        help='KL regularization for PPO, beta in the original paper')
     parser.add_argument('--nb_train_env', type=int, default=32,
                         help='number of parallel environments during training.')
     parser.add_argument('--nb_eval_env', type=int, default=16,
@@ -72,7 +76,7 @@ def setup_args():
     parser = argload.ArgumentLoader(parser, to_reload=[
         'algo', 'dt', 'steps_btw_train', 'env_id', 'noise_type',
         'batch_size', 'hidden_size', 'nb_layers', 'gamma', 'n_step', 'nb_true_epochs', 'nb_steps',
-        'sigma', 'theta', 'c_entropy', 'nb_train_env', 'nb_eval_env', 'memory_size',
+        'sigma', 'theta', 'c_entropy', 'eps_clamp', 'c_kl', 'nb_train_env', 'nb_eval_env', 'memory_size',
         'learn_per_step', 'normalize_state', 'lr', 'time_limit',
         'policy_lr', 'alpha', 'beta', 'weight_decay', 'optimizer',
         'tau', 'eval_gap', 'noscale'

@@ -11,7 +11,9 @@ from policies.policy import Policy
 from policies.a2c import A2CPolicy
 from actors.a2c_actor import A2CActor
 from critics.a2c_critic import A2CCritic
-
+from actors.ppo_actor import PPOActor
+from critics.ppo_critic import PPOCritic
+from policies.ppo import PPOPolicy
 
 def configure(args) -> Tuple[Policy, Env, Env]:
     env_fn = partial(make_env, env_id=args.env_id,
@@ -73,6 +75,24 @@ def configure(args) -> Tuple[Policy, Env, Env]:
 
         policy = A2CPolicy(args.n_step, args.nb_train_env,
                            actor, critic)
+    elif args.algo == "ppo":
+
+        actor = PPOActor.configure(
+            action_space=eval_env.action_space,
+            observation_space=eval_env.observation_space,
+            nb_layers=args.nb_layers, hidden_size=args.hidden_size,
+            lr=args.policy_lr, optimizer=args.optimizer, dt=args.dt,
+            c_entropy=args.c_entropy, weight_decay=args.weight_decay,
+            eps_clamp=args.eps_clamp, c_kl=args.c_kl
+        )
+        critic = PPOCritic.configure(
+            dt=args.dt, gamma=args.gamma, lr=args.lr, optimizer=args.optimizer,
+            observation_space=eval_env.observation_space,
+            nb_layers=args.nb_layers, hidden_size=args.hidden_size,
+            noscale=args.noscale)
+
+        policy = PPOPolicy(args.n_step, args.nb_train_env,
+                           actor, critic, args.learn_per_step)
     else:
         raise ValueError(f"Unknown algorithm {args.algo}")
 

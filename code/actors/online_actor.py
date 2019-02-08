@@ -25,22 +25,11 @@ class OnlineActor(CompoundStateful, Loggable):
             lr=lr, dt=dt, inverse_gradient_magnitude=1, weight_decay=weight_decay)
         self._c_entropy = c_entropy
 
-    # @abstractmethod
+    @abstractmethod
     def _optimize_from_distr(self, distr: Distribution, traj: BatchTraj,
                              critic_value: Tensor) -> None:
-        action = traj.actions
-        logp_action = distr.log_prob(action)
-        entropy = distr.entropy()
-
-        loss_critic = (- logp_action * critic_value.detach()).mean()
-        loss = loss_critic - self._c_entropy * entropy
-
-        info(f"loss_critic:{loss_critic.mean().item():3.2e}\t"
-             f"entropy:{entropy.mean().item():3.2e}")
-        self._optimizer.zero_grad()
-        loss.mean().backward()
-        self._optimizer.step()
-
+        pass
+    
     def act_noisy(self, obs: Tensorable) -> Tensor:
         distr = self._distr_generator(self._policy_function(obs))
         return distr.sample()
@@ -70,29 +59,29 @@ class OnlineActor(CompoundStateful, Loggable):
     def actions(self, obs: Tensorable) -> Tensor:
         pass
 
-    @staticmethod
-    def configure(**kwargs):
-        action_space = kwargs['action_space']
-        observation_space = kwargs['observation_space']
-        assert isinstance(observation_space, Box)
+    # @staticmethod
+    # def configure(**kwargs):
+    #     action_space = kwargs['action_space']
+    #     observation_space = kwargs['observation_space']
+    #     assert isinstance(observation_space, Box)
 
-        # net_dict = dict(hidden_size=kwargs['hidden_size'], nb_layers=kwargs['nb_layers'])
-        nb_state_feats = observation_space.shape[-1]
-        if isinstance(action_space, Box):
-            nb_actions = action_space.shape[-1]
-            policy_generator = ContinuousRandomPolicy
-            # policy_function = ContinuousRandomPolicy(nb_state_feats, nb_actions,
-            #                                          **net_dict)
-            actor_generator = OnlineActorContinuous
-        elif isinstance(action_space, Discrete):
-            nb_actions = action_space.n
-            policy_generator = DiscreteRandomPolicy
-            actor_generator = OnlineActorDiscrete
-        policy_function = policy_generator(nb_state_feats, nb_actions, kwargs['nb_layers'], kwargs['hidden_size'])
+    #     # net_dict = dict(hidden_size=kwargs['hidden_size'], nb_layers=kwargs['nb_layers'])
+    #     nb_state_feats = observation_space.shape[-1]
+    #     if isinstance(action_space, Box):
+    #         nb_actions = action_space.shape[-1]
+    #         policy_generator = ContinuousRandomPolicy
+    #         # policy_function = ContinuousRandomPolicy(nb_state_feats, nb_actions,
+    #         #                                          **net_dict)
+    #         actor_generator = OnlineActorContinuous
+    #     elif isinstance(action_space, Discrete):
+    #         nb_actions = action_space.n
+    #         policy_generator = DiscreteRandomPolicy
+    #         actor_generator = OnlineActorDiscrete
+    #     policy_function = policy_generator(nb_state_feats, nb_actions, kwargs['nb_layers'], kwargs['hidden_size'])
 
-        return actor_generator(policy_function, kwargs['lr'], kwargs['optimizer'],
-                               kwargs['dt'], kwargs['c_entropy'],
-                               kwargs['weight_decay'])
+    #     return actor_generator(policy_function, kwargs['lr'], kwargs['optimizer'],
+    #                            kwargs['dt'], kwargs['c_entropy'],
+    #                            kwargs['weight_decay'])
 
 class OnlineActorContinuous(OnlineActor):
     def __init__(self, policy_function: ParametricFunction,
@@ -103,10 +92,7 @@ class OnlineActorContinuous(OnlineActor):
 
         self._distr_generator = lambda t: DiagonalNormal(*t)
 
-    # def act_noisy(self, obs: Tensorable) -> Tensor:
-    #     mu, sigma = self._policy_function(obs)
-
-    #     return DiagonalNormal(mu, sigma).sample()
+    
 
     def act(self, obs: Tensorable) -> Tensor:
         action, _ = self._policy_function(obs)
@@ -114,11 +100,6 @@ class OnlineActorContinuous(OnlineActor):
             raise ValueError()
         return action
 
-    # def optimize(self, traj: BatchTraj, critic_value: Tensor) -> None:
-    #     traj = traj.to(self._device)
-    #     mu, sigma = self._policy_function(traj.obs)
-    #     distr = DiagonalNormal(mu, sigma)
-    #     self._optimize_from_distr(distr, traj, critic_value)
 
     def actions(self, obs: Tensorable) -> Tensor:
         return self._policy_function(obs)[0]
@@ -132,23 +113,11 @@ class OnlineActorDiscrete(OnlineActor):
         self._distr_generator = lambda logits: Categorical(logits=logits)
 
 
-    # def act_noisy(self, obs: Tensorable) -> Tensor:
-    #     logp_actions = self._policy_function(obs)
-
-    #     distr = torch.distributions.categorical.Categorical(
-    #         logits=logp_actions)
-
-    #     return distr.sample()
 
     def act(self, obs: Tensorable) -> Tensor:
         return torch.argmax(self._policy_function(obs), dim=-1)
 
-    # def optimize(self, traj: BatchTraj, critic_value: Tensor):
-    #     traj = traj.to(self._device)
-    #     logits = self._policy_function(traj.obs)
-
-    #     distr = Categorical(logits=logits)
-    #     self._optimize_from_distr(distr, traj, critic_value)
+    
 
     def actions(self, obs: Tensorable) -> Tensor:
         return torch.softmax(self._policy_function(obs), dim=-1)[:, 0]
