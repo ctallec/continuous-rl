@@ -4,7 +4,6 @@ import torch
 from torch import Tensor
 from torch.distributions import Distribution
 from torch.distributions.kl import kl_divergence
-from torch.optim import Optimizer
 from abstract import ParametricFunction
 from memory.memorytrajectory import BatchTraj
 from logging import info
@@ -12,10 +11,8 @@ from actors.online_actor import OnlineActorContinuous, OnlineActorDiscrete
 from gym.spaces import Box, Discrete
 from models import ContinuousRandomPolicy, DiscreteRandomPolicy
 from actors.online_actor import OnlineActor
-from copy import deepcopy
 from distributions import copy_distr
 
-import ipdb
 
 
 class PPOActor(OnlineActor):
@@ -30,15 +27,17 @@ class PPOActor(OnlineActor):
         if self._old_distr is None:
             self._old_distr = copy_distr(distr)
             self._old_logp = logp_action.clone().detach()
-        ipdb.set_trace()
         logr = (logp_action - self._old_logp)
-        r_clipped = torch.clamp(logr, np.log(1-self._eps_clamp), np.log(1+self._eps_clamp)).exp()
 
-        l_clip = torch.min(
-            logr.exp() * critic_value.detach(),
-            r_clipped * critic_value.detach())
+        r_clipped = torch.where(
+            critic_value.detach() > 0,
+            torch.clamp(logr, max=np.log(1+self._eps_clamp)),
+            torch.clamp(logr, min=np.log(1-self._eps_clamp))
+            ).exp()
+
         
-        loss = l_clip
+        
+        loss = - r_clipped * critic_value.detach()
         if self._c_entropy != 0.:
             loss -= self._c_entropy * distr.entropy()
 
