@@ -1,23 +1,28 @@
-import torch
+from torch import Tensor
 from torch.distributions import Distribution
 from torch.distributions.normal import Normal
 from torch.distributions.kl import _kl_normal_normal, register_kl
 from torch.distributions.categorical import Categorical
 
 class DiagonalNormal(Normal):
-    def log_prob(self, value):
-    	logp = Normal.log_prob(self, value)
-    	return logp.sum(dim=-1)
+    @property
+    def event_shape(self):
+        print(super().event_shape)
+        return super().event_shape[:-1]
 
-    def cdf(self, value):
-    	raise NotImplementedError()
+    def log_prob(self, value: Tensor):
+        logp = Normal.log_prob(self, value)
+        return logp.sum(dim=-1)
 
-    def icdf(self, value):
-    	raise NotImplementedError()
+    def cdf(self, value: Tensor):
+        raise NotImplementedError()
+
+    def icdf(self, value: Tensor):
+        raise NotImplementedError()
 
     def entropy(self):
-    	entropy = Normal.entropy(self)
-    	return entropy.sum(dim=-1)
+        entropy = Normal.entropy(self)
+        return entropy.sum(dim=-1)
 
 @register_kl(DiagonalNormal, DiagonalNormal)
 def _kl_diagonalnormal_diagonalnormal(p, q):
@@ -32,4 +37,3 @@ def copy_distr(d: Distribution) -> Distribution:
         return Categorical(logits=d.logits.clone().detach())
     else:
         raise NotImplementedError()
-

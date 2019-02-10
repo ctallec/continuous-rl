@@ -119,7 +119,7 @@ class NormalizedMLP(nn.Module, ParametricFunction):
 
 class DiscreteRandomPolicy(nn.Module, ParametricFunction):
     def __init__(self, nb_state_feats: int, nb_actions: int,
-                 nb_layers:int, hidden_size:int) -> None:
+                 nb_layers: int, hidden_size: int) -> None:
         nn.Module.__init__(self)
         self._model = MLP(nb_state_feats, nb_actions, nb_layers, hidden_size)
 
@@ -142,14 +142,13 @@ class ContinuousRandomPolicy(nn.Module, ParametricFunction):
         self.ln = nn.LayerNorm(hidden_size)
         self.relu = nn.ReLU()
         self._fc_mu = nn.Linear(hidden_size, nb_actions)
-        self._fc_sigma = nn.Linear(hidden_size, nb_actions)
-
+        self._log_sigma = nn.Parameter(torch.zeros(()))
 
     def forward(self, *inputs: Tensorable) -> Tensor:
         x = self._model(inputs[0])
         x = self.relu(self.ln(x))
         mu = torch.tanh(self._fc_mu(x))
-        sigma = torch.log(1 + torch.exp(self._fc_sigma(x)))
+        sigma = torch.log(1 + torch.exp(self._log_sigma))
         return mu, sigma
 
     def input_shape(self) -> Shape:
@@ -157,19 +156,3 @@ class ContinuousRandomPolicy(nn.Module, ParametricFunction):
 
     def output_shape(self) -> Shape:
         return ((self._nb_actions,), (self._nb_actions,))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
