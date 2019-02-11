@@ -8,7 +8,6 @@ from gym.spaces import Box, Discrete
 from models import ContinuousRandomPolicy, DiscreteRandomPolicy
 
 
-
 def optimize(distr: Distribution, traj: BatchTraj, critic_value: Tensor,
              c_entropy: float, optimizer: Optimizer) -> None:
     action = traj.actions
