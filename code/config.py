@@ -89,10 +89,12 @@ def configure(args) -> Tuple[Policy, Env, Env]:
             dt=args.dt, gamma=args.gamma, lr=args.lr, optimizer=args.optimizer,
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
-            noscale=args.noscale)
+            noscale=args.noscale, eps_clamp=args.eps_clamp)
 
-        policy = PPOPolicy(args.n_step, args.nb_train_env,
-                           actor, critic, args.learn_per_step)
+        policy = PPOPolicy(T=args.n_step, nb_train_env=args.nb_train_env,
+                           actor=actor, critic=critic, learn_per_step=args.learn_per_step,
+                           batch_size=args.batch_size, opt_name=args.optimizer, lr=args.lr, dt=args.dt,
+                           weight_decay=args.weight_decay)
     else:
         raise ValueError(f"Unknown algorithm {args.algo}")
 

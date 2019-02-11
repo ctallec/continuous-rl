@@ -1,17 +1,15 @@
 from torch import Tensor
 from torch.distributions import Distribution
 from torch.optim import Optimizer
-from memory.memorytrajectory import BatchTraj
 from logging import info
 from actors.online_actor import OnlineActorContinuous, OnlineActorDiscrete
 from gym.spaces import Box, Discrete
 from models import ContinuousRandomPolicy, DiscreteRandomPolicy
 
 
-def optimize(distr: Distribution, traj: BatchTraj, critic_value: Tensor,
+def optimize(distr: Distribution, actions: Tensor, critic_value: Tensor,
              c_entropy: float, optimizer: Optimizer) -> None:
-    action = traj.actions
-    logp_action = distr.log_prob(action)
+    logp_action = distr.log_prob(actions)
     entropy = distr.entropy()
 
     loss_critic = (- logp_action * critic_value.detach()).mean()
@@ -24,14 +22,14 @@ def optimize(distr: Distribution, traj: BatchTraj, critic_value: Tensor,
     optimizer.step()
 
 class A2CActorContinuous(OnlineActorContinuous):
-    def _optimize_from_distr(self, distr: Distribution, traj: BatchTraj,
+    def _optimize_from_distr(self, distr: Distribution, actions: Tensor,
                              critic_value: Tensor) -> None:
-        optimize(distr, traj, critic_value, self._c_entropy, self._optimizer)
+        optimize(distr, actions, critic_value, self._c_entropy, self._optimizer)
 
 class A2CActorDiscrete(OnlineActorDiscrete):
-    def _optimize_from_distr(self, distr: Distribution, traj: BatchTraj,
+    def _optimize_from_distr(self, distr: Distribution, actions: Tensor,
                              critic_value: Tensor) -> None:
-        optimize(distr, traj, critic_value, self._c_entropy, self._optimizer)
+        optimize(distr, actions, critic_value, self._c_entropy, self._optimizer)
 
 # this is a dummy class
 class A2CActor(object):

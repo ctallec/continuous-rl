@@ -1,14 +1,12 @@
 from abc import abstractmethod
 import torch
 from torch import Tensor
-from torch.distributions import Distribution
 from torch.distributions.normal import Normal
 from torch.distributions.categorical import Categorical
 from torch.distributions.independent import Independent
 from abstract import ParametricFunction, Loggable, Tensorable
 from stateful import CompoundStateful
 from optimizer import setup_optimizer
-from memory.memorytrajectory import BatchTraj
 
 class OnlineActor(CompoundStateful, Loggable):
     def __init__(self, policy_function: ParametricFunction,
@@ -17,15 +15,15 @@ class OnlineActor(CompoundStateful, Loggable):
         CompoundStateful.__init__(self)
         self._policy_function = policy_function
 
-        self._optimizer = setup_optimizer(
-            self._policy_function.parameters(), opt_name=opt_name,
-            lr=lr, dt=dt, inverse_gradient_magnitude=1, weight_decay=weight_decay)
+        # self._optimizer = setup_optimizer(
+        #     self._policy_function.parameters(), opt_name=opt_name,
+        #     lr=lr, dt=dt, inverse_gradient_magnitude=1, weight_decay=weight_decay)
         self._c_entropy = c_entropy
 
-    @abstractmethod
-    def _optimize_from_distr(self, distr: Distribution, traj: BatchTraj,
-                             critic_value: Tensor) -> None:
-        pass
+    # @abstractmethod
+    # def _optimize_from_distr(self, distr: Distribution, actions: Tensor,
+    #                          critic_value: Tensor) -> None:
+    #     pass
 
     def act_noisy(self, obs: Tensorable) -> Tensor:
         distr = self._distr_generator(self._policy_function(obs))
@@ -35,10 +33,10 @@ class OnlineActor(CompoundStateful, Loggable):
     def act(self, obs: Tensorable) -> Tensor:
         pass
 
-    def optimize(self, traj: BatchTraj, critic_value: Tensor) -> Tensor:
-        traj = traj.to(self._device)
-        distr = self._distr_generator(self._policy_function(traj.obs))
-        self._optimize_from_distr(distr, traj, critic_value)
+    # def optimize(self, obs:Tensor, actions: Tensor, critic_value: Tensor) -> Tensor:
+    #     obs, actions = obs.to(self._device), actions.to(self._device)
+    #     distr = self._distr_generator(self._policy_function(obs))
+    #     self._optimize_from_distr(distr, actions, critic_value)
 
     def log(self) -> None:
         pass
@@ -73,6 +71,18 @@ class OnlineActorContinuous(OnlineActor):
     def actions(self, obs: Tensorable) -> Tensor:
         return self._policy_function(obs)[0]
 
+    @staticmethod
+    def distr_minibatch(distr, idxs):
+        loc = distr.base_dist.loc[idxs]
+        scale = distr.base_dist.scale[idxs]
+        return Independent(Normal(loc, scale), 1)
+
+    @staticmethod
+    def copy_distr(distr):
+        loc = distr.base_dist.loc.clone().detach()
+        scale = distr.base_dist.scale.clone().detach()
+        return Independent(Normal(loc, scale), 1)
+
 class OnlineActorDiscrete(OnlineActor):
     def __init__(self, policy_function: ParametricFunction,
                  lr: float, opt_name: str, dt: float,
@@ -86,3 +96,18 @@ class OnlineActorDiscrete(OnlineActor):
 
     def actions(self, obs: Tensorable) -> Tensor:
         return torch.softmax(self._policy_function(obs), dim=-1)[:, 0]
+
+    @staticmethod
+    def distr_minibatch(distr, idxs):
+        logits = distr.logits[idxs]
+        return Categorical(logits=logits)
+
+    @staticmethod
+    def copy_distr(distr):
+        return Categorical(logits=distr.logits.clone().detach())
+
+
+
+
+
+
