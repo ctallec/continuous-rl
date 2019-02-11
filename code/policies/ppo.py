@@ -2,13 +2,13 @@ from mylog import log
 from logging import info
 from memory.memorytrajectory import Trajectory
 from policies.online_policy import OnlinePolicy
-from actors.online_actor import OnlineActor
-from critics.online_critic import OnlineCritic
+from actors.ppo_actor import PPOActor
+from critics.ppo_critic import PPOCritic
 
 class PPOPolicy(OnlinePolicy):
 
     def __init__(self, T: int, nb_train_env: int,
-                actor: OnlineActor, critic: OnlineCritic, learn_per_step: int):
+                actor: PPOActor, critic: PPOCritic, learn_per_step: int):
         OnlinePolicy.__init__(self, T=T, nb_train_env=nb_train_env, actor=actor, 
             critic=critic)
         self._learn_per_step = learn_per_step
