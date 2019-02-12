@@ -64,29 +64,28 @@ def configure(args) -> Tuple[Policy, Env, Env]:
             action_space=eval_env.action_space,
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
-            lr=args.policy_lr, optimizer=args.optimizer, dt=args.dt,
-            c_entropy=args.c_entropy, weight_decay=args.weight_decay
+            dt=args.dt, c_entropy=args.c_entropy
         )
         critic = A2CCritic.configure(
-            dt=args.dt, gamma=args.gamma, lr=args.lr, optimizer=args.optimizer,
+            dt=args.dt, gamma=args.gamma,
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
             noscale=args.noscale)
 
-        policy = A2CPolicy(args.n_step, args.nb_train_env,
-                           actor, critic)
+        policy = A2CPolicy(T=args.n_step, nb_train_env=args.nb_train_env,
+                           actor=actor, critic=critic, opt_name=args.optimizer,
+                           lr=args.lr, dt=args.dt, weight_decay=args.weight_decay)
     elif args.algo == "ppo":
 
         actor = PPOActor.configure(
             action_space=eval_env.action_space,
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
-            lr=args.policy_lr, optimizer=args.optimizer, dt=args.dt,
-            c_entropy=args.c_entropy, weight_decay=args.weight_decay,
+            dt=args.dt, c_entropy=args.c_entropy,
             eps_clamp=args.eps_clamp, c_kl=args.c_kl
         )
         critic = PPOCritic.configure(
-            dt=args.dt, gamma=args.gamma, lr=args.lr, optimizer=args.optimizer,
+            dt=args.dt, gamma=args.gamma,
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
             noscale=args.noscale, eps_clamp=args.eps_clamp)

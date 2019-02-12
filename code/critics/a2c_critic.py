@@ -5,15 +5,11 @@ from gym import Space
 from models import MLP
 
 class A2CCritic(OnlineCritic):
-    def optimize(self, v: Tensor, v_target: Tensor) -> Tensor:
-        self._optimizer.zero_grad()
-        loss = ((v - v_target.detach()) ** 2).mean()
-        loss.backward()
-        self._optimizer.step()
-        return loss
+    def loss(self, v: Tensor, v_target: Tensor) -> Tensor:
+        return ((v - v_target.detach()) ** 2).mean()
 
     @staticmethod
-    def configure(dt: float, gamma: float, lr: float, optimizer: str,
+    def configure(dt: float, gamma: float,
                   observation_space: Space,
                   nb_layers: int, hidden_size: int,
                   noscale: bool) -> "OnlineCritic":
@@ -23,4 +19,4 @@ class A2CCritic(OnlineCritic):
         v_function = MLP(nb_inputs=nb_state_feats, nb_outputs=1,
                          nb_layers=nb_layers, hidden_size=hidden_size)
 
-        return A2CCritic(gamma, dt, lr, optimizer, v_function)
+        return A2CCritic(gamma, dt, v_function)

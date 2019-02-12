@@ -27,7 +27,7 @@ class OnlinePolicy(CompoundStateful, Policy):
         self._nb_train_env = nb_train_env
         self._count = 0
         self._T = T
-        self._device="cpu"
+        self._device = "cpu"
         self.reset()
 
     def step(self, obs: Arrayable) -> np.ndarray:
@@ -99,4 +99,3 @@ class OnlinePolicy(CompoundStateful, Policy):
         self._device = device
         CompoundStateful.to(self, device)
         return self
-        

@@ -1,29 +1,20 @@
 from abc import abstractmethod
 import torch
 from torch import Tensor
+from torch.distributions import Distribution
 from torch.distributions.normal import Normal
 from torch.distributions.categorical import Categorical
 from torch.distributions.independent import Independent
 from abstract import ParametricFunction, Loggable, Tensorable
 from stateful import CompoundStateful
-from optimizer import setup_optimizer
 
 class OnlineActor(CompoundStateful, Loggable):
     def __init__(self, policy_function: ParametricFunction,
-                 lr: float, opt_name: str, dt: float,
-                 c_entropy: float, weight_decay: float) -> None:
+                 dt: float, c_entropy: float) -> None:
         CompoundStateful.__init__(self)
         self._policy_function = policy_function
 
-        # self._optimizer = setup_optimizer(
-        #     self._policy_function.parameters(), opt_name=opt_name,
-        #     lr=lr, dt=dt, inverse_gradient_magnitude=1, weight_decay=weight_decay)
         self._c_entropy = c_entropy
-
-    # @abstractmethod
-    # def _optimize_from_distr(self, distr: Distribution, actions: Tensor,
-    #                          critic_value: Tensor) -> None:
-    #     pass
 
     def act_noisy(self, obs: Tensorable) -> Tensor:
         distr = self._distr_generator(self._policy_function(obs))
@@ -33,11 +24,6 @@ class OnlineActor(CompoundStateful, Loggable):
     def act(self, obs: Tensorable) -> Tensor:
         pass
 
-    # def optimize(self, obs:Tensor, actions: Tensor, critic_value: Tensor) -> Tensor:
-    #     obs, actions = obs.to(self._device), actions.to(self._device)
-    #     distr = self._distr_generator(self._policy_function(obs))
-    #     self._optimize_from_distr(distr, actions, critic_value)
-
     def log(self) -> None:
         pass
 
@@ -45,6 +31,9 @@ class OnlineActor(CompoundStateful, Loggable):
         CompoundStateful.to(self, device)
         self._device = device
         return self
+
+    def actions_distr(self, obs: Tensorable) -> Distribution:
+        return self._distr_generator(self._policy_function(obs))
 
     def policy(self, obs: Tensorable) -> Tensor:
         return self._policy_function(obs)
@@ -55,10 +44,8 @@ class OnlineActor(CompoundStateful, Loggable):
 
 class OnlineActorContinuous(OnlineActor):
     def __init__(self, policy_function: ParametricFunction,
-                 lr: float, opt_name: str, dt: float,
-                 c_entropy: float, weight_decay: float) -> None:
-        OnlineActor.__init__(self, policy_function, lr, opt_name, dt,
-                             c_entropy, weight_decay)
+                 dt: float, c_entropy: float) -> None:
+        OnlineActor.__init__(self, policy_function, dt, c_entropy)
 
         self._distr_generator = lambda t: Independent(Normal(*t), 1)
 
@@ -85,10 +72,8 @@ class OnlineActorContinuous(OnlineActor):
 
 class OnlineActorDiscrete(OnlineActor):
     def __init__(self, policy_function: ParametricFunction,
-                 lr: float, opt_name: str, dt: float,
-                 c_entropy: float, weight_decay: float) -> None:
-        OnlineActor.__init__(self, policy_function, lr, opt_name, dt,
-                             c_entropy, weight_decay)
+                 dt: float, c_entropy: float) -> None:
+        OnlineActor.__init__(self, policy_function, dt, c_entropy)
         self._distr_generator = lambda logits: Categorical(logits=logits)
 
     def act(self, obs: Tensorable) -> Tensor:
@@ -105,9 +90,3 @@ class OnlineActorDiscrete(OnlineActor):
     @staticmethod
     def copy_distr(distr):
         return Categorical(logits=distr.logits.clone().detach())
-
-
-
-
-
-

@@ -1,35 +1,24 @@
 from torch import Tensor
 from torch.distributions import Distribution
-from torch.optim import Optimizer
-from logging import info
 from actors.online_actor import OnlineActorContinuous, OnlineActorDiscrete
 from gym.spaces import Box, Discrete
 from models import ContinuousRandomPolicy, DiscreteRandomPolicy
 
-
-def optimize(distr: Distribution, actions: Tensor, critic_value: Tensor,
-             c_entropy: float, optimizer: Optimizer) -> None:
+def loss(distr: Distribution, actions: Tensor,
+         critic_value: Tensor, c_entropy: float) -> Tensor:
     logp_action = distr.log_prob(actions)
     entropy = distr.entropy()
 
     loss_critic = (- logp_action * critic_value.detach()).mean()
-    loss = loss_critic - c_entropy * entropy
-
-    info(f"loss_critic:{loss_critic.mean().item():3.2e}\t"
-         f"entropy:{entropy.mean().item():3.2e}")
-    optimizer.zero_grad()
-    loss.mean().backward()
-    optimizer.step()
+    return loss_critic - c_entropy * entropy.mean()
 
 class A2CActorContinuous(OnlineActorContinuous):
-    def _optimize_from_distr(self, distr: Distribution, actions: Tensor,
-                             critic_value: Tensor) -> None:
-        optimize(distr, actions, critic_value, self._c_entropy, self._optimizer)
+    def loss(self, distr: Distribution, actions: Tensor, critic_value: Tensor) -> Tensor:
+        return loss(distr, actions, critic_value, self._c_entropy)
 
 class A2CActorDiscrete(OnlineActorDiscrete):
-    def _optimize_from_distr(self, distr: Distribution, actions: Tensor,
-                             critic_value: Tensor) -> None:
-        optimize(distr, actions, critic_value, self._c_entropy, self._optimizer)
+    def loss(self, distr: Distribution, actions: Tensor, critic_value: Tensor) -> Tensor:
+        return loss(distr, actions, critic_value, self._c_entropy)
 
 # this is a dummy class
 class A2CActor(object):
@@ -48,6 +37,4 @@ class A2CActor(object):
             policy_generator, actor_generator = DiscreteRandomPolicy, A2CActorDiscrete
         policy_function = policy_generator(nb_state_feats, nb_actions, kwargs['nb_layers'], kwargs['hidden_size'])
 
-        return actor_generator(policy_function, kwargs['lr'], kwargs['optimizer'],
-                               kwargs['dt'], kwargs['c_entropy'],
-                               kwargs['weight_decay'])
+        return actor_generator(policy_function, kwargs['dt'], kwargs['c_entropy'])
