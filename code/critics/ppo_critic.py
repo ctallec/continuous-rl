@@ -15,10 +15,10 @@ class PPOCritic(OnlineCritic):
 
     def loss(self, v: Tensor, v_target: Tensor, old_v: Tensor) -> Tensor:
         assert old_v.shape == v.shape and v_target.shape == v.shape
-        loss_unclipped = ((v - v_target.detach()) ** 2).mean()
+        loss_unclipped = ((v - v_target.detach()) ** 2)
         v_clipped = old_v + torch.clamp(v-old_v, -self._eps_clamp, self.eps_clamp)
-        loss_clipped = ((v_clipped - v_target.detach()) ** 2).mean()
-        return .5 * (loss_clipped + loss_unclipped)
+        loss_clipped = ((v_clipped - v_target.detach()) ** 2)
+        return .5 * torch.max(loss_clipped, loss_unclipped).mean()
 
     @staticmethod
     def configure(dt: float, gamma: float, observation_space: Space,

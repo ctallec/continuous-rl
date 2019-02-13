@@ -10,6 +10,7 @@ from tqdm import tqdm
 from abstract import Arrayable
 from envs.env import Env
 from policies.policy import Policy
+from policies.online_policy import OnlinePolicy
 from interact import interact
 from evaluation import specific_evaluation
 from utils import compute_return
@@ -29,10 +30,13 @@ def train(nb_steps: int, env: Env, policy: Policy, start_obs: Arrayable):
 
 def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
              time_limit: Optional[float] = None, eval_return: bool = False,
-             progress_bar: bool = False, video: bool = False, no_log: bool = False, test=False):
+             progress_bar: bool = False, video: bool = False, no_log: bool = False,
+             test: bool = False, eval_policy: bool = True):
     """ Evaluate. """
     log_gap = int(eval_gap / dt)
     policy.eval()
+    if not eval_policy and isinstance(policy, OnlinePolicy):
+        policy.noisy_eval()
     policy.reset()
     R = None
     if eval_return:
@@ -50,12 +54,16 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
                 imgs.append(env.render(mode='rgb_array'))
         R = compute_return(np.stack(rewards, axis=0),
                            np.stack(dones, axis=0))
-        info(f"At epoch {epoch}, return: {R}")
+        tag = "noisy" if not eval_policy else ""
+        info(f"At epoch {epoch}, {tag} return: {R}")
         if not no_log:
-            if not test:
-                log("Return", R, epoch) # don't log when outputing video
+            if not eval_policy:
+                log("Return_noisy", R, epoch)
             else:
-                log("Return_test", R, epoch)
+                if not test:
+                    log("Return", R, epoch) # don't log when outputing video
+                else:
+                    log("Return_test", R, epoch)
         if video:
             log_video("demo", epoch, np.stack(imgs, axis=0))
 
@@ -105,6 +113,19 @@ def main(args):
             eval_return=e % log_gap == log_gap - 1,
             test=False
         )
+
+        # evaluate with noisy actions
+        evaluate(
+            dt,
+            e, eval_env,
+            policy,
+            eval_gap,
+            time_limit,
+            eval_return=e % log_gap == log_gap - 1,
+            test=False,
+            eval_policy=False
+        )
+
         if new_R is not None:
             # policy.observe_evaluation(new_R)
             if new_R > R:

@@ -31,7 +31,7 @@ class OnlinePolicy(CompoundStateful, Policy):
         self.reset()
 
     def step(self, obs: Arrayable) -> np.ndarray:
-        if self._train:
+        if self._mode != "eval":
             action = th_to_arr(self._actor.act_noisy(obs))
         else:
             action = th_to_arr(self._actor.act(obs))
@@ -54,7 +54,7 @@ class OnlinePolicy(CompoundStateful, Policy):
                 done: Arrayable,
                 time_limit: Optional[Arrayable] = None) -> None:
 
-        if not self._train:
+        if self._mode != "train":
             return None
 
         self._count += 1
@@ -84,10 +84,13 @@ class OnlinePolicy(CompoundStateful, Policy):
         self._count = state_dict["count"]
 
     def train(self) -> None:
-        self._train = True
+        self._mode = "train"
 
     def eval(self) -> None:
-        self._train = False
+        self._mode = "eval"
+
+    def noisy_eval(self) -> None:
+        self._mode = "noisy_eval"
 
     def value(self, obs: Arrayable) -> Tensor:
         return self._critic.value(obs)

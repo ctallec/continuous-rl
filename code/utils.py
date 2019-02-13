@@ -26,8 +26,8 @@ def values(v_function: ParametricFunction, traj: BatchTraj,
     tl[..., -1] = 1
     stop = torch.max(d, tl)
 
-    gae = tl * v + (1 - tl) * \
-        (r + gamma * (1 - d) * torch.cat([v[..., 1:], v[..., :1]], dim=-1)) - v
+    gae = (1 - tl) * \
+        (r + gamma * (1 - d) * torch.cat([v[..., 1:], v[..., :1]], dim=-1) - v)
 
     for t in reversed(range(0, traj.length - 1)):
         gae[..., t] += (1 - stop[..., t]) * (gamma * lambd * gae[..., t + 1])

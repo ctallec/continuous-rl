@@ -23,7 +23,7 @@ class A2CPolicy(OnlinePolicy):
             lr=lr, dt=dt, inverse_gradient_magnitude=1, weight_decay=weight_decay)
 
     def learn(self) -> None:
-        if (self._count + 1) % self._T != 0:
+        if (self._count + 1) % (self._T - 1) != 0:
             return None
         traj = Trajectory.tobatch(*self._current_trajectories)
         traj = traj.to(self._device)

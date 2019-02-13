@@ -148,7 +148,7 @@ class ContinuousRandomPolicy(nn.Module, ParametricFunction):
         x = self._model(inputs[0])
         x = self.relu(self.ln(x))
         mu = torch.tanh(self._fc_mu(x))
-        sigma = torch.log(1 + torch.exp(self._log_sigma))
+        sigma = torch.exp(self._log_sigma)
         return mu, sigma
 
     def input_shape(self) -> Shape:

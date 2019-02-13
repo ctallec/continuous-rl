@@ -5,6 +5,7 @@ from torch.distributions import Distribution
 from torch.distributions.normal import Normal
 from torch.distributions.categorical import Categorical
 from torch.distributions.independent import Independent
+from distributions import DiagonalNormal
 from abstract import ParametricFunction, Loggable, Tensorable
 from stateful import CompoundStateful
 
@@ -47,7 +48,7 @@ class OnlineActorContinuous(OnlineActor):
                  dt: float, c_entropy: float) -> None:
         OnlineActor.__init__(self, policy_function, dt, c_entropy)
 
-        self._distr_generator = lambda t: Independent(Normal(*t), 1)
+        self._distr_generator = lambda t: Independent(Normal(*t), 1) # DiagonalNormal(*t)
 
     def act(self, obs: Tensorable) -> Tensor:
         action, _ = self._policy_function(obs)
