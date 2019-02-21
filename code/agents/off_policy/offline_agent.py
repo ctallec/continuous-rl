@@ -2,9 +2,6 @@ from typing import Optional
 from abstract import Arrayable, Tensorable
 from cudaable import Cudaable
 from stateful import StateDict
-from policies.policy import Policy
-from critics.critic import Critic
-from actors.actor import Actor
 from memory.utils import setup_memory
 from stateful import CompoundStateful
 from mylog import log
@@ -12,8 +9,11 @@ from logging import info
 import numpy as np
 from torch import Tensor
 from convert import th_to_arr, arr_to_th
+from agents.agent import Agent
+from critics.critic import Critic
+from actors.actor import Actor
 
-class OfflinePolicy(CompoundStateful, Policy, Cudaable):
+class OfflineAgent(CompoundStateful, Agent, Cudaable):
     def __init__(
             self, memory_size: int, batch_size: int,
             steps_btw_train: int, learn_per_step: int,

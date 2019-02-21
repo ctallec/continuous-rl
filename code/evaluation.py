@@ -2,27 +2,29 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from envs.env import Env
-from policies.policy import Policy
-from policies.offline_policy import OfflinePolicy
+from agents.agent import Agent
+from agents.off_policy.offline_agent import OfflineAgent
 from envs.hill import HillEnv
 from envs.pusher import AbstractPusher, ContinuousPusherEnv
 from convert import th_to_arr
 from gym.envs.classic_control import PendulumEnv
 from gym.spaces import Box
 from mylog import log_image
+
+
 def specific_evaluation(
         epoch: int,
         log: int,
         dt: float,
         env: Env,
-        policy: Policy):
+        agent: Agent):
 
     if isinstance(env.envs[0].unwrapped, AbstractPusher): # type: ignore
         nb_pixels = 50
         state_space = np.linspace(-1.5, 1.5, nb_pixels)[:, np.newaxis]
 
-        actions = policy.actions(state_space)
-        values = policy.value(state_space)
+        actions = agent.actions(state_space)
+        values = agent.value(state_space)
         plt.clf()
         plt.subplot(131)
         plt.plot(state_space, th_to_arr(values))
@@ -33,8 +35,8 @@ def specific_evaluation(
             states, actions = np.meshgrid(state_space, action_space)
             states = states[..., np.newaxis]
             actions = actions[..., np.newaxis]
-            if isinstance(policy, OfflinePolicy):
-                advantage = th_to_arr(policy.advantage(states, actions).squeeze())
+            if isinstance(agent, OfflineAgent):
+                advantage = th_to_arr(agent.advantage(states, actions).squeeze())
                 plt.subplot(133)
                 plt.imshow(advantage)
                 log_image('adv', epoch, advantage)
@@ -47,9 +49,9 @@ def specific_evaluation(
         state_space = np.stack([np.cos(theta), np.sin(theta), dtheta], axis=-1)
         target_shape = state_space.shape[:2]
 
-        actions = policy.actions(
+        actions = agent.actions(
             state_space.reshape(-1, 3))
-        values = policy.value(
+        values = agent.value(
             state_space.reshape(-1, 3)).reshape(target_shape).squeeze()
         actions = actions.reshape(target_shape).squeeze()
         plt.clf()
@@ -65,8 +67,8 @@ def specific_evaluation(
         nb_pixels = 50
         state_space = np.linspace(-1, 1, nb_pixels)[:, np.newaxis]
 
-        actions = policy.actions(state_space)
-        values = policy.value(state_space).squeeze()
+        actions = agent.actions(state_space)
+        values = agent.value(state_space).squeeze()
 
         plt.clf()
         plt.subplot(1, 3, 1)
@@ -78,7 +80,7 @@ def specific_evaluation(
             states, actions = np.meshgrid(state_space, action_space)
             states = states[..., np.newaxis]
             actions = actions[..., np.newaxis]
-            advantages = policy.advantage(states, actions).squeeze()
+            advantages = agent.advantage(states, actions).squeeze()
             plt.subplot(1, 3, 3)
             plt.imshow(th_to_arr(advantages))
             log_image('adv', epoch, th_to_arr(advantages))

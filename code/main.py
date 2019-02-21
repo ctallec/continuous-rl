@@ -9,8 +9,8 @@ from tqdm import tqdm
 
 from abstract import Arrayable
 from envs.env import Env
-from policies.policy import Policy
-from policies.online_policy import OnlinePolicy
+from agents.agent import Agent
+from agents.on_policy.online_agent import OnlineAgent
 from interact import interact
 from evaluation import specific_evaluation
 from utils import compute_return
@@ -18,34 +18,34 @@ from mylog import log, logto, log_video
 from parse import setup_args
 from config import configure
 
-def train(nb_steps: int, env: Env, policy: Policy, start_obs: Arrayable):
+def train(nb_steps: int, env: Env, agent: Agent, start_obs: Arrayable):
     """Trains for one epoch.
 
     :args nb_steps: number of interaction steps
     :args env: environment
-    :args policy: interacting policy
+    :args agent: interacting agent
     :start_obs: starting observation
 
     :return: final observation
     """
-    policy.train()
-    policy.reset()
+    agent.train()
+    agent.reset()
     obs = start_obs
     for _ in range(nb_steps):
         # interact
-        obs, _, _ = interact(env, policy, obs)
+        obs, _, _ = interact(env, agent, obs)
     return obs
 
-def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
+def evaluate(dt: float, epoch: int, env: Env, agent: Agent, eval_gap: float, # noqa: C901
              time_limit: Optional[float] = None, eval_return: bool = False,
              progress_bar: bool = False, video: bool = False, no_log: bool = False,
              test: bool = False, eval_policy: bool = True) -> Optional[float]:
-    """Evaluate policy in environment.
+    """Evaluate agent in environment.
 
     :args dt: time discretization
     :args epoch: index of the current epoch
     :args env: environment
-    :args policy: interacting policy
+    :args agent: interacting agent
     :args eval_gap: number of normalized epochs (epochs divided by dt)
         between training steps
     :args time_limit: maximal physical time (number of steps divided by dt)
@@ -61,10 +61,10 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
     :return: return evaluated, None if no return is evaluated
     """
     log_gap = int(eval_gap / dt)
-    policy.eval()
-    if not eval_policy and isinstance(policy, OnlinePolicy):
-        policy.noisy_eval()
-    policy.reset()
+    agent.eval()
+    if not eval_policy and isinstance(agent, OnlineAgent):
+        agent.noisy_eval()
+    agent.reset()
     R = None
     if eval_return:
         rewards, dones = [], []
@@ -76,7 +76,7 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
         obs = env.reset()
         iter_range = tqdm(range(nb_steps)) if progress_bar else range(nb_steps)
         for _ in iter_range:
-            obs, reward, done = interact(env, policy, obs)
+            obs, reward, done = interact(env, agent, obs)
             rewards.append(reward)
             dones.append(done)
             if video:
@@ -97,7 +97,7 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
             log_video("demo", epoch, np.stack(imgs, axis=0))
 
     if not no_log:
-        specific_evaluation(epoch, log_gap, dt, env, policy)
+        specific_evaluation(epoch, log_gap, dt, env, agent)
     return R
 
 def main(args):
@@ -113,31 +113,31 @@ def main(args):
     # device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    policy, env, eval_env = configure(args)
-    policy = policy.to(device)
+    agent, env, eval_env = configure(args)
+    agent = agent.to(device)
 
     obs = env.reset()
 
     # load checkpoints if directory is not empty
-    policy_file = join(logdir, 'best_policy.pt')
+    agent_file = join(logdir, 'best_agent.pt')
     R = - np.inf
     cur_e = 0
-    if exists(policy_file) and not noreload:
-        state_dict = torch.load(policy_file)
+    if exists(agent_file) and not noreload:
+        state_dict = torch.load(agent_file)
         R = state_dict["return"]
         cur_e = state_dict["epoch"]
-        info(f"train> Loading policy with return {R} at epoch {cur_e}...")
-        policy.load_state_dict(state_dict)
+        info(f"train> Loading agent with return {R} at epoch {cur_e}...")
+        agent.load_state_dict(state_dict)
     log_gap = max(int(eval_gap / dt), 1)
     info(f"train> number of epochs between evaluations: {log_gap}")
 
     for e in range(cur_e, int(nb_true_epochs / dt)):
         info(f"train> Epoch {e}...")
-        obs = train(nb_steps, env, policy, obs)
+        obs = train(nb_steps, env, agent, obs)
         new_R = evaluate(
             dt,
             e, eval_env,
-            policy,
+            agent,
             eval_gap,
             time_limit,
             eval_return=e % log_gap == log_gap - 1,
@@ -148,7 +148,7 @@ def main(args):
         evaluate(
             dt,
             e, eval_env,
-            policy,
+            agent,
             eval_gap,
             time_limit,
             eval_return=e % log_gap == log_gap - 1,
@@ -157,16 +157,16 @@ def main(args):
         )
 
         if new_R is not None:
-            # policy.observe_evaluation(new_R)
+            # agent.observe_evaluation(new_R)
             if new_R > R:
                 evaluate(
-                    dt, e, eval_env, policy, eval_gap,
+                    dt, e, eval_env, agent, eval_gap,
                     time_limit, eval_return=True, test=True)
-                info(f"train> Saving new policy with return {new_R}")
-                state_dict = policy.state_dict()
+                info(f"train> Saving new agent with return {new_R}")
+                state_dict = agent.state_dict()
                 state_dict["return"] = new_R
                 state_dict["epoch"] = e
-                torch.save(state_dict, policy_file)
+                torch.save(state_dict, agent_file)
                 R = new_R
     env.close()
     eval_env.close()

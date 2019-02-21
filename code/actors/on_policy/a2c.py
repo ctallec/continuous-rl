@@ -1,6 +1,6 @@
 from torch import Tensor
 from torch.distributions import Distribution
-from actors.online_actor import OnlineActorContinuous, OnlineActorDiscrete
+from actors.on_policy.online_actor import OnlineActorContinuous, OnlineActorDiscrete
 from gym.spaces import Box, Discrete
 from models import ContinuousRandomPolicy, DiscreteRandomPolicy, NormalizedMLP
 

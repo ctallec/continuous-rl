@@ -1,18 +1,21 @@
+from abc import abstractmethod
 from typing import Optional, List
-from abstract import Arrayable
-from stateful import StateDict
-from policies.policy import Policy
-from stateful import CompoundStateful
+
 import numpy as np
 from torch import Tensor
+
+from abstract import Arrayable
+from stateful import StateDict
+from stateful import CompoundStateful
+from memory.trajectory import Trajectory
 from convert import th_to_arr, check_array
-from memory.memorytrajectory import Trajectory
-from actors.online_actor import OnlineActor, OnlineActorContinuous
-from critics.online_critic import OnlineCritic
-from abc import abstractmethod
+
+from agents.agent import Agent
+from actors.on_policy.online_actor import OnlineActor, OnlineActorContinuous
+from critics.on_policy.online_critic import OnlineCritic
 
 
-class OnlinePolicy(CompoundStateful, Policy):
+class OnlineAgent(CompoundStateful, Agent):
     def __init__(
             self, T: int, nb_train_env: int,
             actor: OnlineActor, critic: OnlineCritic) -> None:
@@ -98,7 +101,7 @@ class OnlinePolicy(CompoundStateful, Policy):
     def actions(self, obs: Arrayable) -> Tensor:
         return self._actor.actions(obs)
 
-    def to(self, device) -> "OnlinePolicy":
+    def to(self, device) -> "OnlineAgent":
         self._device = device
         CompoundStateful.to(self, device)
         return self

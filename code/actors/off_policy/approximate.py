@@ -11,6 +11,19 @@ from nn import soft_update
 import numpy as np
 
 class ApproximateActor(CompoundStateful, Actor):
+    """ Approximate max actor.
+
+    Actor using a neural network to approximate the argmax agent
+    on a continuous action space.
+
+    :args policy_function: parametric neural net to approximate the argmax
+    :args noise: perturbative noise on the action
+    :args lr: unscaled learning rate
+    :args tau: target network update rate
+    :args opt_name: optimizer used
+    :args dt: framerate
+    :args weight_decay: weight decay
+    """
     def __init__(self, policy_function: ParametricFunction,
                  noise: Noise, lr: float, tau: float, opt_name: str, dt: float,
                  weight_decay: float) -> None:

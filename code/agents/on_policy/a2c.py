@@ -1,20 +1,20 @@
 from typing import Union
 from mylog import log
 from logging import info
-from memory.memorytrajectory import Trajectory
-from policies.online_policy import OnlinePolicy
+from memory.trajectory import Trajectory
+from agents.on_policy.online_agent import OnlineAgent
 from optimizer import setup_optimizer
 from itertools import chain
-from critics.a2c_critic import A2CCritic
-from actors.a2c_actor import A2CActorContinuous, A2CActorDiscrete
+from critics.on_policy.a2c import A2CCritic
+from actors.on_policy.a2c import A2CActorContinuous, A2CActorDiscrete
 
 TypeA2CActor = Union[A2CActorContinuous, A2CActorDiscrete]
 
-class A2CPolicy(OnlinePolicy):
+class A2CAgent(OnlineAgent):
     def __init__(self, T: int, nb_train_env: int,
                  actor: TypeA2CActor, critic: A2CCritic, opt_name: str, lr: float,
                  dt: float, weight_decay: float):
-        OnlinePolicy.__init__(self, T=T, nb_train_env=nb_train_env, actor=actor,
+        OnlineAgent.__init__(self, T=T, nb_train_env=nb_train_env, actor=actor,
                               critic=critic)
 
         self._optimizer = setup_optimizer(

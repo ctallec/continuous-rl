@@ -1,6 +1,6 @@
 import torch
 from torch import Tensor
-from critics.online_critic import OnlineCritic
+from critics.on_policy.online_critic import OnlineCritic
 from gym.spaces import Box
 from gym import Space
 from models import MLP, NormalizedMLP

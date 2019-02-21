@@ -1,4 +1,4 @@
-from critics.advantage import AdvantageCritic
-from critics.value import ValueCritic
+from critics.off_policy.advantage import AdvantageCritic
+from critics.off_policy.value import ValueCritic
 
 __all__ = ["AdvantageCritic", "ValueCritic"]

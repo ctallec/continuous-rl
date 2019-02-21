@@ -2,13 +2,20 @@
 import torch
 from torch import Tensor
 from typing import Tuple
-from memory.memorytrajectory import BatchTraj
+from memory.trajectory import BatchTraj
 import numpy as np
 from abstract import ParametricFunction, Arrayable
 from convert import check_array
 from copy import deepcopy
 
-def compute_return(rewards: Arrayable, dones: Arrayable):
+def compute_return(rewards: Arrayable, dones: Arrayable) -> float:
+    """Compute return from rewards and termination signals.
+
+    :args rewards: (seq_len, batch_size) reward array
+    :args dones: (seq_len, batch_size) termination signal array
+
+    :return: averaged undiscounted return
+    """
     R = 0
     rewards = check_array(rewards)
     dones = check_array(dones)
@@ -18,7 +25,19 @@ def compute_return(rewards: Arrayable, dones: Arrayable):
 
 def values(v_function: ParametricFunction, traj: BatchTraj,
            gamma: float, lambd: float, dt: float) -> Tuple[Tensor, Tensor]:
-    """ Returns value and target value. """
+    """ Returns values and target values computed using GAE.
+
+    Computes both the current value estimate on each state of the traj
+    using the v_function, and a bootstrapped estimate of the value using
+    generalized advantage estimation.
+
+    :args v_function: Parametric V function
+    :args traj: batch of trajectories on which to compute the values and target values
+    :args gamma: discount factor
+    :args lambd: truncated eligibility traces parameter
+
+    :return: (values (batch_size, seq_len), target_values (batch_size, seq_len))
+    """
     v = v_function(traj.obs).squeeze(-1)
     r = traj.rewards * dt
     d = traj.done

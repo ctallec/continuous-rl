@@ -4,7 +4,7 @@ from typing import Tuple
 from abstract import ParametricFunction, Tensorable
 
 from stateful import CompoundStateful
-from memory.memorytrajectory import BatchTraj
+from memory.trajectory import BatchTraj
 from utils import values
 
 class OnlineCritic(CompoundStateful):

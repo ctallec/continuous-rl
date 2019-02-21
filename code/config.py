@@ -1,25 +1,25 @@
 """Configuration facilities."""
 from typing import Tuple
 from functools import partial
-from policies.offline_policy import OfflinePolicy
 from envs.env import Env
 from actors import DiscreteActor, ApproximateActor
 from critics import AdvantageCritic, ValueCritic
 from envs.utils import make_env
 from envs.vecenv import VEnv
-from noises.setupnoise import setup_noise
-from policies.policy import Policy
-from policies.a2c import A2CPolicy
-from actors.a2c_actor import A2CActor
-from critics.a2c_critic import A2CCritic
-from actors.ppo_actor import PPOActor
-from critics.ppo_critic import PPOCritic
-from policies.ppo import PPOPolicy
+from noises.setup import setup_noise
+from agents.agent import Agent
+from agents.off_policy.offline_agent import OfflineAgent
+from agents.on_policy.a2c import A2CAgent
+from agents.on_policy.ppo import PPOAgent
+from actors.on_policy.a2c import A2CActor
+from actors.on_policy.ppo import PPOActor
+from critics.on_policy.ppo import PPOCritic
+from critics.on_policy.a2c import A2CCritic
 
-def configure(args) -> Tuple[Policy, Env, Env]:
+def configure(args) -> Tuple[Agent, Env, Env]:
     """
     Takes argparse args and generates the corresponding
-    policy, environment and evaluation environment.
+    agent, environment and evaluation environment.
     """
     env_fn = partial(make_env, env_id=args.env_id,
                      dt=args.dt, time_limit=args.time_limit)
@@ -58,7 +58,7 @@ def configure(args) -> Tuple[Policy, Env, Env]:
 
         actor = actor_cls.configure(**kwargs) # type: ignore
 
-        policy: Policy = OfflinePolicy(
+        agent: Agent = OfflineAgent(
             steps_btw_train=args.steps_btw_train, learn_per_step=args.learn_per_step,
             memory_size=args.memory_size,
             batch_size=args.batch_size, alpha=args.alpha, beta=args.beta,
@@ -77,7 +77,7 @@ def configure(args) -> Tuple[Policy, Env, Env]:
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
             noscale=args.noscale, normalize=args.normalize_state)
 
-        policy = A2CPolicy(T=args.n_step, nb_train_env=args.nb_train_env,
+        agent = A2CAgent(T=args.n_step, nb_train_env=args.nb_train_env,
                            actor=actor, critic=critic, opt_name=args.optimizer,
                            lr=args.lr, dt=args.dt, weight_decay=args.weight_decay)
     elif args.algo == "ppo":
@@ -97,7 +97,7 @@ def configure(args) -> Tuple[Policy, Env, Env]:
             noscale=args.noscale, eps_clamp=args.eps_clamp,
             normalize=args.normalize_state)
 
-        policy = PPOPolicy(
+        agent = PPOAgent(
             T=args.n_step, nb_train_env=args.nb_train_env,
             actor=actor, critic=critic, learn_per_step=args.learn_per_step,
             batch_size=args.batch_size, opt_name=args.optimizer, lr=args.lr, dt=args.dt,
@@ -105,4 +105,4 @@ def configure(args) -> Tuple[Policy, Env, Env]:
     else:
         raise ValueError(f"Unknown algorithm {args.algo}")
 
-    return policy, env, eval_env
+    return agent, env, eval_env

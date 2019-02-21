@@ -14,8 +14,8 @@ def setup_args():
                         help='number of environment steps between two training periods.')
     parser.add_argument('--env_id', type=str, default='pendulum',
                         help='environment.')
-    parser.add_argument('--noise_type', type=str, default='action', choices=['action', 'parameter'],
-                        help='noise type used (parameter is ill-behaved)')
+    parser.add_argument('--noise_type', type=str, default='coherent', choices=['coherent', 'independant'],
+                        help='noise type used')
     parser.add_argument('--batch_size', type=int, default=64,
                         help='training batch size')
     parser.add_argument('--hidden_size', type=int, default=64,
