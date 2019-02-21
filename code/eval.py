@@ -1,4 +1,4 @@
-"""Evaluate a model."""
+"""Perform standalone evaluation."""
 from os.path import join, exists
 from logging import info
 import torch
@@ -11,6 +11,7 @@ from mylog import logto
 
 
 def main(args):
+    """Evaluation corresponding to given argparse arguments."""
     # device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -23,7 +24,7 @@ def main(args):
     if exists(policy_file):
         state_dict = torch.load(policy_file)
         R = state_dict["return"]
-        info(f"Loading policy with return {R}...")
+        info(f"eval> Loading policy with return {R}...")
         policy.load_state_dict(state_dict)
     else:
         raise ValueError(f"{policy_file} does not exists, no policy available...")

@@ -3,7 +3,7 @@ from torch import Tensor
 from critics.online_critic import OnlineCritic
 from gym.spaces import Box
 from gym import Space
-from models import MLP
+from models import MLP, NormalizedMLP
 from abstract import ParametricFunction
 
 class PPOCritic(OnlineCritic):
@@ -23,11 +23,14 @@ class PPOCritic(OnlineCritic):
     @staticmethod
     def configure(dt: float, gamma: float, observation_space: Space,
                   nb_layers: int, hidden_size: int,
-                  noscale: bool, eps_clamp: float) -> "OnlineCritic":
+                  noscale: bool, eps_clamp: float, normalize: bool) -> "OnlineCritic":
 
         assert isinstance(observation_space, Box)
         nb_state_feats = observation_space.shape[-1]
         v_function = MLP(nb_inputs=nb_state_feats, nb_outputs=1,
                          nb_layers=nb_layers, hidden_size=hidden_size)
+
+        if normalize:
+            v_function = NormalizedMLP(v_function)
 
         return PPOCritic(gamma, dt, v_function, eps_clamp)

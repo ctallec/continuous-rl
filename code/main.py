@@ -1,4 +1,4 @@
-"""Trying to solve pendulum using a robust advantage learning."""
+"""Main training file"""
 from typing import Optional
 import sys
 from os.path import join, exists
@@ -19,7 +19,15 @@ from parse import setup_args
 from config import configure
 
 def train(nb_steps: int, env: Env, policy: Policy, start_obs: Arrayable):
-    """ Trains for one epoch. """
+    """Trains for one epoch.
+
+    :args nb_steps: number of interaction steps
+    :args env: environment
+    :args policy: interacting policy
+    :start_obs: starting observation
+
+    :return: final observation
+    """
     policy.train()
     policy.reset()
     obs = start_obs
@@ -31,8 +39,27 @@ def train(nb_steps: int, env: Env, policy: Policy, start_obs: Arrayable):
 def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
              time_limit: Optional[float] = None, eval_return: bool = False,
              progress_bar: bool = False, video: bool = False, no_log: bool = False,
-             test: bool = False, eval_policy: bool = True):
-    """ Evaluate. """
+             test: bool = False, eval_policy: bool = True) -> Optional[float]:
+    """Evaluate policy in environment.
+
+    :args dt: time discretization
+    :args epoch: index of the current epoch
+    :args env: environment
+    :args policy: interacting policy
+    :args eval_gap: number of normalized epochs (epochs divided by dt)
+        between training steps
+    :args time_limit: maximal physical time (number of steps divided by dt)
+        spent in the environment
+    :args eval_return: do we only perform specific evaluation?
+    :args progress_bar: use a progress bar?
+    :args video: log a video of the interaction?
+    :args no_log: do we log results
+    :args test: log to a different test summary
+    :args eval_policy: if the exploitation policy is noisy,
+        remove the noise before evaluating
+
+    :return: return evaluated, None if no return is evaluated
+    """
     log_gap = int(eval_gap / dt)
     policy.eval()
     if not eval_policy and isinstance(policy, OnlinePolicy):
@@ -44,6 +71,8 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
         imgs = []
         time_limit = time_limit if time_limit else 10
         nb_steps = int(time_limit / dt)
+        info(f"eval> evaluating on a physical time {time_limit}"
+             f" ({nb_steps} steps in total)")
         obs = env.reset()
         iter_range = tqdm(range(nb_steps)) if progress_bar else range(nb_steps)
         for _ in iter_range:
@@ -55,13 +84,13 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
         R = compute_return(np.stack(rewards, axis=0),
                            np.stack(dones, axis=0))
         tag = "noisy" if not eval_policy else ""
-        info(f"At epoch {epoch}, {tag} return: {R}")
+        info(f"eval> At epoch {epoch}, {tag} return: {R}")
         if not no_log:
             if not eval_policy:
                 log("Return_noisy", R, epoch)
-            else:
+            elif not video: # don't log when outputing video
                 if not test:
-                    log("Return", R, epoch) # don't log when outputing video
+                    log("Return", R, epoch)
                 else:
                     log("Return_test", R, epoch)
         if video:
@@ -72,7 +101,7 @@ def evaluate(dt: float, epoch: int, env: Env, policy: Policy, eval_gap: float,
     return R
 
 def main(args):
-    """ Starts training. """
+    """Main training procedure."""
     logdir = args.logdir
     noreload = args.noreload
     dt = args.dt
@@ -97,12 +126,13 @@ def main(args):
         state_dict = torch.load(policy_file)
         R = state_dict["return"]
         cur_e = state_dict["epoch"]
-        info(f"Loading policy with return {R} at epoch {cur_e}...")
+        info(f"train> Loading policy with return {R} at epoch {cur_e}...")
         policy.load_state_dict(state_dict)
     log_gap = max(int(eval_gap / dt), 1)
+    info(f"train> number of epochs between evaluations: {log_gap}")
 
     for e in range(cur_e, int(nb_true_epochs / dt)):
-        info(f"Epoch {e}...")
+        info(f"train> Epoch {e}...")
         obs = train(nb_steps, env, policy, obs)
         new_R = evaluate(
             dt,
@@ -132,7 +162,7 @@ def main(args):
                 evaluate(
                     dt, e, eval_env, policy, eval_gap,
                     time_limit, eval_return=True, test=True)
-                info(f"Saving new policy with return {new_R}")
+                info(f"train> Saving new policy with return {new_R}")
                 state_dict = policy.state_dict()
                 state_dict["return"] = new_R
                 state_dict["epoch"] = e

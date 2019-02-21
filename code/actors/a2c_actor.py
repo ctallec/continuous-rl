@@ -2,7 +2,7 @@ from torch import Tensor
 from torch.distributions import Distribution
 from actors.online_actor import OnlineActorContinuous, OnlineActorDiscrete
 from gym.spaces import Box, Discrete
-from models import ContinuousRandomPolicy, DiscreteRandomPolicy
+from models import ContinuousRandomPolicy, DiscreteRandomPolicy, NormalizedMLP
 
 def loss(distr: Distribution, actions: Tensor,
          critic_value: Tensor, c_entropy: float) -> Tensor:
@@ -36,5 +36,8 @@ class A2CActor(object):
             nb_actions = action_space.n
             policy_generator, actor_generator = DiscreteRandomPolicy, A2CActorDiscrete
         policy_function = policy_generator(nb_state_feats, nb_actions, kwargs['nb_layers'], kwargs['hidden_size'])
+
+        if kwargs['normalize']:
+            policy_function = NormalizedMLP(policy_function)
 
         return actor_generator(policy_function, kwargs['dt'], kwargs['c_entropy'])

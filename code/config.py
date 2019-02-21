@@ -1,3 +1,4 @@
+"""Configuration facilities."""
 from typing import Tuple
 from functools import partial
 from policies.offline_policy import OfflinePolicy
@@ -16,6 +17,10 @@ from critics.ppo_critic import PPOCritic
 from policies.ppo import PPOPolicy
 
 def configure(args) -> Tuple[Policy, Env, Env]:
+    """
+    Takes argparse args and generates the corresponding
+    policy, environment and evaluation environment.
+    """
     env_fn = partial(make_env, env_id=args.env_id,
                      dt=args.dt, time_limit=args.time_limit)
 
@@ -64,13 +69,13 @@ def configure(args) -> Tuple[Policy, Env, Env]:
             action_space=eval_env.action_space,
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
-            dt=args.dt, c_entropy=args.c_entropy
-        )
+            dt=args.dt, c_entropy=args.c_entropy, normalize=args.normalize_state)
+
         critic = A2CCritic.configure(
             dt=args.dt, gamma=args.gamma,
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
-            noscale=args.noscale)
+            noscale=args.noscale, normalize=args.normalize_state)
 
         policy = A2CPolicy(T=args.n_step, nb_train_env=args.nb_train_env,
                            actor=actor, critic=critic, opt_name=args.optimizer,
@@ -82,18 +87,21 @@ def configure(args) -> Tuple[Policy, Env, Env]:
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
             dt=args.dt, c_entropy=args.c_entropy,
-            eps_clamp=args.eps_clamp, c_kl=args.c_kl
+            eps_clamp=args.eps_clamp, c_kl=args.c_kl, normalize=args.normalize_state
         )
+
         critic = PPOCritic.configure(
             dt=args.dt, gamma=args.gamma,
             observation_space=eval_env.observation_space,
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
-            noscale=args.noscale, eps_clamp=args.eps_clamp)
+            noscale=args.noscale, eps_clamp=args.eps_clamp,
+            normalize=args.normalize_state)
 
-        policy = PPOPolicy(T=args.n_step, nb_train_env=args.nb_train_env,
-                           actor=actor, critic=critic, learn_per_step=args.learn_per_step,
-                           batch_size=args.batch_size, opt_name=args.optimizer, lr=args.lr, dt=args.dt,
-                           weight_decay=args.weight_decay)
+        policy = PPOPolicy(
+            T=args.n_step, nb_train_env=args.nb_train_env,
+            actor=actor, critic=critic, learn_per_step=args.learn_per_step,
+            batch_size=args.batch_size, opt_name=args.optimizer, lr=args.lr, dt=args.dt,
+            weight_decay=args.weight_decay)
     else:
         raise ValueError(f"Unknown algorithm {args.algo}")
 

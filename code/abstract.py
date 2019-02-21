@@ -7,6 +7,7 @@ import numpy as np
 from stateful import Stateful
 from cudaable import Cudaable
 
+# Some simple type definitions
 Arrayable = Union[list, float, np.ndarray]
 Tensorable = Union[Arrayable, Tensor]
 DecayFunction = Callable[[int], float]
@@ -52,6 +53,3 @@ class Loggable(ABC):
     @abstractmethod
     def log(self):
         raise NotImplementedError()
-
-
-

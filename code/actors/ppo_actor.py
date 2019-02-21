@@ -7,7 +7,7 @@ from torch.distributions.kl import kl_divergence
 from abstract import ParametricFunction
 from actors.online_actor import OnlineActorContinuous, OnlineActorDiscrete
 from gym.spaces import Box, Discrete
-from models import ContinuousRandomPolicy, DiscreteRandomPolicy
+from models import ContinuousRandomPolicy, DiscreteRandomPolicy, NormalizedMLP
 
 
 def loss(distr: Distribution, actions: Tensor, critic_value: Tensor,
@@ -80,6 +80,9 @@ class PPOActor(object):
             policy_generator, actor_generator = DiscreteRandomPolicy, PPOActorDiscrete
         policy_function = policy_generator(
             nb_state_feats, nb_actions, kwargs['nb_layers'], kwargs['hidden_size'])
+
+        if kwargs['normalize']:
+            policy_function = NormalizedMLP(policy_function)
 
         return actor_generator(policy_function, kwargs['dt'], kwargs['c_entropy'],
                                kwargs["eps_clamp"], kwargs["c_kl"])

@@ -1,3 +1,4 @@
+"""Distribution facilities (unused)."""
 from torch import Tensor
 from torch.distributions.normal import Normal
 from torch.distributions.independent import Independent
