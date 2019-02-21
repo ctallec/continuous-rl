@@ -5,8 +5,6 @@ import torch.nn as nn
 from torch import Tensor
 from abstract import ParametricFunction, Tensorable, Shape
 from convert import check_tensor
-# from mylog import log
-# from uuid import uuid4
 
 class MLP(nn.Module, ParametricFunction):
     """Multi Layer Perceptron.
