@@ -1,19 +1,22 @@
 import copy
-from abstract import Arrayable, ParametricFunction, Tensorable
-from actors.actor import Actor
-from critics.critic import Critic
+from logging import info
 from typing import Optional
+
 import torch
 from torch import Tensor
 import numpy as np
-from convert import arr_to_th, check_array, check_tensor
-from optimizer import setup_optimizer
 from gym.spaces import Box, Discrete
-from models import MLP, ContinuousAdvantageMLP, NormalizedMLP
-from stateful import CompoundStateful
-from nn import soft_update
 
-class AdvantageCritic(CompoundStateful, Critic):
+from abstract import Arrayable, ParametricFunction, Tensorable
+from actors.actor import Actor
+from convert import arr_to_th, check_array, check_tensor
+from critics.off_policy.offline_critic import OfflineCritic
+from models import MLP, ContinuousAdvantageMLP, NormalizedMLP
+from nn import soft_update
+from optimizer import setup_optimizer
+from stateful import CompoundStateful
+
+class AdvantageCritic(CompoundStateful, OfflineCritic):
     def __init__(self,
                  dt: float, gamma: float, lr: float, tau: float, optimizer: str,
                  val_function: ParametricFunction, adv_function: ParametricFunction) -> None:
@@ -38,6 +41,8 @@ class AdvantageCritic(CompoundStateful, Critic):
         self._dt = dt
         self._gamma = gamma
         self._tau = tau
+        info(f"setup> using AdvantageCritic, the provided gamma and rewards are scaled,"
+             f" actual values: gamma={gamma ** dt}, rewards=original_rewards * {dt}")
 
         self._device = 'cpu'
 

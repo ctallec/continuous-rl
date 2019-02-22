@@ -5,7 +5,16 @@ from noises import Noise
 from actors.actor import Actor
 
 class DiscreteActor(Actor):
-    def __init__(self, critic: ParametricFunction, target_critic: ParametricFunction, noise: Noise) -> None:
+    """ Exact argmax actor.
+
+    Actor using an argmax on the critic as policy.
+
+    :args critic: parametric neural net representing the current critic
+    :args target_critic: parameter delayed critic network
+    :args noise: perturbative noise on the action
+    """
+    def __init__(self, critic: ParametricFunction,
+                 target_critic: ParametricFunction, noise: Noise) -> None:
         self._critic = critic
         self._target_critic = target_critic
         self._noise = noise
@@ -17,6 +26,7 @@ class DiscreteActor(Actor):
         return pre_action.argmax(axis=-1)
 
     def act(self, obs: Arrayable, target=False) -> Tensor:
+        """If target is True, use target critic."""
         critic = self._critic if not target else self._target_critic
         pre_action = critic(obs)
         return pre_action.argmax(dim=-1)
@@ -39,7 +49,9 @@ class DiscreteActor(Actor):
 
     @staticmethod
     def configure(
-            critic_function: ParametricFunction, target_critic_function: ParametricFunction,
+            critic_function: ParametricFunction,
+            target_critic_function: ParametricFunction,
             noise: Noise, **kwargs
     ):
+        """Configure the actor."""
         return DiscreteActor(critic_function, target_critic_function, noise)

@@ -11,7 +11,7 @@ from nn import soft_update
 import numpy as np
 
 class ApproximateActor(CompoundStateful, Actor):
-    """ Approximate max actor.
+    """ Approximate argmax actor.
 
     Actor using a neural network to approximate the argmax agent
     on a continuous action space.
@@ -50,6 +50,7 @@ class ApproximateActor(CompoundStateful, Actor):
         return np.clip(action, -1, 1)
 
     def act(self, obs: Arrayable, target=False) -> Tensor:
+        """If target is True, use target policy."""
         if target:
             return self._target_policy_function(obs)
         return self._policy_function(obs)
@@ -64,7 +65,12 @@ class ApproximateActor(CompoundStateful, Actor):
         pass
 
     @staticmethod
-    def configure(**kwargs):
+    def configure(**kwargs) -> "ApproximateActor":
+        """Configure the actor.
+
+        Requires action_space, observation_space, hidden_size, nb_layers,
+        noise, lr, tau, normalize, optimizer, dt and weight_decay in kwargs.
+        """
         action_space = kwargs['action_space']
         observation_space = kwargs['observation_space']
         assert isinstance(action_space, Box)

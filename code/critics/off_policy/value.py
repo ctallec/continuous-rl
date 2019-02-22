@@ -1,18 +1,21 @@
-from abstract import Arrayable, ParametricFunction, Tensorable
-from critics.critic import Critic
-from actors.actor import Actor
-from torch import Tensor
+import copy
+from logging import info
 from typing import Optional
-from convert import arr_to_th, check_array, check_tensor
-from optimizer import setup_optimizer
+
 from gym import Space
 from gym.spaces import Box, Discrete
-from models import MLP, ContinuousAdvantageMLP, NormalizedMLP
-from stateful import CompoundStateful
-import copy
-from nn import soft_update
+from torch import Tensor
 
-class ValueCritic(CompoundStateful, Critic):
+from abstract import Arrayable, ParametricFunction, Tensorable
+from actors.actor import Actor
+from convert import arr_to_th, check_array, check_tensor
+from critics.off_policy.offline_critic import OfflineCritic
+from models import MLP, ContinuousAdvantageMLP, NormalizedMLP
+from nn import soft_update
+from optimizer import setup_optimizer
+from stateful import CompoundStateful
+
+class ValueCritic(CompoundStateful, OfflineCritic):
     def __init__(self,
                  dt: float, gamma: float, lr: float, optimizer: str,
                  q_function: ParametricFunction, tau: float, noscale: bool) -> None:
@@ -33,6 +36,9 @@ class ValueCritic(CompoundStateful, Critic):
             self._dt = ref_dt
         else:
             self._dt = dt
+        info(f"setup> using ValueCritic, the provided gamma and rewards are scaled,"
+             f" actual values: gamma={gamma ** self._dt},"
+             f" rewards=original_rewards * {self._dt}")
 
         self._q_optimizer = \
             setup_optimizer(self._q_function.parameters(),

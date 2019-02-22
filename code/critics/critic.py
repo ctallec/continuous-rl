@@ -1,31 +1,6 @@
-"""Define abstractions."""
-from typing import Optional
-from abc import abstractmethod
-from torch import Tensor
+"""Define critic abstraction."""
+from typing import Union
+from critics.off_policy.offline_critic import OfflineCritic
+from critics.on_policy.online_critic import OnlineCritic
 
-
-from abstract import Loggable, Arrayable, Tensorable
-from cudaable import Cudaable
-from actors.actor import Actor
-from stateful import Stateful
-
-class Critic(Stateful, Cudaable, Loggable):
-    @abstractmethod
-    def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,
-                 next_obs: Arrayable, max_next_action: Tensor, reward: Arrayable,
-                 done: Arrayable, time_limit: Arrayable, weights: Arrayable) -> Tensor:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def critic(self, obs: Arrayable, action: Tensorable, target: bool = False) -> Tensor:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def value(self, obs: Arrayable, actor: Optional[Actor] = None) -> Tensor:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def advantage(self, obs: Arrayable, action: Tensorable, actor: Actor) -> Tensor:
-        pass
-
-
+Critic = Union[OnlineCritic, OfflineCritic]

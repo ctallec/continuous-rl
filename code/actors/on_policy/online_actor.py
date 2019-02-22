@@ -2,14 +2,14 @@ from abc import abstractmethod
 import torch
 from torch import Tensor
 from torch.distributions import Distribution
-from torch.distributions.normal import Normal
-from torch.distributions.categorical import Categorical
-from torch.distributions.independent import Independent
-from distributions import DiagonalNormal
+from distributions import Normal
+from distributions import Categorical
+from distributions import Independent
 from abstract import ParametricFunction, Loggable, Tensorable
 from stateful import CompoundStateful
 
 class OnlineActor(CompoundStateful, Loggable):
+    """Abstraction for online actor."""
     def __init__(self, policy_function: ParametricFunction,
                  dt: float, c_entropy: float) -> None:
         CompoundStateful.__init__(self)
@@ -34,6 +34,7 @@ class OnlineActor(CompoundStateful, Loggable):
         return self
 
     def actions_distr(self, obs: Tensorable) -> Distribution:
+        """Returns the distributions on actions corresponding to the given obs."""
         return self._distr_generator(self._policy_function(obs))
 
     def policy(self, obs: Tensorable) -> Tensor:
@@ -44,11 +45,12 @@ class OnlineActor(CompoundStateful, Loggable):
         pass
 
 class OnlineActorContinuous(OnlineActor):
+
     def __init__(self, policy_function: ParametricFunction,
                  dt: float, c_entropy: float) -> None:
         OnlineActor.__init__(self, policy_function, dt, c_entropy)
 
-        self._distr_generator = lambda t: Independent(Normal(*t), 1) # DiagonalNormal(*t)
+        self._distr_generator = lambda t: Independent(Normal(*t), 1)
 
     def act(self, obs: Tensorable) -> Tensor:
         action, _ = self._policy_function(obs)
@@ -58,18 +60,6 @@ class OnlineActorContinuous(OnlineActor):
 
     def actions(self, obs: Tensorable) -> Tensor:
         return self._policy_function(obs)[0]
-
-    @staticmethod
-    def distr_minibatch(distr, idxs):
-        loc = distr.base_dist.loc[idxs]
-        scale = distr.base_dist.scale[idxs]
-        return Independent(Normal(loc, scale), 1)
-
-    @staticmethod
-    def copy_distr(distr):
-        loc = distr.base_dist.loc.clone().detach()
-        scale = distr.base_dist.scale.clone().detach()
-        return Independent(Normal(loc, scale), 1)
 
 class OnlineActorDiscrete(OnlineActor):
     def __init__(self, policy_function: ParametricFunction,
@@ -82,12 +72,3 @@ class OnlineActorDiscrete(OnlineActor):
 
     def actions(self, obs: Tensorable) -> Tensor:
         return torch.softmax(self._policy_function(obs), dim=-1)[:, 0]
-
-    @staticmethod
-    def distr_minibatch(distr, idxs):
-        logits = distr.logits[idxs]
-        return Categorical(logits=logits)
-
-    @staticmethod
-    def copy_distr(distr):
-        return Categorical(logits=distr.logits.clone().detach())

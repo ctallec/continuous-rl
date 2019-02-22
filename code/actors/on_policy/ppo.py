@@ -13,6 +13,22 @@ from models import ContinuousRandomPolicy, DiscreteRandomPolicy, NormalizedMLP
 def loss(distr: Distribution, actions: Tensor, critic_value: Tensor,
          c_entropy: float, eps_clamp: float, c_kl: float, old_logp: Tensor,
          old_distr: Optional[Distribution] = None) -> None:
+    """Computes PPO actor loss. See
+    https://spinningup.openai.com/en/latest/algorithms/ppo.html
+    for a detailled explanation
+
+    :args distr: current distribution of actions,
+        accepting actions of the same size as actions
+    :args actions: actions performed
+    :args critic_value: advantage corresponding to the actions performed
+    :args c_entropy: entropy loss weighting
+    :args eps_clamp: clamping parameter
+    :args c_kl: kl penalty coefficient
+    :args old_logp: log probabilities of the old distribution of actions
+    :args old_distr: old ditribution of actions
+
+    :return: loss
+    """
     logp_action = distr.log_prob(actions)
     logr = (logp_action - old_logp)
 
@@ -67,6 +83,11 @@ class PPOActorDiscrete(OnlineActorDiscrete):
 class PPOActor(object):
     @staticmethod
     def configure(**kwargs):
+        """Configure actor.
+
+        kwargs must contain action_space, observation_space, nb_layers, hidden_size,
+        normalize, dt, eps_clamp, c_kl and c_entropy.
+        """
         action_space = kwargs['action_space']
         observation_space = kwargs['observation_space']
         assert isinstance(observation_space, Box)

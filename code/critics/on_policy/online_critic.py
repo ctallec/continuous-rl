@@ -1,10 +1,11 @@
-from torch import Tensor
+from logging import info
 from typing import Tuple
 
-from abstract import ParametricFunction, Tensorable
+from torch import Tensor
 
-from stateful import CompoundStateful
+from abstract import ParametricFunction, Tensorable
 from memory.trajectory import BatchTraj
+from stateful import CompoundStateful
 from utils import values
 
 class OnlineCritic(CompoundStateful):
@@ -16,6 +17,8 @@ class OnlineCritic(CompoundStateful):
         self._gamma = gamma ** dt
         self._device = 'cpu'
         self._dt = dt
+        info(f"setup> using OnlineCritic, the provided gamma and rewards are scaled,"
+             f" actual values: gamma={gamma ** dt}, rewards=original_rewards * {dt}")
 
     def value(self, obs: Tensorable) -> Tensor:
         return self._v_function(obs)

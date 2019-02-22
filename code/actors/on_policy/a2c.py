@@ -6,6 +6,15 @@ from models import ContinuousRandomPolicy, DiscreteRandomPolicy, NormalizedMLP
 
 def loss(distr: Distribution, actions: Tensor,
          critic_value: Tensor, c_entropy: float) -> Tensor:
+    """Computes A2C actor loss, i.e. -C(s, a) log pi(a | s) - c_entropy H(pi(.|s)).
+
+    :args distr: distribution on actions, accepting actions of the same size as actions
+    :args actions: actions performed
+    :args critic_value: advantage corresponding to the actions performed
+    :args c_entropy: entropy loss weighting
+
+    :return: loss
+    """
     logp_action = distr.log_prob(actions)
     entropy = distr.entropy()
 
@@ -24,6 +33,11 @@ class A2CActorDiscrete(OnlineActorDiscrete):
 class A2CActor(object):
     @staticmethod
     def configure(**kwargs):
+        """Configure actor.
+
+        kwargs must contain action_space, observation_space, nb_layers, hidden_size,
+        normalize, dt and c_entropy.
+        """
         action_space = kwargs['action_space']
         observation_space = kwargs['observation_space']
         assert isinstance(observation_space, Box)
