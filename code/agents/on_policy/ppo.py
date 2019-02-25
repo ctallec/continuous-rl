@@ -47,7 +47,7 @@ class PPOAgent(OnlineAgent):
         actions_flat = traj.actions.flatten(0, 1)
         distr_flat = self._actor._distr_generator(
             self._actor.policy(traj.obs.flatten(0, 1)))
-        old_distr = distr_flat.copy_distr()
+        old_distr = distr_flat.copy()
         old_logp = distr_flat.log_prob(actions_flat).clone().detach()
         old_v = v.flatten().clone().detach()
         critic_value_flat = (v_target - v).flatten()
@@ -67,7 +67,7 @@ class PPOAgent(OnlineAgent):
                     distr=self._actor._distr_generator(self._actor.policy(obs_flat[idxs])),
                     actions=actions_flat[idxs], critic_value=critic_value_flat[idxs],
                     old_logp=old_logp[idxs],
-                    old_distr=self._actor.distr_minibatch(old_distr, idxs)
+                    old_distr=old_distr[idxs]
                 )
 
                 loss = loss_actor + critic_loss

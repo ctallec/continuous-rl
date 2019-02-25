@@ -5,7 +5,6 @@ from torch.distributions import Distribution
 from torch.distributions.normal import Normal
 from torch.distributions.categorical import Categorical
 from torch.distributions.independent import Independent
-from distributions import DiagonalNormal
 from abstract import ParametricFunction, Loggable, Tensorable
 from stateful import CompoundStateful
 
@@ -59,18 +58,6 @@ class OnlineActorContinuous(OnlineActor):
     def actions(self, obs: Tensorable) -> Tensor:
         return self._policy_function(obs)[0]
 
-    @staticmethod
-    def distr_minibatch(distr, idxs):
-        loc = distr.base_dist.loc[idxs]
-        scale = distr.base_dist.scale[idxs]
-        return Independent(Normal(loc, scale), 1)
-
-    @staticmethod
-    def copy_distr(distr):
-        loc = distr.base_dist.loc.clone().detach()
-        scale = distr.base_dist.scale.clone().detach()
-        return Independent(Normal(loc, scale), 1)
-
 class OnlineActorDiscrete(OnlineActor):
     def __init__(self, policy_function: ParametricFunction,
                  dt: float, c_entropy: float) -> None:
@@ -82,12 +69,3 @@ class OnlineActorDiscrete(OnlineActor):
 
     def actions(self, obs: Tensorable) -> Tensor:
         return torch.softmax(self._policy_function(obs), dim=-1)[:, 0]
-
-    @staticmethod
-    def distr_minibatch(distr, idxs):
-        logits = distr.logits[idxs]
-        return Categorical(logits=logits)
-
-    @staticmethod
-    def copy_distr(distr):
-        return Categorical(logits=distr.logits.clone().detach())
