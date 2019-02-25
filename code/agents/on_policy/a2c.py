@@ -11,11 +11,20 @@ from actors.on_policy.a2c import A2CActorContinuous, A2CActorDiscrete
 TypeA2CActor = Union[A2CActorContinuous, A2CActorDiscrete]
 
 class A2CAgent(OnlineAgent):
-    def __init__(self, T: int, nb_train_env: int,
-                 actor: TypeA2CActor, critic: A2CCritic, opt_name: str, lr: float,
-                 dt: float, weight_decay: float):
-        OnlineAgent.__init__(self, T=T, nb_train_env=nb_train_env, actor=actor,
-                              critic=critic)
+    """Synchronous Advantage Actor Critic Agent.
+
+    :args T: number of max steps used for bootstrapping
+       (to be computationnally efficient, bootstrapping horizon is variable).
+    :args actor: actor used
+    :args critic: critic used
+    :args opt_name: 'rmsprop' ('sgd' deprecated)
+    :args lr: unscaled learning rate
+    :args dt: framerate
+    :args weigth_decay: weight decay
+    """
+    def __init__(self, T: int, actor: TypeA2CActor, critic: A2CCritic,
+                 opt_name: str, lr: float, dt: float, weight_decay: float):
+        OnlineAgent.__init__(self, T=T, actor=actor, critic=critic)
 
         self._optimizer = setup_optimizer(
             chain(self._actor._policy_function.parameters(), self._critic._v_function.parameters()),

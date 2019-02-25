@@ -13,13 +13,21 @@ from critics.on_policy.online_critic import OnlineCritic
 
 
 class PPOAgent(OnlineAgent):
+    """One variant of Proximal Policy Optimizaation agent
 
-    def __init__(self, T: int, nb_train_env: int, actor: OnlineActor,
+    :args T: number of max steps used for bootstrapping
+       (to be computationnally efficient, bootstrapping horizon is variable).
+    :args actor: actor used
+    :args critic: critic used
+    :args opt_name: 'rmsprop' ('sgd' deprecated)
+    :args lr: unscaled learning rate
+    :args dt: framerate
+    :args weigth_decay: weight decay
+    """
+    def __init__(self, T: int, actor: OnlineActor,
                  critic: OnlineCritic, learn_per_step: int, batch_size: int,
                  opt_name: str, lr: float, dt: float, weight_decay: float):
-
-        OnlineAgent.__init__(self, T=T, nb_train_env=nb_train_env, actor=actor,
-                             critic=critic)
+        OnlineAgent.__init__(self, T=T, actor=actor, critic=critic)
         self._learn_per_step = learn_per_step
         self._batch_size = batch_size
 
@@ -39,7 +47,7 @@ class PPOAgent(OnlineAgent):
         actions_flat = traj.actions.flatten(0, 1)
         distr_flat = self._actor._distr_generator(
             self._actor.policy(traj.obs.flatten(0, 1)))
-        old_distr = self._actor.copy_distr(distr_flat)
+        old_distr = distr_flat.copy_distr()
         old_logp = distr_flat.log_prob(actions_flat).clone().detach()
         old_v = v.flatten().clone().detach()
         critic_value_flat = (v_target - v).flatten()
