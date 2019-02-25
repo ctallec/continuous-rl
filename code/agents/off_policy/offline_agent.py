@@ -14,6 +14,19 @@ from critics.critic import Critic
 from actors.actor import Actor
 
 class OfflineAgent(CompoundStateful, Agent, Cudaable):
+    """Offline agent, i.e. learning from a buffer.
+
+    :args memory_size: size of the memory
+    :args batch_size: size of training batches
+    :args steps_btw_train: number of interactions with the environment
+        between two training steps
+    :args learn_per_step: number of batches processed during a training
+       step
+    :args alpha:
+    :args beta: prioritized experience replay parameters (untested)
+    :args actor: actor used
+    :args critic: critic used
+    """
     def __init__(
             self, memory_size: int, batch_size: int,
             steps_btw_train: int, learn_per_step: int,
@@ -38,6 +51,7 @@ class OfflineAgent(CompoundStateful, Agent, Cudaable):
         self._learn_per_step = learn_per_step
 
     def reset(self):
+        """Reset current transition (not memory buffer) !"""
         # internals
         self._obs = np.array([])
         self._action = np.array([])
@@ -61,6 +75,7 @@ class OfflineAgent(CompoundStateful, Agent, Cudaable):
                 reward: Arrayable,
                 done: Arrayable,
                 time_limit: Optional[Arrayable] = None):
+        """If in train mode, store transition in buffer, and may perform a training step."""
         if self._train:
             self._count += 1
             self._next_obs = next_obs

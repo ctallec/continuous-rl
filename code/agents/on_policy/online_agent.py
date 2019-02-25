@@ -16,9 +16,15 @@ from critics.on_policy.online_critic import OnlineCritic
 
 
 class OnlineAgent(CompoundStateful, Agent):
+    """Abstraction for Online Agent.
+
+    :args T: number of max steps used for bootstrapping
+       (to be computationnally efficient, bootstrapping horizon is variable).
+    :args actor: actor used
+    :args critic: critic used
+    """
     def __init__(
-            self, T: int, nb_train_env: int,
-            actor: OnlineActor, critic: OnlineCritic) -> None:
+            self, T: int, actor: OnlineActor, critic: OnlineCritic) -> None:
         CompoundStateful.__init__(self)
 
         # reset and set in train mode
@@ -27,11 +33,14 @@ class OnlineAgent(CompoundStateful, Agent):
         # define learning components
         self._actor = actor
         self._critic = critic
-        self._nb_train_env = nb_train_env
         self._count = 0
         self._T = T
         self._device = "cpu"
         self.reset()
+
+        # init _nb_train_env and _current_trajectories to None
+        self._nb_train_env: Optional[int] = None
+        self._current_trajectories: List[Trajectory] = []
 
     def step(self, obs: Arrayable) -> np.ndarray:
         if self._mode != "eval":
@@ -46,8 +55,11 @@ class OnlineAgent(CompoundStateful, Agent):
         return action
 
     def reset(self) -> None:
-        self._current_trajectories: List[Trajectory] = \
-            [Trajectory(boundlength=self._T) for _ in range(self._nb_train_env)]
+        # use _nb_train_env to know if current trajectories were initialized at
+        # some point
+        if self._nb_train_env is not None:
+            self._current_trajectories: List[Trajectory] = \
+                [Trajectory(boundlength=self._T) for _ in range(self._nb_train_env)]
         self._current_obs = np.array([])
         self._current_action = np.array([])
 
@@ -66,6 +78,11 @@ class OnlineAgent(CompoundStateful, Agent):
         if time_limit is None:
             time_limit = np.zeros(done.shape)
         time_limit = check_array(time_limit)
+
+        if self._current_trajectories is None:
+            self._nb_train_env = done.shape[0]
+            self._current_trajectories = \
+                [Trajectory(boundlength=self._T) for _ in range(self._nb_train_env)]
 
         for k, traj in enumerate(self._current_trajectories):
             traj.push(self._current_obs[k], self._current_action[k], reward[k],

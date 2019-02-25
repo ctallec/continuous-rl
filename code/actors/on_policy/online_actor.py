@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import torch
 from torch import Tensor
-from torch.distributions import Distribution
+from distributions import Distribution
 from distributions import Normal
 from distributions import Categorical
 from distributions import Independent
