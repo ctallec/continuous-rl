@@ -13,6 +13,7 @@ class OfflineCritic(Stateful, Cudaable, Loggable):
     def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,
                  next_obs: Arrayable, max_next_action: Tensor, reward: Arrayable,
                  done: Arrayable, time_limit: Arrayable, weights: Arrayable) -> Tensor:
+        """Offline optimization. Typically uses variants of Q learning."""
         raise NotImplementedError()
 
     @abstractmethod

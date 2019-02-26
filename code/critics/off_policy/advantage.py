@@ -17,6 +17,19 @@ from optimizer import setup_optimizer
 from stateful import CompoundStateful
 
 class AdvantageCritic(CompoundStateful, OfflineCritic):
+    """Advantage offline critic, i.e. Deep Advantage Updating.
+
+    :args dt: framerate
+    :args gamma: physical discount factor
+    :args lr: unscaled learning rate
+    :args tau: target network update rate (preferentially 0.)
+    :args optimizer: 'rmsprop'
+    :args val_function: parametric value function estimate
+    :args adv_function: parametric unormalized advantage function
+        estimate. The normalized advantage function is
+            A(s, a) = adv_function(s, a) - adv_function(s, pi(s))
+        where pi is the current policy.
+    """
     def __init__(self,
                  dt: float, gamma: float, lr: float, tau: float, optimizer: str,
                  val_function: ParametricFunction, adv_function: ParametricFunction) -> None:
@@ -49,7 +62,13 @@ class AdvantageCritic(CompoundStateful, OfflineCritic):
     def optimize(self, obs: Arrayable, action: Arrayable, max_action: Tensor,
                  next_obs: Arrayable, max_next_action: Tensor, reward: Arrayable,
                  done: Arrayable, time_limit: Arrayable, weights: Arrayable) -> Tensor:
+        """Optimizes using the DAU variant of advantage updating.
 
+        Note that this variant uses max_action, and not max_next_action, as is
+        more common with standard Q-Learning. It relies on the set of equations
+        V^*(s) + dt A^*(s, a) = r(s, a) dt + gamma^dt V^*(s)
+        A^*(s, a) = adv_function(s, a) - adv_function(s, max_action)
+        """
         obs = check_array(obs)
         batch_size = obs.shape[0]
         action = arr_to_th(action, self._device).type_as(max_action)
@@ -111,6 +130,7 @@ class AdvantageCritic(CompoundStateful, OfflineCritic):
 
     @staticmethod
     def configure(**kwargs):
+        """Configure critic."""
         observation_space = kwargs['observation_space']
         action_space = kwargs['action_space']
         assert isinstance(observation_space, Box)

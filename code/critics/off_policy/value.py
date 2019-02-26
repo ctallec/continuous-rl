@@ -16,6 +16,17 @@ from optimizer import setup_optimizer
 from stateful import CompoundStateful
 
 class ValueCritic(CompoundStateful, OfflineCritic):
+    """Directly use Q function to rank actions (i.e. uses standard Q learning).
+
+    :args dt: framerate
+    :args gamma: unscaled discount factor
+    :args lr: unscaled learning rate
+    :args optimizer: 'rmsprop'
+    :args q_function: parametric approximator used to approximate the Q function
+    :args tau: target networks update rate
+    :args noscale: if set to true, scales reward and learning rate by 0.02 instead of
+       dt. Does not change the gamma scaling to avoid shortsightedness.
+    """
     def __init__(self,
                  dt: float, gamma: float, lr: float, optimizer: str,
                  q_function: ParametricFunction, tau: float, noscale: bool) -> None:
@@ -107,6 +118,7 @@ class ValueCritic(CompoundStateful, OfflineCritic):
                   action_space: Space, observation_space: Space,
                   nb_layers: int, hidden_size: int, normalize: bool,
                   tau: float, noscale: bool, **kwargs):
+        """Configure the critic."""
         assert isinstance(observation_space, Box)
         nb_state_feats = observation_space.shape[-1]
         net_dict = dict(nb_layers=nb_layers, hidden_size=hidden_size)
