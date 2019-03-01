@@ -30,7 +30,7 @@ def configure(args) -> Tuple[Agent, Env, Env]:
     if args.algo in ["approximate_value", "approximate_advantage",
                      "discrete_value", "discrete_advantage"]:
         noise = setup_noise(
-            noise_type=args.noise_type, sigma=args.sigma,
+            noise_type=args.noise_type, sigma=args.sigma, epsilon=args.epsilon,
             theta=args.theta, dt=args.dt, sigma_decay=lambda _: 1.,
             action_space=eval_env.action_space, noscale=args.noscale)
 

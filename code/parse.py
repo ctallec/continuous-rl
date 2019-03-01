@@ -14,7 +14,7 @@ def setup_args():
                         help='number of environment steps between two training periods.')
     parser.add_argument('--env_id', type=str, default='pendulum',
                         help='environment.')
-    parser.add_argument('--noise_type', type=str, default='coherent', choices=['coherent', 'independant'],
+    parser.add_argument('--noise_type', type=str, default='coherent', choices=['coherent', 'independent'],
                         help='noise type used')
     parser.add_argument('--batch_size', type=int, default=64,
                         help='training batch size')
@@ -67,6 +67,8 @@ def setup_args():
     parser.add_argument('--tau', type=float, default=.99,
                         help='target network update rate (works for all '
                         'algo, do not expect it to work with dau).')
+    parser.add_argument('--epsilon', type=float, default=.1,
+                        help='epsilon greedy coeficient')
     parser.add_argument('--noscale', action='store_true',
                         help='use unscaled ddpg when set')
     parser.add_argument('--optimizer', type=str, choices=['sgd', 'rmsprop', 'adam'],
@@ -79,7 +81,7 @@ def setup_args():
         'sigma', 'theta', 'c_entropy', 'eps_clamp', 'c_kl', 'nb_train_env', 'nb_eval_env', 'memory_size',
         'learn_per_step', 'normalize_state', 'lr', 'time_limit',
         'policy_lr', 'alpha', 'beta', 'weight_decay', 'optimizer',
-        'tau', 'eval_gap', 'noscale'
+        'tau', 'eval_gap', 'noscale', 'epsilon'
     ])
     args = parser.parse_args()
 

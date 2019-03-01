@@ -5,10 +5,7 @@ from abstract import Arrayable, ParametricFunction, Tensorable
 from noises.noise import Noise
 from convert import th_to_arr, check_tensor
 
-
-
-
-class ActionNoise(Noise): # pylint: disable=too-few-public-methods
+class CoherentNoise(Noise): # pylint: disable=too-few-public-methods
     """ Ornstein Ulhenbeck action noise. """
     def __init__(self, # pylint: disable=too-many-arguments
                  theta: float,
