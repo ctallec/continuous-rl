@@ -3,6 +3,7 @@ from memory.buffer import MemorySampler, PrioritizedMemorySampler
 
 def setup_memory(memory_size: int, alpha: Optional[float],
                  beta: Optional[float], batch_size: int):
+    """Setup memory buffer."""
     args = dict(batch_size=batch_size,
                 size=memory_size)
 

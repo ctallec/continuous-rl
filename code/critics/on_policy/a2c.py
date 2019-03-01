@@ -5,6 +5,7 @@ from gym import Space
 from models import MLP, NormalizedMLP
 
 class A2CCritic(OnlineCritic):
+    """Implements A2C value function estimation."""
     def loss(self, v: Tensor, v_target: Tensor) -> Tensor:
         return ((v - v_target.detach()) ** 2).mean()
 

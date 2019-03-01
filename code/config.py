@@ -27,7 +27,8 @@ def configure(args) -> Tuple[Agent, Env, Env]:
     env: Env = VEnv([env_fn() for _ in range(args.nb_train_env)])
     eval_env: Env = VEnv([env_fn() for _ in range(args.nb_eval_env)])
 
-    if args.algo in ["approximate_value", "approximate_advantage", "discrete_value, discrete_adavantage"]:
+    if args.algo in ["approximate_value", "approximate_advantage",
+                     "discrete_value", "discrete_advantage"]:
         noise = setup_noise(
             noise_type=args.noise_type, sigma=args.sigma,
             theta=args.theta, dt=args.dt, sigma_decay=lambda _: 1.,
@@ -77,9 +78,9 @@ def configure(args) -> Tuple[Agent, Env, Env]:
             nb_layers=args.nb_layers, hidden_size=args.hidden_size,
             noscale=args.noscale, normalize=args.normalize_state)
 
-        agent = A2CAgent(T=args.n_step, nb_train_env=args.nb_train_env,
-                           actor=actor, critic=critic, opt_name=args.optimizer,
-                           lr=args.lr, dt=args.dt, weight_decay=args.weight_decay)
+        agent = A2CAgent(T=args.n_step, actor=actor, critic=critic,
+                         opt_name=args.optimizer, lr=args.lr,
+                         dt=args.dt, weight_decay=args.weight_decay)
     elif args.algo == "ppo":
 
         actor = PPOActor.configure(
@@ -98,9 +99,10 @@ def configure(args) -> Tuple[Agent, Env, Env]:
             normalize=args.normalize_state)
 
         agent = PPOAgent(
-            T=args.n_step, nb_train_env=args.nb_train_env,
-            actor=actor, critic=critic, learn_per_step=args.learn_per_step,
-            batch_size=args.batch_size, opt_name=args.optimizer, lr=args.lr, dt=args.dt,
+            T=args.n_step, actor=actor, critic=critic,
+            learn_per_step=args.learn_per_step,
+            batch_size=args.batch_size, opt_name=args.optimizer,
+            lr=args.lr, dt=args.dt,
             weight_decay=args.weight_decay)
     else:
         raise ValueError(f"Unknown algorithm {args.algo}")

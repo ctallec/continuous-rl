@@ -89,11 +89,18 @@ class CustomBN(nn.Module):
         t_input = check_tensor(inputs[0], device)
         batch_size = t_input.size(0)
 
+        mean_shape = tuple(self._mean.size())
         std = torch.sqrt(torch.clamp(self._squared_mean - self._mean ** 2, min=1e-2)) # type: ignore
         output = (t_input - self._mean) / std # type: ignore
         with torch.no_grad():
-            self._mean = (self._mean * self._count + batch_size * t_input.mean(dim=0)) / (self._count + batch_size) # type: ignore
-            self._squared_mean = (self._squared_mean * self._count + batch_size * (t_input ** 2).mean(dim=0)) / (self._count + batch_size) # type: ignore
+            self._mean = (
+                self._mean * self._count +
+                batch_size * t_input.view(-1, *mean_shape).mean(dim=0)) \
+                / (self._count + batch_size) # type: ignore
+            self._squared_mean = (
+                self._squared_mean * self._count +
+                batch_size * (t_input.view(-1, *mean_shape) ** 2).mean(dim=0)) \
+                / (self._count + batch_size) # type: ignore
             self._count += batch_size
         return output
 
@@ -149,4 +156,4 @@ class ContinuousRandomPolicy(MLP):
         self._log_sigma = nn.Parameter(torch.zeros(()))
 
     def forward(self, *inputs: Tensorable) -> Tensor:
-        return torch.tanh(self._model(inputs[0])), torch.exp(self._log_sigma)
+        return torch.tanh(super().forward(inputs[0])), torch.exp(self._log_sigma)

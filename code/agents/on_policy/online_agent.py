@@ -79,7 +79,7 @@ class OnlineAgent(CompoundStateful, Agent):
             time_limit = np.zeros(done.shape)
         time_limit = check_array(time_limit)
 
-        if self._current_trajectories is None:
+        if not self._current_trajectories:
             self._nb_train_env = done.shape[0]
             self._current_trajectories = \
                 [Trajectory(boundlength=self._T) for _ in range(self._nb_train_env)]

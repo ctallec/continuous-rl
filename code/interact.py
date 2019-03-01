@@ -3,7 +3,7 @@ from typing import Tuple
 from abstract import Arrayable
 from envs.env import Env
 from agents.agent import Agent
-import numpy.ndarray as array
+from numpy import ndarray as array
 
 def interact(
         env: Env,

@@ -1,6 +1,7 @@
 from typing import List, Optional
 import random
 import numpy as np
+from numpy import array
 
 from convert import check_array, check_tensor
 from abstract import Arrayable, Tensorable
@@ -14,7 +15,15 @@ class Trajectory:
                  done: Optional[List[float]] = None,
                  time_limit: Optional[List[float]] = None,
                  boundlength: Optional[int] = None) -> None:
+        """Stores a trajectory as a list of (obs, action, reward, done, time_limit).
 
+        :args obs: initial list of obs
+        :args actions: initial list of actions
+        :args rewards: initial list of rewards
+        :args done: initial list of done signal
+        :args time_limit: initial list of time limits
+        :args boundlength: max trajectory length
+        """
         if obs is None:
             obs = []
         if actions is None:
@@ -38,6 +47,10 @@ class Trajectory:
 
     def push(self, obs: Arrayable, action: Arrayable, reward: float,
              done: float, time_limit: float) -> None:
+        """
+        Push a single transition on a trajectory
+        (before seing the next observation).
+        """
         obs = check_array(obs)
         action = check_array(action)
 
@@ -49,6 +62,7 @@ class Trajectory:
         self.boundlength()
 
     def extract(self, length: int) -> "Trajectory":
+        """Extract a random sub trajectory of length length."""
         assert length <= len(self)
         start = random.randrange(len(self) - length + 1)
         stop = start + length
@@ -63,6 +77,7 @@ class Trajectory:
         return len(self._obs)
 
     def boundlength(self) -> None:
+        """Resize trajectory to boundlength if trajectory is too long."""
         if self._boundlength is None or len(self) <= self._boundlength:
             return None
         delta = max(0, len(self) - self._boundlength)
@@ -75,6 +90,7 @@ class Trajectory:
 
     @property
     def isdone(self) -> bool:
+        """True if current done is True."""
         if len(self) == 0:
             return False
 
@@ -82,6 +98,7 @@ class Trajectory:
 
     @staticmethod
     def tobatch(*trajs: "Trajectory") -> "BatchTraj":
+        """Turn a list of trajs into a batch of trajs."""
         batch_size = len(trajs)
         length_traj = len(trajs[0])
         assert all(len(traj) == length_traj for traj in trajs)
@@ -95,19 +112,22 @@ class Trajectory:
         done = np.zeros((batch_size, length_traj))
         time_limit = np.zeros((batch_size, length_traj))
         for i, traj in enumerate(trajs):
-            for t in range(length_traj):
-                assert obs[i, t].shape == traj._obs[t].shape and actions[i, t].shape == traj._actions[t].shape
-                obs[i, t] = traj._obs[t]
-                actions[i, t] = traj._actions[t]
-                rewards[i, t] = traj._rewards[t]
-                done[i, t] = traj._done[t]
+            assert obs[i, :].shape == array(traj._obs).shape \
+                and actions[i, :].shape == array(traj._actions).shape
+            obs[i, :] = array(traj._obs)
+            actions[i, :] = array(traj._actions)
+            rewards[i, :] = array(traj._rewards)
+            done[i, :] = array(traj._done)
 
-        return BatchTraj(obs=obs, actions=actions, rewards=rewards, done=done, time_limit=time_limit)
+        return BatchTraj(obs=obs, actions=actions, rewards=rewards,
+                         done=done, time_limit=time_limit)
 
 
 class BatchTraj(Cudaable):
+    """Batched trajectory."""
     def __init__(self, obs: Tensorable, actions: Tensorable,
-                 rewards: Tensorable, done: Tensorable, time_limit: Tensorable):
+                 rewards: Tensorable, done: Tensorable,
+                 time_limit: Tensorable) -> None:
         self.obs = check_tensor(obs)
         self.actions = check_tensor(actions)
         self.rewards = check_tensor(rewards)
@@ -116,11 +136,17 @@ class BatchTraj(Cudaable):
         self.batch_size = self.obs.shape[0]
         self.length = self.obs.shape[1]
 
-        assert self.actions.shape[0] == self.batch_size and self.rewards.shape[0] == self.batch_size \
-            and self.done.shape[0] == self.batch_size and self.time_limit.shape[0] == self.batch_size
-        assert self.actions.shape[1] == self.length and self.rewards.shape[1] == self.length \
-            and self.done.shape[1] == self.length and self.time_limit.shape[1] == self.length
-        assert len(self.done.shape) == 2 and len(self.rewards.shape) == 2 and len(self.time_limit.shape) == 2
+        assert self.actions.shape[0] == self.batch_size \
+            and self.rewards.shape[0] == self.batch_size \
+            and self.done.shape[0] == self.batch_size \
+            and self.time_limit.shape[0] == self.batch_size
+        assert self.actions.shape[1] == self.length \
+            and self.rewards.shape[1] == self.length \
+            and self.done.shape[1] == self.length \
+            and self.time_limit.shape[1] == self.length
+        assert len(self.done.shape) == 2 \
+            and len(self.rewards.shape) == 2 \
+            and len(self.time_limit.shape) == 2
 
     def to(self, device) -> "BatchTraj":
         self.obs = self.obs.to(device)
@@ -131,8 +157,9 @@ class BatchTraj(Cudaable):
         return self
 
     def __getitem__(self, key) -> "BatchTraj":
-        return BatchTraj(obs=self.obs[key], actions=self.actions[key], rewards=self.rewards[key],
-                         done=self.done[key], time_limit=self.time_limit[key])
+        return BatchTraj(obs=self.obs[key], actions=self.actions[key],
+                         rewards=self.rewards[key], done=self.done[key],
+                         time_limit=self.time_limit[key])
 
     @property
     def device(self):
@@ -173,7 +200,8 @@ class MemoryTrajectory:
 
 
 class MemorySampler:
-    def __init__(self, memory: MemoryTrajectory, batch_size: int, length_traj: int) -> None:
+    def __init__(self, memory: MemoryTrajectory,
+                 batch_size: int, length_traj: int) -> None:
         self._memory = memory
         self._batch_size = batch_size
         self._length_traj = length_traj
@@ -200,7 +228,8 @@ class MemorySampler:
                 done[i, t] = traj._done[t]
                 tl[i, t] = traj._time_limit[t]
 
-        batchtraj = BatchTraj(obs=obs, actions=actions, rewards=rewards, done=done, time_limit=tl)
+        batchtraj = BatchTraj(obs=obs, actions=actions, rewards=rewards,
+                              done=done, time_limit=tl)
         return batchtraj
 
     def warmed_up(self) -> bool:

@@ -26,7 +26,7 @@ class Distribution(ABC):
     def copy(self) -> "Distribution":
         pass
 
-class Normal(Distribution, TNormal):
+class Normal(TNormal, Distribution):
     def __getitem__(self, idxs) -> "Normal":
         loc = self.loc[idxs]
         scale = self.scale[idxs]
@@ -37,14 +37,14 @@ class Normal(Distribution, TNormal):
         scale = self.scale.clone().detach()
         return Normal(loc, scale)
 
-class Categorical(Distribution, TCategorical):
+class Categorical(TCategorical, Distribution):
     def __getitem__(self, idxs) -> "Categorical":
         return Categorical(logits=self.logits[idxs])
 
     def copy(self) -> "Categorical":
         return Categorical(logits=self.logits.clone().detach())
 
-class Independent(Distribution, TIndependent):
+class Independent(TIndependent, Distribution):
     def __getitem__(self, idxs) -> "Independent":
         return Independent(self.base_dist[idxs],
                            reinterpreted_batch_ndims=self.reinterpreted_batch_ndims)

@@ -2,7 +2,7 @@
 from typing import Optional
 from abc import abstractmethod
 
-import numpy.ndarray as array
+from numpy import ndarray as array
 from torch import Tensor
 
 from abstract import Arrayable

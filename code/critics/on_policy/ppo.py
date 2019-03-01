@@ -7,6 +7,16 @@ from models import MLP, NormalizedMLP
 from abstract import ParametricFunction
 
 class PPOCritic(OnlineCritic):
+    """Implements PPO value estimation method.
+    See
+    https://spinningup.openai.com/en/latest/algorithms/ppo.html
+    for details.
+
+    :args gamma: physical discount factor
+    :args dt: framerate
+    :args v_function: value function parametric approximator
+    :args eps_clamp: PPO epsilon clamping
+    """
     def __init__(self, gamma: float, dt: float,
                  v_function: ParametricFunction, eps_clamp: float):
         OnlineCritic.__init__(self, gamma=gamma, dt=dt,
