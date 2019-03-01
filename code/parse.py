@@ -75,13 +75,15 @@ def setup_args():
                         default='sgd')
     parser.add_argument('--noreload', action='store_true',
                         help='do not reload previously saved model when set.')
+    parser.add_argument('--snapshot', action='store_true',
+                        help='if true, stores snapshot every once in a while')
     parser = argload.ArgumentLoader(parser, to_reload=[
         'algo', 'dt', 'steps_btw_train', 'env_id', 'noise_type',
         'batch_size', 'hidden_size', 'nb_layers', 'gamma', 'n_step', 'nb_true_epochs', 'nb_steps',
         'sigma', 'theta', 'c_entropy', 'eps_clamp', 'c_kl', 'nb_train_env', 'nb_eval_env', 'memory_size',
         'learn_per_step', 'normalize_state', 'lr', 'time_limit',
         'policy_lr', 'alpha', 'beta', 'weight_decay', 'optimizer',
-        'tau', 'eval_gap', 'noscale', 'epsilon'
+        'tau', 'eval_gap', 'noscale', 'epsilon', 'snapshot'
     ])
     args = parser.parse_args()
 

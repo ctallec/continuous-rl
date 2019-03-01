@@ -130,6 +130,8 @@ def main(args):
         agent.load_state_dict(state_dict)
     log_gap = max(int(eval_gap / dt), 1)
     info(f"train> number of epochs between evaluations: {log_gap}")
+    snapshot_gap = 10 * max(int(eval_gap / dt), 1)
+    info(f"train> number of epochs between snapshots: {snapshot_gap}")
 
     for e in range(cur_e, int(nb_true_epochs / dt)):
         info(f"train> Epoch {e}...")
@@ -156,6 +158,12 @@ def main(args):
             eval_policy=False
         )
 
+        if args.snapshot and e % snapshot_gap == snapshot_gap - 1:
+            state_dict = agent.state_dict()
+            state_dict["return"] = new_R
+            state_dict["epoch"] = e
+            snap_file = join(logdir, f'agent_{e}.pt')
+            torch.save(state_dict, snap_file)
         if new_R is not None:
             # agent.observe_evaluation(new_R)
             if new_R > R:
