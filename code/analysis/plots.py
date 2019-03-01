@@ -29,7 +29,6 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
 #    lss = [(0, ()), (0, (5, 1)), (0, (5, 5)), (0, (5, 10)), (0, (1, 5)), (0, (1, 10))]
 #    dt_dict = {dt: ls for dt, ls in zip(dts, lss)}
 
-
     if len(dts) > 0:
         #        print(f'dts:{dts}')
         cnorm = matplotlib.colors.Normalize(vmin=np.log(MIN_DT) - 3, vmax=np.log(MAX_DT) + .1)
