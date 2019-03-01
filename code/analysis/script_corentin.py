@@ -1,7 +1,7 @@
 import argparse
-from dataloader import loader, ExperimentData
+from analog.load import ExperimentLog
+from dataloader import loader
 from plots import plot_learning_curves
-from typing import List
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--logdir', type=str, required=True)
@@ -13,18 +13,16 @@ args = parser.parse_args()
 
 start_date = 'last'
 stop_date = None
-runlist: List[ExperimentData] = []
+expdata: ExperimentLog = ExperimentLog()
 for exp_name in args.exp_names:
-    runlist.extend(loader(args.logdir, exp_name, start_date=start_date, stop_date=stop_date))
-
-expdata = ExperimentData(runlist)
+    expdata.extend(loader(args.logdir, exp_name, start_date=start_date, stop_date=stop_date))
 
 # def filter(args) -> bool:
 #     return ('noscale' in args and args['noscale'] and 'value' in args['algo']) \
 #         or 'advantage' in args['algo']
 
 
-# expdata = expdata.filter_settings(filter)
+# expdata = filter(expdata, filter)
 
 plot_learning_curves(expdata, ['Return'], args.exp_names[0], mint=args.min_t, maxt=args.max_t, gtype=args.std_type + "_std")
 expdata.repr_rawlogs("Return", 5)

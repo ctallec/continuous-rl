@@ -1,12 +1,12 @@
 import os
-from analog.load import load, LoadPredicate
+from analog.load import load, LoadPredicate, ExperimentLog
 from datetime import datetime
 
-def loader(workdir: str, exp_name: str, start_date=None, stop_date=None):
+def loader(workdir: str, exp_name: str, start_date=None, stop_date=None) -> ExperimentLog:
     list_exp_names = os.listdir(workdir)
     if exp_name not in list_exp_names:
         raise ValueError(f'The experience {exp_name} '
-                         'is not in the work directory {workdir}')
+                         f'is not in the work directory {workdir}')
 
     exp_dir = os.path.join(workdir, exp_name)
 
