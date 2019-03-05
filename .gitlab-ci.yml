@@ -1,4 +1,0 @@
-pages:
-        script:
-                - gem install jekyll
-                - jekyll build -s docs
