@@ -24,11 +24,11 @@ Before going into the depth of why Q-learning is failing when the framerate beco
 let's give ...
 
 As a reinforcement learning algorithm, Q-learning displays three key properties:
-	1. It is *temporal difference based*. More precisely it revolves around
+  1. It is *temporal difference based*. More precisely it revolves around
 the use of the *optimal Bellman Equation*.
-	2. It is *model free*. It does not need to know, or to model the
+  2. It is *model free*. It does not need to know, or to model the
 dynamic of the environment to learn.
-	3. It is *off-policy*, i.e. it learns a different policy than the one
+  3. It is *off-policy*, i.e. it learns a different policy than the one
 it actually uses to produce its training trajectories.
 
 # What is continuous time Reinforcement Learning, and why does it matters
