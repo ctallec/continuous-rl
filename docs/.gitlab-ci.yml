@@ -1,0 +1,3 @@
+script:
+        - gem install jekyll
+        - jekyll build
