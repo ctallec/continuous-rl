@@ -5,14 +5,14 @@ Have you ever tried training a *Deep Deterministic Policy Gradient* (DDPG TODO{c
 agent on the *Bipedal Walker* (TODO{cite}) environment? With very little hyperparameterisation,
 you can get it to kind of work, and you would probably obtain something of the sort:
 
-![It is not much, but it is at least trying to go forward.]({{docs/vids/ddpg_low_best.gif | absolute_url}})
+![It is not much, but it is at least trying to go forward.]({{/docs/vids/ddpg_low_best.gif | absolute_url}})
 
 Now, have you ever tried to do it with a framerate of 1000 FPS instead of the usual 50 FPS?
 Kind of crazy, but things should only be easier. We are just providing our agent with a much smaller 
 reaction time, and this should only improve its performance. If you were able to react 20 times faster
 than you normally, you would expect to become much better at everything you do, not much worse.
 
-![Not quite the results we were expecting...]({{docs/vids/ddpg_high_best.gif | absolute_url}})
+![Not quite the results we were expecting...]({{/docs/vids/ddpg_high_best.gif | absolute_url}})
 
 Strange, the agent is not learning anything anymore... And if you perform the same experiment
 on different environments, you will get the same kind of results. There seems to be something
