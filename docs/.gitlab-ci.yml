@@ -1,3 +1,4 @@
-script:
-        - gem install jekyll
-        - jekyll build
+pages:
+        script:
+                - gem install jekyll
+                - jekyll build
