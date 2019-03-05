@@ -16,10 +16,20 @@ than you normally, you would expect to become much better at everything you do, 
 
 Strange, the agent is not learning anything anymore... And if you perform the same experiment
 on different environments, you will get the same kind of results. There seems to be something
-wrong with Q-learning when the framerate/reaction time becomes arbitrarily small. Time to put on
+wrong with Q-learning when the framerate time becomes arbitrarily high. Time to put on
 the detective cap and investigate!
 
 # A crash course on approximate Q-learning
+Before going into the depth of why Q-learning is failing when the framerate becomes high,
+let's give ...
+
+As a reinforcement learning algorithm, Q-learning displays three key properties:
+	1. It is *temporal difference based*. More precisely it revolves around
+the use of the *optimal Bellman Equation*.
+	2. It is *model free*. It does not need to know, or to model the
+dynamic of the environment to learn.
+	3. It is *off-policy*, i.e. it learns a different policy than the one
+it actually uses to produce its training trajectories.
 
 # What is continuous time Reinforcement Learning, and why does it matters
 
