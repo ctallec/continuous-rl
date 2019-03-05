@@ -31,9 +31,12 @@ dynamic of the environment to learn.
   3. It is *off-policy*, i.e. it learns a different policy than the one
 it actually uses to produce its training trajectories.
 
+To make things formal, define a *Markov Decision Process* $\mathcal{M}$ as.
 # What is continuous time Reinforcement Learning, and why does it matters
 
 # What's wrong with near continuous Q-learning?
+## There is no continuous time Q-function
+## Exploration and time discretization
 
 # Can we fix it?
 
