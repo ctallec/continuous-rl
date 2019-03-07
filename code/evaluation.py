@@ -53,14 +53,34 @@ def specific_evaluation(
             state_space.reshape(-1, 3))
         values = agent.value(
             state_space.reshape(-1, 3)).reshape(target_shape).squeeze()
+        if isinstance(agent, OfflineAgent):
+            advs = agent.advantage(
+                state_space.reshape(-1, 3),
+                actions).reshape(target_shape).squeeze()
+            non_advs = agent.advantage(
+                state_space.reshape(-1, 3),
+                1 - actions).reshape(target_shape).squeeze()
+
         actions = actions.reshape(target_shape).squeeze()
+        plt.figure(0, figsize=(20, 10))
         plt.clf()
-        plt.subplot(121)
+        plt.subplot(241)
         plt.imshow(th_to_arr(actions), origin='lower')
         log_image('act', epoch, th_to_arr(actions))
-        plt.subplot(122)
+        plt.subplot(242)
         plt.imshow(th_to_arr(values), origin='lower')
         log_image('val', epoch, th_to_arr(values))
+        if isinstance(agent, OfflineAgent):
+            plt.subplot(243)
+            plt.imshow(th_to_arr(advs), origin='lower')
+            log_image('adv', epoch, th_to_arr(advs))
+            plt.subplot(244)
+            plt.imshow(th_to_arr(non_advs), origin='lower')
+            log_image('inverse_adv', epoch, th_to_arr(non_advs))
+            plt.subplot(245)
+            plt.hist(th_to_arr(values).reshape(-1), bins=nb_pixels)
+            plt.subplot(246)
+            plt.hist(th_to_arr(non_advs).reshape(-1), bins=nb_pixels)
         plt.colorbar()
         plt.pause(.1)
     elif isinstance(env.envs[0].unwrapped, HillEnv):

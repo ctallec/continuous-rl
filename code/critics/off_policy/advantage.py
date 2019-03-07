@@ -114,7 +114,7 @@ class AdvantageCritic(CompoundStateful, OfflineCritic):
         return self._val_function(obs).squeeze()
 
     def advantage(self, obs: Arrayable, action: Tensorable, actor: Actor) -> Tensor:
-        return self._adv_function(obs, action) - self._adv_function(obs, actor.act(obs))
+        return self._dt * (self.critic(obs, action) - self.critic(obs, actor.act(obs)))
 
     def log(self):
         pass
