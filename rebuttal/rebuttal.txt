@@ -76,3 +76,6 @@ equivalent to Dueling DQN, since
   we chose to use one, even though this does not exactly match our theory.
 
 Thanks for pointing out the typos, we will make sure to fix them.
+
+Reviewer #8:
+
