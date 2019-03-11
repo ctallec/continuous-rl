@@ -39,6 +39,8 @@ expdata_cheetah = filter(expdata_cheetah, lambda s: s['nb_true_epochs'] == 50)
 plot_learning_curves(expdata_cheetah, ['Return'], 'cheetah'+suffix, gtype='run_std', mint=0, maxt=20)
 
 expdata_bipedal = filter(expdata, lambda s: s['env_id'] == 'bipedal_walker')
+expdata_tau.repr_rawlogs("Return", 5)
+
 plot_learning_curves(expdata_bipedal, ['Return'], 'bipedal_walker'+suffix, gtype='run_std', mint=0, maxt=2.5)
 
 # expdata_cartpole = expdata.filter(lambda s: s['env_id'] == 'cartpole')
