@@ -48,6 +48,8 @@ now present the continuous version in the main paper instead.
 f. Thank you for pointing out the typos.
 
 Reviewer #7:
+- "on three domains, the baseline algorithm (DDPG) is in fact not sensitive to \delta t"
+  This is factually incorrect. On Pendulum, Cartpole, Ant and Cheetah, 
 - "Dueling DQN, as the closest relative to DAU should be a baseline in the
   experiment section.": We experimented with a DDPG variant of dueling DQN and
   found that it provided similar results to DDPG, we did not present the
