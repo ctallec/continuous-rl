@@ -1,55 +1,43 @@
 We thank the reviewers for their insightful comments. In what follows, we will
 tried to extensively attend all of the mentionned concerns.
 
-First off, and before going into answers to detailled comment, some of the
-reviewers complained about the scale of the experiments:
+First off, and before going into detailled answers to specific comments, some of the
+reviewers mentionned that experiments were relatively small scale:
 Reviewer #8: "A few small scale experiments"
-Reviewer #7: "the experiments are not ambitious in this sense"
-Let us emphasize that the computational time required to run an experiment with
-time discretization $\delta t$ is proportional to $\frac{1}{\delta t}$ (this is
-the best you can expect, since you need to have the same amount of physical
-time experience to learn the same behavior). With standard discretization, on
-the mujoco environments, it takes approximately 1 hour with decent hardware to
-obtain reasonable results. If we want to use a discretization 100 times finer
-grained than the standard discretization, we can only expect to obtain
-reasonable results after approximately 100 hours. Using radically finer grained
+Reviewer #7: "the experiments are not ambitious in this sense".
+The computational time required to run an experiment with time discretization
+$\delta t$ is proportional to $\frac{1}{\delta t}$ (this is the best you can
+expect, since you need to have the same amount of physical time experience to
+learn the same behavior). With standard discretization, on the mujoco
+environments, it takes approximately 1 hour with decent hardware to obtain
+reasonable results. If we want to use a discretization 100 times finer grained
+than the standard discretization, we can only expect to obtain reasonable
+results after approximately 100 hours. Using radically finer grained
 discretization, and typically going to the next order of magnitude would
 require a full month of computation for a single experiment, which is
 impossible to obtain with the ressources at our disposal.  At the moment, for
 our smallest time discretizations, each experiment on Mujoco takes
-approximately a day and a half. 
-We propose adding the following mention as a footnote to the experimental section
-in the text: ""
-
-Reviewer #1:
-Thank you for your encouraging review! We propose adding the following mention
-at the end of the introduction, to make the contribution more precise.
-"In what follows, theorem 1, 2 and 3 were informally stated in [Doya, Baird], but
-not formally proven, while theorem 4 and 5 are novel".
-
-Thank you for pointing out the theorem numbering issue.
-
-Reviewer #2:
-a. We believe there was a confusion between the BipedalWalker environment that
-we are using (https://gym.openai.com/envs/BipedalWalker-v2/) whose best
-obtainable result is around 300, and the walker2d environment which is used in
-[Haarnoja 2019] whose return values are not comparable. For other environments,
-(Ant and Cheetah) our baseline DDPG seem to behave comparably to their implementation,
-and DAU provides better or comparable results on Ant, irrelevant of the time
-discretization, and better results on Cheetah for the default time discretization. Do
-note that, except for BipedalWalker, where our highest time discretiation is smaller
-than the default one, the highest time discretization used is the standard one.
-
-b.c. TODO
-
-d. We have deffered the presentation of the discrete algorithm to the appendix, and
-now present the continuous version in the main paper instead.
-
-f. Thank you for pointing out the typos.
+approximately a day and a half.  We propose adding the following mention as a
+footnote to the experimental section in the text: ""
 
 Reviewer #7:
-- "on three domains, the baseline algorithm (DDPG) is in fact not sensitive to \delta t"
-  This is factually incorrect. On Pendulum, Cartpole, Ant and Cheetah, 
+- "on three domains, the baseline algorithm (DDPG) is in fact not sensitive to
+  \delta t"
+  We are surprised by this comment. On pendulum, both in the
+  qualitative and quantitative experiments, the performance of DDPG decreases
+  significantly with the discretization timestep: qualitatively, DDPG quickly
+  converges to the optimal V function for $\delta t = 0.01$, converges slower
+  for $\delta t = 0.005$ and fails to converge for smaller $\delta t$'s.
+  Quantitatively, for DDPG, on all benchmark environments, with very few exceptions,
+  lighter curves (small $\delta t$'s) display significantly decreased performances 
+  compared to darker curves (high $\delta t$'s). On the Bipedal Walker, this
+  ranking is less visible, but still present at the end of training (from physical
+  time 8 hours to the end of training). On Cheetah and Ant, the ranking of the two
+  highest $\delta t$'s is at times reversed, but this is explained by the fact that
+  not much learning is happening for these $\delta t$'s.
+- "However there, DAU also exhibits such sensitivity, just in the reverse order
+
+(things get worse with coarser discretisation)."
 - "Dueling DQN, as the closest relative to DAU should be a baseline in the
   experiment section.": We experimented with a DDPG variant of dueling DQN and
   found that it provided similar results to DDPG, we did not present the
@@ -78,6 +66,34 @@ equivalent to Dueling DQN, since
   we chose to use one, even though this does not exactly match our theory.
 
 Thanks for pointing out the typos, we will make sure to fix them.
+
+Reviewer #1:
+Thank you for your encouraging review! We propose adding the following mention
+at the end of the introduction, to make the contribution more precise.
+"To the best of our knowledge, theorem 1, 2 and 3 were informally stated in
+[Doya, Baird], but not formally proven, while theorem 4 and 5 are novel".
+
+Thank you for pointing out the theorem numbering issue.
+
+Reviewer #2:
+a. We believe there was a confusion between the BipedalWalker environment that
+we are using (https://gym.openai.com/envs/BipedalWalker-v2/) whose best
+obtainable result is around 300, and the walker2d environment which is used in
+[Haarnoja 2019] whose return values are not comparable. For other environments,
+(Ant and Cheetah) our baseline DDPG (with no hyperparameter tuning) seems to
+behave comparably to their implementation on the environments we have in
+common. DAU provides better or comparable results on Ant, irrelevant of the
+time discretization, and better results on Cheetah for the default time
+discretization. Do note that, except for BipedalWalker, where our highest time
+discretiation is smaller than the default one, the highest time discretization
+used is the default time discretization.
+
+b.c. TODO
+
+d. We have deffered the presentation of the discrete algorithm to the appendix, and
+now present the continuous version in the main paper instead.
+
+f. Thank you for pointing out the typos.
 
 Reviewer #8:
 
