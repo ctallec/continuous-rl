@@ -1,5 +1,5 @@
 """Define memory sampler"""
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Any
 import numpy as np
 from abstract import Arrayable
 from convert import check_array
@@ -7,6 +7,13 @@ from convert import check_array
 from memory.sumtree import SumTree
 
 class MemorySampler:
+    """Replay buffer.
+
+    This is a simple cyclic replay buffer with a fixed size.
+    :args size: max number of elements in the buffer.
+    :args batch_size: number of samples drawn each time sample
+        is called.
+    """
     def __init__(self, size: int, batch_size: int) -> None:
         self._size = size
         self._true_size = -1
@@ -27,6 +34,7 @@ class MemorySampler:
 
     @property
     def size(self):
+        """Returns true size (not max size)."""
         return self._true_size
 
     def push(
@@ -38,6 +46,7 @@ class MemorySampler:
             done: Arrayable,
             time_limit: Optional[Arrayable]
     ) -> None:
+        """Push a transition on the buffer."""
         # if empty, initialize  buffer
         obs = check_array(obs)
         action = check_array(action)
@@ -72,7 +81,18 @@ class MemorySampler:
             self._full = True
         self._cur = (self._cur + nb_envs) % (self._true_size)
 
-    def sample(self, idxs: Optional[Arrayable] = None, to_observe: bool = True) -> Tuple[Arrayable, ...]:
+    def sample(
+            self, idxs: Optional[Arrayable] = None,
+            to_observe: bool = True) -> Tuple[Arrayable, ...]:
+        """Sample a batch from the buffer.
+
+        :args idxs: if specified, samples buffer with the corresponding
+            indices
+        :args to_observe: if True, before next sampling, the observe method
+            must be called before sampling another batch.
+
+        :return: transition batch
+        """
         size = self._true_size if self._full else self._cur
         if idxs is None:
             idxs = np.random.randint(0, size, self._batch_size)
@@ -99,6 +119,7 @@ class MemorySampler:
         self._ref_obs = ref_obs
 
 class PrioritizedMemorySampler:
+    """Prioritized replay buffer. Untested."""
     def __init__(self, size: int, batch_size: int,
                  beta: float, alpha: float) -> None:
         self._sum_tree: SumTree = SumTree(size)
@@ -109,7 +130,7 @@ class PrioritizedMemorySampler:
         self._alpha = alpha
 
         # placeholders to update priorities
-        self._idxs = None
+        self._idxs: Optional[Tuple[Any, ...]] = None
 
     @property
     def beta(self):
@@ -151,6 +172,7 @@ class PrioritizedMemorySampler:
 
     def observe(self, priorities: Arrayable):
         assert self._idxs is not None, "No sample before observe ..."
+        priorities = check_array(priorities)
         self._max_priority = max(self._max_priority, priorities.max())
         for idx, prio in zip(self._idxs, priorities):
             self._sum_tree.modify(idx, prio ** self._alpha)

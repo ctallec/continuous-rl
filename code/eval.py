@@ -1,4 +1,4 @@
-"""Evaluate a model."""
+"""Perform standalone evaluation."""
 from os.path import join, exists
 from logging import info
 import torch
@@ -11,24 +11,25 @@ from mylog import logto
 
 
 def main(args):
+    """Evaluation corresponding to given argparse arguments."""
     # device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    policy, env, eval_env = configure(args)
-    policy = policy.to(device)
+    agent, env, eval_env = configure(args)
+    agent = agent.to(device)
 
     # load checkpoints if directory is not empty
-    policy_file = join(args.logdir, 'best_policy.pt')
+    agent_file = join(args.logdir, 'best_agent.pt')
     R = - np.inf
-    if exists(policy_file):
-        state_dict = torch.load(policy_file)
+    if exists(agent_file):
+        state_dict = torch.load(agent_file)
         R = state_dict["return"]
-        info(f"Loading policy with return {R}...")
-        policy.load_state_dict(state_dict)
+        info(f"eval> Loading agent with return {R}...")
+        agent.load_state_dict(state_dict)
     else:
-        raise ValueError(f"{policy_file} does not exists, no policy available...")
+        raise ValueError(f"{agent_file} does not exists, no agent available...")
 
-    evaluate(args.dt, 0, eval_env, policy, args.time_limit,
+    evaluate(args.dt, 0, eval_env, agent, args.time_limit,
              eval_return=True, video=True, progress_bar=True, no_log=True)
 
 

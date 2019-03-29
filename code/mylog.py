@@ -13,20 +13,25 @@ from scipy.misc import toimage
 
 from logging import info
 
-class KVTWritter(ABC):
+class KVTWriter(ABC):
+    """Abstract key-value-timestamp logger."""
     @abstractmethod
     def writekvts(self, key: str, value: float, timestamp: int):
+        """Write key value timestamp element."""
         pass
 
     @abstractmethod
     def set_dir(self, logdir: str, reload: bool = False):
+        """Set logging directory."""
         pass
 
     @abstractmethod
     def load(self):
+        """Load previously logged key-value-timestamps."""
         pass
 
-class PickleKVTWriter(KVTWritter):
+class PickleKVTWriter(KVTWriter):
+    """Write key-value-timestamps into a pickle file."""
     def __init__(self):
         self._logs: Dict[str, Dict[int, float]] = dict()
         self._buffering = 500
@@ -64,7 +69,8 @@ class PickleKVTWriter(KVTWritter):
         assert self._dir is not None
         pickle.dump(self._logs, open(join(self._dir, 'logs.pkl'), 'wb'))
 
-class TensorboardKVTWriter(KVTWritter):
+class TensorboardKVTWriter(KVTWriter):
+    """Write key-value-timestamps into tensorflow summaries."""
     def __init__(self):
         self._writer = None
         self._dir = None
@@ -94,6 +100,7 @@ class TensorboardKVTWriter(KVTWritter):
         self._writer.add_scalar(key, value, timestamp)
 
 class Logger:
+    """Logging facilities."""
     CURRENT = None # current logger
 
     def __init__(self):
@@ -102,39 +109,55 @@ class Logger:
         self._dir = None
 
     def log(self, key: str, value: float, timestamp: int):
+        """Transmit key-value-timestamp to all writers."""
         for writer in self._writers:
             writer.writekvts(key, value, timestamp)
 
     def log_video(self, tag: str, timestamp: int, frames):
+        """Log 4D (T, H, W, C) numpy array as a video."""
         video_dir = join(self._dir, "videos")
         if not exists(video_dir):
             makedirs(video_dir)
         np.savez(join(video_dir, f"{tag}_{timestamp}.npz"), frames)
 
     def log_image(self, tag: str, timestamp: int, image):
+        """Log 3D (T, H, W) numpy array as an image."""
         img_dir = join(self._dir, "imgs")
         if not exists(img_dir):
             makedirs(img_dir)
         toimage(image).save(join(img_dir, f"{tag}_{timestamp}.png"))
 
     def set_dir(self, logdir: str, reload: bool = True):
+        """Set logging directory.
+
+        :args logdir: logging directory
+        :args reload: reload previous results from directory?
+        """
         self._dir = logdir
         for writer in self._writers:
             writer.set_dir(logdir, reload)
 
 def logto(logdir: str, reload: bool = True):
+    """Set logging directory.
+
+    :args logdir: logging directory
+    :args reload: reload previous results from directory?
+    """
     assert Logger.CURRENT is not None
     Logger.CURRENT.set_dir(logdir, reload)
 
 def log(key: str, value: float, timestamp: int):
+    """Log key-value-timestamp."""
     assert Logger.CURRENT is not None
     Logger.CURRENT.log(key, value, timestamp)
 
 def log_video(tag: str, timestamp: int, frames):
+    """Log 4D (T, H, W, C) numpy array as a video."""
     assert Logger.CURRENT is not None
     Logger.CURRENT.log_video(tag, timestamp, frames)
 
 def log_image(tag: str, timestamp: int, image):
+    """Log 3D (T, H, W) numpy array as an image."""
     assert Logger.CURRENT is not None
     Logger.CURRENT.log_image(tag, timestamp, image)
 

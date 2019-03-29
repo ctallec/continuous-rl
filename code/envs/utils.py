@@ -162,7 +162,16 @@ class CloudpickleWrapper: # pylint: disable=R0903
         self.x = pickle.loads(ob)
 
 def make_env(env_id: str, dt: float, time_limit: float): # noqa: C901
-    """ Make env. """
+    """ Make environment.
+
+    :args env_id: id of the environment chosen, among
+        pendulum, cartpole, continuous_pendulum, continuous_pusher,
+        lunar_lander, bipedal_walker, bipedal_hardcore, half_cheetah,
+        ant, dart_cheetah, hill, continuous_hill
+    :args dt: framerate
+    :args time_limit: should the environment terminate after a certain
+        number of steps
+    """
     # pendulum
     if env_id == 'pendulum':
         env = gym.make('Pendulum-v0').unwrapped

@@ -8,6 +8,7 @@ StateDict = Dict[str, Any]
 
 
 class Stateful(ABC):
+    """Abstraction for dict loadable/dumpable objects."""
     @abstractmethod
     def load_state_dict(self, state_dict: StateDict):
         raise NotImplementedError()
@@ -18,6 +19,15 @@ class Stateful(ABC):
 
 
 class CompoundStateful(Stateful, Cudaable):
+    """Super class to automate registration of Statefuls.
+
+    Each time an attribute subtype of Stateful is assigned to
+    a subclass of CompoundStateful, the attribute is directly
+    considered as part of the state, and will thus be dumped/loaded
+    when calling load_state_dict and state_dict. Compound Stateful
+    also make sure that Stateful attributes that are Cudaable are
+    ported to the appropriate device when to is called.
+    """
     def __init__(self):
         self._statefuls = {}
 
@@ -47,4 +57,3 @@ class CompoundStateful(Stateful, Cudaable):
             if isinstance(self._statefuls[k], Cudaable):
                 self._statefuls[k] = self._statefuls[k].to(device)
         return self
-

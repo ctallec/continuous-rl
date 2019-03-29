@@ -14,8 +14,8 @@ def setup_args():
                         help='number of environment steps between two training periods.')
     parser.add_argument('--env_id', type=str, default='pendulum',
                         help='environment.')
-    parser.add_argument('--noise_type', type=str, default='action', choices=['action', 'parameter'],
-                        help='noise type used (parameter is ill-behaved)')
+    parser.add_argument('--noise_type', type=str, default='coherent', choices=['coherent', 'independent'],
+                        help='noise type used')
     parser.add_argument('--batch_size', type=int, default=64,
                         help='training batch size')
     parser.add_argument('--hidden_size', type=int, default=64,
@@ -24,6 +24,8 @@ def setup_args():
                         help='number of layers (careful, the "true number of layers" is this number + 1).')
     parser.add_argument('--gamma', type=float, default=.8,
                         help='discount factor.')
+    parser.add_argument('--n_step', type=int, default=20,
+                        help='Number of steps in a2c')
     parser.add_argument('--nb_true_epochs', type=float, default=50,
                         help='number of true epochs (epochs / dt) to train on.')
     parser.add_argument('--nb_steps', type=int, default=100,
@@ -32,6 +34,12 @@ def setup_args():
                         help='OU noise parameter.')
     parser.add_argument('--theta', type=float, default=7.5,
                         help='OU stiffness parameter.')
+    parser.add_argument('--c_entropy', type=float, default=1e-4,
+                        help='entropy regularization')
+    parser.add_argument('--eps_clamp', type=float, default=0.2,
+                        help='Clipping value for PPO, epsilon in the original paper')
+    parser.add_argument('--c_kl', type=float, default=0.,
+                        help='KL regularization for PPO, beta in the original paper')
     parser.add_argument('--nb_train_env', type=int, default=32,
                         help='number of parallel environments during training.')
     parser.add_argument('--nb_eval_env', type=int, default=16,
@@ -59,19 +67,23 @@ def setup_args():
     parser.add_argument('--tau', type=float, default=.99,
                         help='target network update rate (works for all '
                         'algo, do not expect it to work with dau).')
+    parser.add_argument('--epsilon', type=float, default=.1,
+                        help='epsilon greedy coeficient')
     parser.add_argument('--noscale', action='store_true',
                         help='use unscaled ddpg when set')
     parser.add_argument('--optimizer', type=str, choices=['sgd', 'rmsprop', 'adam'],
                         default='sgd')
     parser.add_argument('--noreload', action='store_true',
                         help='do not reload previously saved model when set.')
+    parser.add_argument('--snapshot', action='store_true',
+                        help='if true, stores snapshot every once in a while')
     parser = argload.ArgumentLoader(parser, to_reload=[
         'algo', 'dt', 'steps_btw_train', 'env_id', 'noise_type',
-        'batch_size', 'hidden_size', 'nb_layers', 'gamma', 'nb_true_epochs', 'nb_steps',
-        'sigma', 'theta', 'nb_train_env', 'nb_eval_env', 'memory_size',
+        'batch_size', 'hidden_size', 'nb_layers', 'gamma', 'n_step', 'nb_true_epochs', 'nb_steps',
+        'sigma', 'theta', 'c_entropy', 'eps_clamp', 'c_kl', 'nb_train_env', 'nb_eval_env', 'memory_size',
         'learn_per_step', 'normalize_state', 'lr', 'time_limit',
         'policy_lr', 'alpha', 'beta', 'weight_decay', 'optimizer',
-        'tau', 'eval_gap', 'noscale'
+        'tau', 'eval_gap', 'noscale', 'epsilon', 'snapshot'
     ])
     args = parser.parse_args()
 
