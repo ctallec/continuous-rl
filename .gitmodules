@@ -1,3 +1,3 @@
 [submodule "code/analog"]
 	path = code/analog
-	url = git@gitlab.inria.fr:ctallec/analog.git
+	url = git@github.com:ctallec/analog.git
