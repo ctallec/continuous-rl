@@ -3,8 +3,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter1d
 from scipy.interpolate import interp1d
-from typing import List
+from typing import List, Dict, Optional
 from os.path import join
+from analog.logdata import SettingLog
+
+
+def settingtimeseq(setting:SettingLog, key:str, maxrun:Optional[int]=None) -> Dict[str, np.array]:
+    x = np.array(sorted(set(setting.runs[0].logs[key].keys()).intersection(*[set(r.logs[key].keys()) for r in setting.runs[1:]])))
+    # x = np.array(list(setting.runs[0].logs[key].keys()))
+    y = np.zeros(x.shape+(len(setting.runs),))
+    for i, run in enumerate(setting.runs):
+        if maxrun is not None and i >= maxrun: 
+            break
+        for j, (t, v) in enumerate(run.logs[key].items()):
+            if t not in x:
+                continue
+            y[j,i] = v
+    mean = y.mean(axis=1)
+    std = y.std(axis=1)
+    return {"x":x, "mean":mean, "std":std}
+
+
 
 
 def plot_learning_curves(expdata, key_list: List[str], namefile: str,
@@ -25,7 +44,7 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
         "continuous_pendulum": .05,
         "half_cheetah": .05
     }
-    dts = sorted(list(set([s.args['dt'] for s in expdata._settings])))
+    dts = sorted(list(set([s.args['dt'] for _, s in expdata.settings.items()])))
 #    lss = [(0, ()), (0, (5, 1)), (0, (5, 5)), (0, (5, 10)), (0, (1, 5)), (0, (1, 10))]
 #    dt_dict = {dt: ls for dt, ls in zip(dts, lss)}
 
@@ -42,7 +61,7 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
     for key, ax in zip(key_list, axes.flat if nlines > 1 else [axes]):
         # ax.set_title(key)
 
-        for setting in sorted(expdata._settings, key=lambda s: s.args['dt']):
+        for setting in sorted(expdata.settings.values(), key=lambda s: s.args['dt']):
             args = setting.args
             dt = args['dt']
             nb_steps = args['nb_steps']
@@ -59,7 +78,7 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 c = cm1.to_rgba(np.log(dt))
                 linewidth = 1.
                 alpha = None
-                if 'tau' in expdata.deltakeys:
+                if 'tau' in expdata.delta_args:
                     tau = setting.args['tau']
                     label += f';tau{tau}'
             elif 'advantage' in algo:
@@ -70,13 +89,13 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
             else:
                 raise ValueError
 
-            timeseq_stats = setting.timeseq(key, maxrun=maxrun)
+            timeseq_stats = settingtimeseq(setting, key, maxrun=maxrun)
             if timeseq_stats is None:
                 continue
-            timeseq = timeseq_stats['mean']
+            xdata, ydata, std_data = timeseq_stats['x'], timeseq_stats['mean'], timeseq_stats['std']
 
-            xdata = np.array([i for (i, v) in timeseq.items()])
-            ydata = np.array([v for (i, v) in timeseq.items()])
+            # xdata = np.array([i for (i, v) in timeseq.items()])
+            # ydata = np.array([v for (i, v) in timeseq.items()])
 
             if gtype == 'time_std':
                 kernelsize = max(maxt/100, 0.3) / dt
@@ -98,7 +117,7 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
                 ax.fill_between(x, y-sigma, y+sigma, facecolor=c, alpha=0.2)
                 # ax.plot(dt*xdata, dt*ydata, c=c, alpha=0.2, linestyle=linestyle, linewidth=linewidth)
             elif gtype == 'run_std':
-                std_data = np.array([v for (i, v) in timeseq_stats['std'].items()])
+                # std_data = np.array([v for (i, v) in timeseq_stats['std'].items()])
                 x = np.linspace(min(xdata), max(xdata), 400)
                 y = interp1d(xdata, ydata, kind='cubic')(x)
                 std = interp1d(xdata, std_data, kind='cubic')(x)
@@ -116,3 +135,5 @@ def plot_learning_curves(expdata, key_list: List[str], namefile: str,
     plt.tight_layout()
     # plt.savefig(namefile+'.eps', format="eps")
     plt.savefig(join('plots', namefile+'.png'), format='png', dpi=1000)
+
+
