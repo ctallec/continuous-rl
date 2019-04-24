@@ -399,14 +399,14 @@ experimentally.
 As a first qualitative validation, we test the resilience of both DDPG and DAU to
 changes in framerate on the simple pendulum environment from OpenAI gym.
 
-![Qualitative results]({{"/imgs/pendulum_fig_act_unscaled.png"}} "Qualitative results on pendulum.")
+![Qualitative results]({{"/imgs/pendulum_fig_act_unscaled.png"}})
 
 To that end, we display the policy in phase space learnt after fixed *physical times*, for different
 values of $\deltat$.
 
 We also test quantitatively the resilience wrt to $\deltat$ on a variety of environments:
 
-![Quantitative results]({{"/imgs/full_results_unscaled.png"}} "Quantitative results.")
+![Quantitative results]({{"/imgs/full_results_unscaled.png"}})
 
 Overall, DAU is substantially more resilient to changes in $\deltat$ than DDPG. On many environments,
 it already outperforms DDPG for the standard $\deltat$, as the standard framerate is already quite
@@ -416,11 +416,11 @@ Finally, coming back to our motivating example, what happens when training using
 Bipedal walker environment, with different framerates. With the usual framerate, DAU behaves
 approximately the same as DDPG:
 
-![Bipedal Walker, low framerate]({{"/vids/advup_low_best.gif"}} "Bipedal walker, DAU, low framerate.")
+![Bipedal Walker, low framerate]({{"/vids/advup_low_best.gif"}})
 
 Now, with a framerate $20$ times larger:
 
-![Bipedal Walker, high framerate]({{"/vids/advup_high_best.gif"}} "Bipedal walker, DAU, high framerate.")
+![Bipedal Walker, high framerate]({{"/vids/advup_high_best.gif"}})
 
 DAU succeeds in learning a decent behavior, even with a vastly larger framerate !
 
