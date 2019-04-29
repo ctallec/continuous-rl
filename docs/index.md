@@ -17,6 +17,7 @@ MathJax.Hub.Config({
 This blog post gives a summary of the article [Making Deep Q-learning Approaches Robust to Time Discretization](https://arxiv.org/abs/1901.09732).
 
 # A bit of motivation
+
 Have you ever tried training a *Deep Deterministic Policy Gradient* [3]
 agent on the OpenAI gym *Bipedal Walker* [2] environment? With very little hyperparameterisation,
 you can get it to kind of work, and you would probably obtain something of the sort:
@@ -32,14 +33,38 @@ than you normally, you would expect to become much better at everything you do, 
 
 Strange, the agent is not learning anything anymore... And if you perform the same experiment
 on different environments, you will get the same kind of results. There seems to be something
-wrong with Q-learning when the framerate time becomes arbitrarily high. Time to put on
-the detective cap and investigate!
+wrong with Q-learning when the framerate time becomes arbitrarily high. 
+
+This is not at all the behavior we expect for a reinforcement learning algorithm. Imagine starting to play
+to a new video game. Your learning behavior would be exactly the same if the game render 50 frame per second or 500 
+frame per second. This is because  the underlying learning process is independant of the time discretization.
+We expect the same thing from a RL method!
+
+Is that a real problem in practice? One could argue that most of the time, we are only using a single time discretization.
+That's true. But it suggests that you will always have to tune every hyperparameter on a new problem in order to adapt them to the time discretization. 
+The algorithms will be extremely sensitive to hyperparameter choice, and it will take more time to make an algorithm work in practice on a new problem.
+On the contrary, if the learning algorithm is time-discretization invariant, this means there is one thing less to adapt. 
+Thus, it should be easier to find reasonnable hyperparameter, and the method should be more stable and robust.
+
+Time to put on the detective cap and investigate!
+
+# Outline
+Before going into details, here is a very short summary of our work:
+
+> We study the influence of time discretisation on Q-learning and DDPG: We show that
+> in order to obtain a well-behavied algorithm, we should change three aspects of the method:
+> 1. The architecture of the network approximating the Q-function must be adapted to the time discretization, such that its outputs are of the proper order of magnitude.
+> 2. The exploration strategy must depend on the time discretization and be time coherent. 
+> 3. The learning rates must be adapted to the time discretization.
+> With these three ingredients, the algorithm converge when the time discretization goes to 0 to a well defined "continuous algorithm". This is a necessary step towards invariance to time discretization.
+
 
 # A crash course on approximate Q-learning
 In the following section, some elementary notions of reinforcement learning are given,
 as well as a reminder on *Q-learning*. If you are already familiar with the domain, you
 may want to directly skip to the next section.
 
+## Markov Decision Process
 We are going to work in the context of *Markov Decision Processes*. In this context,
 the observations received by the agent form a complete description of the state of the
 environment. To make things formal, a *Markov Decision Process* $\mathcal{M}$ is defined as
@@ -57,6 +82,7 @@ The agent interacts with the environment through a (potentially stochastic
 policy $\pi$, where $\pi(a|s)$ represents the probability for the agent of executing
 action $a$ in state $s$.
 
+## Policy and Value function
 The goal of the agent is to find a policy $\pi$ that maximizes the expected sum of weighted
 rewards across all subsequent timesteps. Formally, let's define the value function as
 
@@ -68,6 +94,7 @@ where the expectation is over trajectories sampled by using policy $\pi$ to inte
 the environment. The goal of the agent is to find a policy $\pi^\*$ such that for all policies
 $\pi$, for all state $s$, $V^{\pi^*}(s) \geq V^\pi(s)$.
 
+## Discount factor and time horizon
 You may notice that a *discount factor* $\gamma$ was introduced in the
 definition of $V^\pi$. Besides providing existence of the value function, this
 parameter can be interpreted as a preference for the present of the agent.
@@ -76,6 +103,7 @@ Informally, $\gamma$ introduces a notion of temporal horizon, $T = \frac{1}{1 -
 horizon of order $T$. Having a $\gamma$ of $.9$ thus roughly means looking
 about $10$ environment steps into the future.
 
+## Q-learning: Learning the optimal state-action value function $Q^\*$
 *Q-learning* is a way of computing an approximation of this optimal policy. To
 explain how it works, we first need to introduce the notion of *state-action value
 function*
@@ -113,6 +141,7 @@ obtained using an exploration policy $\pi^\text{explo}$:
 Under suitable conditions on the $\alpha$'s, this procedure can be shown to converge
 to the true optimal state-value function. This is *tabular Q-learning*!
 
+## Deep-Q-learning: Approximating  $Q^\*$ via gradient descent
 When facing continuous state space, we would like to approximate $Q^\*$ using a parametric
 function approximator $Q_\theta$. To this end, we can modify the previous learning
 procedure by replacing $3$ by
@@ -430,11 +459,6 @@ training with a $\deltat$ $10$ times smaller than the standard $\deltat$, you
 must train for $10$ times the usual training time if you hope to obtain the
 same results. This makes results for very low $\deltat$'s costly to obtain.
 
-
-# Outlines
-From systematic examination of the behavior of standard reinforcement learning quantities in the limit
-regime $\deltat \to 0$, we are able to devise a Q-learning based algorithm resilient to changes of
-framerate.
 
 # References
 * [1] BAIRD III, Leemon C. *Advantage updating*. WRIGHT LAB WRIGHT-PATTERSON AFB OH, 1993.
