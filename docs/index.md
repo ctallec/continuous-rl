@@ -60,7 +60,7 @@ Before going into details, here is a very short summary of our work:
 
 
 # A crash course on approximate Q-learning
-<details>
+<details> <summary> Click if you are not familiar with Q-learning </summary>
   In the following section, some elementary notions of reinforcement learning are given,
 as well as a reminder on *Q-learning*. If you are already familiar with the domain, you
 may want to directly skip to the next section.
@@ -165,6 +165,8 @@ it actually uses to produce its training trajectories.
 </details>
 
 # What is continuous time Reinforcement Learning, and why does it matters
+<details> <summary> Click if you want to know more about continuous-time reinforcement learning. </summary>
+
 To study the behavior of Q-learning when the framerate goes to $+\infty$, or equivalently the discretization
 timestep goes to $0$, we must first define a notion of discretized MDPs. To that end, we will introduce
 a restricted class of *continuous* environments, that will yield a familly of discretized environments,
@@ -242,6 +244,8 @@ T_{\deltat} = \frac{\deltat}{1 - \gamma^{\deltat}} = - \frac{1}{\log \gamma} + O
 \end{equation}
 thus yielding a non trivial time horizon as $\deltat$ goes to $0$, and physical time horizon close to this
 this value in near continuous environments.
+</details>
+
 # What's wrong with near continuous Q-learning?
 We are now ready to study what is going wrong with near continuous time Q-learning.
 ## There is no continuous time Q-function
@@ -316,6 +320,8 @@ the exploration behaviour is tenuous
 ![Exploration?]({{"/vids/vid-eps-1-0.0001.gif" | absolute_url}})
 
 # Can we fix it?
+<details> <summary> Click if you want to know how to fix it! </summary>
+
 We would now want to build a version of Q-learning that provides better invariance
 guarantees than standard approaches, and notably to work with small and very small
 $\deltat$'s.
