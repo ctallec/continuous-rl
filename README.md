@@ -23,7 +23,6 @@ Bipedal walker with DDPG:
 python main.py --algo ddpg --steps_btw_train 10 --noise_type coherent --batch_size 256 --hidden_size 256 --nb_layers 1 --gamma 0.8 --nb_steps 100 --sigma 1.5 --theta 7.5 --nb_train_env 256 --nb_eval_env 64 --memory_size 1000000 --learn_per_step 50 --eval_gap 0.05   --weight_decay 0.0   --tau 0.9 --optimizer rmsprop --env_id bipedal_walker --time_limit 10 --dt 0.02 --normalize_state  --lr 0.1 --policy_lr 0.02  --noscale --nb_true_epochs 20 --logdir ~/logdir
 ```
 
-
 Bipedal walker with DAU:
 ```bash
 python main.py --algo cdau --steps_btw_train 10 --noise_type coherent --batch_size 256 --hidden_size 256 --nb_layers 1 --gamma 0.8 --nb_steps 100 --sigma 1.5 --theta 7.5 --nb_train_env 256 --nb_eval_env 64 --memory_size 1000000 --learn_per_step 50 --eval_gap 0.05   --weight_decay 0.0   --tau 0.0 --optimizer rmsprop --env_id bipedal_walker --time_limit 10 --dt 0.02 --normalize_state  --lr 0.1 --policy_lr 0.02   --nb_true_epochs 20 --logdir ~/logdir

@@ -427,6 +427,8 @@ obtained by generating independent gaussian noises at each timestep.
 
 ![Coherent OU noise]({{"/vids/coherent.gif" | absolute_url}})
 
+</details>
+
 # Results
 With all the above remarks in hand, we can devise an algorithm, which we will
 refer to as *Deep Advantage Updating* (DAU), due to its resemblance to *Advantage Updating* [1], that should be more resilient to
