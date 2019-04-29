@@ -60,7 +60,8 @@ Before going into details, here is a very short summary of our work:
 
 
 # A crash course on approximate Q-learning
-In the following section, some elementary notions of reinforcement learning are given,
+<details>
+  In the following section, some elementary notions of reinforcement learning are given,
 as well as a reminder on *Q-learning*. If you are already familiar with the domain, you
 may want to directly skip to the next section.
 
@@ -161,6 +162,7 @@ the use of the *optimal Bellman Equation*.
 dynamic of the environment to learn.
   3. It is *off-policy*, i.e. it learns a different policy than the one
 it actually uses to produce its training trajectories.
+</details>
 
 # What is continuous time Reinforcement Learning, and why does it matters
 To study the behavior of Q-learning when the framerate goes to $+\infty$, or equivalently the discretization
