@@ -27,7 +27,7 @@ you can get it to kind of work, and you would probably obtain something of the s
 Now, have you ever tried to do it with a framerate of 1000 FPS instead of the usual 50 FPS?
 Kind of crazy, but things should only be easier. We are just providing our agent with a much smaller 
 reaction time, and this should only improve its performance. If you were able to react 20 times faster
-than you normally, you would expect to become much better at everything you do, not much worse.
+than you normally would, you would expect to become much better at everything you do, not much worse.
 
 ![Not quite the results we were expecting...]({{"/vids/ddpg_low_best.gif" | absolute_url}})
 
@@ -43,10 +43,9 @@ We expect the same thing from a RL method!
 Is that a real problem in practice? One could argue that most of the time, we are only using a single time discretization.
 That's true. But it suggests that you will always have to tune every hyperparameter on a new problem in order to adapt them to the time discretization. 
 The algorithms will be extremely sensitive to hyperparameter choice, and it will take more time to make an algorithm work in practice on a new problem.
-On the contrary, if the learning algorithm is time-discretization invariant, this means there is one thing less to adapt. 
+On the contrary, if the learning algorithm is time-discretization invariant, this means there is one less thing to adapt. 
 Thus, it should be easier to find reasonnable hyperparameter, and the method should be more stable and robust.
 
-Time to put on the detective cap and investigate!
 
 # Outline
 Before going into details, here is a very short summary of our work:
@@ -56,6 +55,7 @@ Before going into details, here is a very short summary of our work:
 > 1. The architecture of the network approximating the Q-function must be adapted to the time discretization, such that its outputs are of the proper order of magnitude.
 > 2. The exploration strategy must depend on the time discretization and be time coherent. 
 > 3. The learning rates must be adapted to the time discretization.
+> 
 > With these three ingredients, the algorithm converge when the time discretization goes to 0 to a well defined "continuous algorithm". This is a necessary step towards invariance to time discretization.
 
 
